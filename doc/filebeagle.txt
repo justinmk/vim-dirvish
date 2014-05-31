@@ -1,0 +1,63 @@
+*filebeagle.txt*	For Vim version 7.3	Last change: 2014 May 31
+
+===============================================================================
+CONTENTS                                     *filebeagle* *filebeagle-contents*
+
+    1. Invocation Commands ................... |filebeagle-invocation-commands|
+    2. Invocation Key Mappings ............... |filebeagle-invocation-key-maps|
+    1. Viewer Commands ....................... |filebeagle-viewer-commands|
+    2. Viewer Key Mappings ................... |filebeagle-viewer-key-maps|
+    3. Options and Settings .................. |filebeagle-options|
+
+===============================================================================
+INVOCATION COMMANDS                            *filebeagle-invocation-commands*
+
+:FileBeagle [{path}]                                              *:FileBeagle*
+    Open the FileBeagle directory viewer on {path} or current working directory
+    if {path} is not given.
+
+:FileBeagleBufferDir                                     *:FileBeagleBufferDir*
+    Open the FileBeagle directory viewer on the directory of the current
+    buffer.
+
+===============================================================================
+INVOCATION KEY MAPPINGS                        *filebeagle-invocation-key-maps*
+
+By default (unless |g:filebeagle_suppress_keymaps| is defined to be 1, the
+following key maps are provided:
+
+<leader>f   Invokes ":FileBeagle" with no arguments: open the directory viewer
+            on the current working directory.
+
+-           Invokes ":FileBeagleBufferDir": open the directory viewer
+            on the directory of the current buffer.
+
+===============================================================================
+VIEWER COMMANDS                                    *filebeagle-viewer-commands*
+
+===============================================================================
+VIEWER KEY MAPPINGS                                *filebeagle-viewer-key-maps*
+
+<CR>, o             Open the currently-selected file.
+s                   Open the currently-selected file in a new vertical
+                    split.
+<C-V>               As above (compatibility with Ctrl-P/Command-T)
+i                   Open the currently-selected file in a new horizontal
+                    split.
+<C-S>               As above (compatibility with Ctrl-P/Command-T)
+i                   Open the currently-selected file in a new tab.
+<C-T>               As above (compatibility with Ctrl-P/Command-T)
+
+===============================================================================
+OPTIONS AND SETTTINGS                                      *filebeagle-options*
+
+g:filebeagle_suppress_keymaps~                  *g:filebeagle_suppress_keymaps*
+    Default: 0
+    If specified as 1, then key-mappings to invoke FileBeagle will not be defined.
+
+                                                         *g:filebeagle_hijack_netrw*
+g:filebeagle_hijack_netrw
+    Default: 0
+    If specified as 1, directories will be opened by FileBeagle instead of |netrw|.
+
+ vim:tw=78:ts=8:ft=help:norl:
