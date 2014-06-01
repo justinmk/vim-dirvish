@@ -39,6 +39,20 @@ following key maps are provided:
 VIEWER KEY MAPPINGS~
 
 -------------------------------------------------------------------------------
+Listing Control~
+
+r           Refresh the directory listing.
+f           Define and apply a regular expression filter for the file entries.
+F           Toggle application of the regular expression filter.
+<ESC>, q    Quit and exit the viewer.
+
+-------------------------------------------------------------------------------
+Directory Navigation~
+
+-, u        Move up to the parent directory of the current directory.
+<BS>, b     Go back to the previous directory in the directory history.
+
+-------------------------------------------------------------------------------
 File Selection~
 
 <CR>, o     Open the currently selected file in the current window.
@@ -52,11 +66,6 @@ File Operations~
 a           Add (create) a new file to the current directory.
 +           Edit a new empty buffer in the current directory.
 
--------------------------------------------------------------------------------
-Directory Navigation~
-
--, u        Move up to the parent directory of the current directory.
-<BS>,b      Go back to the previous directory in the directory history.
 
 ===============================================================================
                                                            *filebeagle-options*

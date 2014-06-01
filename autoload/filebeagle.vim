@@ -166,7 +166,7 @@ function! s:NewDirectoryViewer()
     let l:directory_viewer["buf_name"] = s:get_filebeagle_buffer_name()
     let l:directory_viewer["buf_num"] = bufnr(l:directory_viewer["buf_name"], 1)
 
-    function! l:directory_viewer.open_dir(focus_dir, calling_buf_num, prev_focus_dirs) dict
+    function! l:directory_viewer.open_dir(focus_dir, calling_buf_num, prev_focus_dirs, is_filtered, filter_exp) dict
         " save previous buffer
         if empty(a:calling_buf_num)
             let prev_buf_num = bufnr('%')
@@ -186,6 +186,9 @@ function! s:NewDirectoryViewer()
         call self.setup_buffer_keymaps()
         call self.setup_buffer_statusline()
         let self.prev_buf_num = prev_buf_num
+        " set up filters
+        let self.is_filtered = a:is_filtered
+        let self.filter_exp = a:filter_exp
         " render it
         call self.render_buffer()
     endfunction
@@ -202,6 +205,7 @@ function! s:NewDirectoryViewer()
         " setlocal nonumber
         setlocal cursorline
         setlocal nospell
+        set ft=filebeagle
     endfunction
 
     " Sets buffer syntax.
@@ -230,6 +234,8 @@ function! s:NewDirectoryViewer()
 
         """ Index buffer management
         noremap <buffer> <silent> r       :call b:filebeagle_directory_viewer.refresh()<CR>
+        noremap <buffer> <silent> f       :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
+        noremap <buffer> <silent> F       :call b:filebeagle_directory_viewer.toggle_filter()<CR>
         noremap <buffer> <silent> q       :call b:filebeagle_directory_viewer.close()<CR>
         noremap <buffer> <silent> <ESC>   :call b:filebeagle_directory_viewer.close()<CR>
 
@@ -257,7 +263,7 @@ function! s:NewDirectoryViewer()
 
     " Sets buffer status line.
     function! l:directory_viewer.setup_buffer_statusline() dict
-        setlocal statusline=%{FileBeagleStatusLineCurrentLineInfo()}
+        setlocal statusline=%{FileBeagleStatusLineCurrentLineInfo()}%=%{FileBeagleStatusLineFilterInfo()}
     endfunction
 
     " Populates the buffer with the catalog index.
@@ -268,6 +274,9 @@ function! s:NewDirectoryViewer()
         call self.setup_buffer_syntax()
         let paths = s:discover_paths(self.focus_dir, "*")
         for path in paths[0] + paths[1]
+            if !path.is_dir && self.is_filtered && !empty(self.filter_exp) && (path["basename"] !~# self.filter_exp)
+                continue
+            endif
             let l:line_map = {
                         \ "full_path" : path["full_path"],
                         \ "basename" : path["basename"],
@@ -316,7 +325,7 @@ function! s:NewDirectoryViewer()
             else
                 execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
                 let directory_viewer = s:NewDirectoryViewer()
-                call directory_viewer.open_dir(l:target, self.prev_buf_num, self.prev_focus_dirs)
+                call directory_viewer.open_dir(l:target, self.prev_buf_num, self.prev_focus_dirs, self.is_filtered, self.filter_exp)
             endif
         else
             call self.visit_file(l:target, a:split_cmd)
@@ -330,7 +339,7 @@ function! s:NewDirectoryViewer()
             endif
         endif
         let self.focus_dir = fnamemodify(a:new_dir, ":p")
-        call self.render_buffer()
+        call self.refresh()
     endfunction
 
     function! l:directory_viewer.visit_file(full_path, split_cmd)
@@ -395,6 +404,34 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
+    function! l:directory_viewer.set_filter_exp() dict
+        let self.filter_exp = input("Filter expression: ", self.filter_exp)
+        if empty(self.filter_exp)
+            let self.is_filtered = 0
+            call s:_filebeagle_messenger.send_info("Filter OFF")
+        else
+            let self.is_filtered = 1
+            call s:_filebeagle_messenger.send_info("Filter ON")
+        endif
+        call self.refresh()
+    endfunction
+
+    function! l:directory_viewer.toggle_filter() dict
+        if self.is_filtered
+            let self.is_filtered = 0
+            call s:_filebeagle_messenger.send_info("Filter OFF")
+            call self.refresh()
+        else
+            if !empty(self.filter_exp)
+                let self.is_filtered = 1
+                call s:_filebeagle_messenger.send_info("Filter ON")
+                call self.refresh()
+            else
+                call self.set_filter_exp()
+            endif
+        endif
+    endfunction
+
     " return object
     return l:directory_viewer
 
@@ -402,7 +439,7 @@ endfunction
 
 " }}}1
 
-" Global Functions {{{1
+" Status Line Functions {{{1
 " ==============================================================================
 
 function! FileBeagleStatusLineCurrentLineInfo()
@@ -410,6 +447,14 @@ function! FileBeagleStatusLineCurrentLineInfo()
         return "[not a valid FileBeagle viewer]"
     endif
     let l:status_line = '[[FileBeagle]] "' . b:filebeagle_directory_viewer.focus_dir . '" '
+    return l:status_line
+endfunction
+
+function! FileBeagleStatusLineFilterInfo()
+    let l:status_line = ""
+    if b:filebeagle_directory_viewer.is_filtered && !empty(b:filebeagle_directory_viewer.filter_exp)
+        let l:status_line .= " | FILTER: ".b:filebeagle_directory_viewer.filter_exp . " "
+    endif
     return l:status_line
 endfunction
 " }}}1
@@ -428,7 +473,7 @@ function! filebeagle#FileBeagleOpen(focus_dir)
     else
         let focus_dir = a:focus_dir
     endif
-    call directory_viewer.open_dir(focus_dir, bufnr("%"), [])
+    call directory_viewer.open_dir(focus_dir, bufnr("%"), [], 0, "")
 endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
@@ -441,7 +486,7 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
     else
         let directory_viewer = s:NewDirectoryViewer()
         let focus_dir = expand('%:p:h')
-        call directory_viewer.open_dir(focus_dir, bufnr("%"), [])
+        call directory_viewer.open_dir(focus_dir, bufnr("%"), [], 0, "")
     endif
 endfunction
 
