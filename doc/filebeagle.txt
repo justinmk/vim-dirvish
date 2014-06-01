@@ -60,7 +60,12 @@ Directory Navigation~
 
 ===============================================================================
                                                            *filebeagle-options*
-OPTIONS AND SETTTINGS~
+OPTIONS AND SETTINGS~
+
+The list of file patterns to ignore can be controlled by setting
+|wildignore|.
+
+Other options are:
 
 g:filebeagle_suppress_keymaps~                  *g:filebeagle_suppress_keymaps*
     Default: 0
