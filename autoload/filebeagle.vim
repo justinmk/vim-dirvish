@@ -288,20 +288,22 @@ function! s:NewDirectoryViewer()
     let l:directory_viewer["buf_name"] = s:GetNewBufferName()
     let l:directory_viewer["buf_num"] = bufnr(l:directory_viewer["buf_name"], 1)
 
-    " Opens the buffer for viewing, creating it if needed. If non-empty first
-    " argument is given, forces re-rendering of buffer.
-    function! l:directory_viewer.open(...) dict
+    function! l:directory_viewer.open_dir(root_dir, add_to_history) dict
         " save previous buffer
         let prev_buf_num = bufnr('%')
-        if a:0 == 0
-            let root_dir = expand('%:p:h')
-        else
-            let root_dir = fnamemodify(a:1, ":p")
-        endif
-        if exists("self['root_dir']")
-            let self.prev_root_dir = self.root_dir
-        else
-            let self.prev_root_dir = root_dir
+        let root_dir = fnamemodify(a:root_dir, ":p")
+        if !exists("self['prev_root_dir']")
+            let self.prev_root_dir = []
+        elseif a:add_to_history
+            if exists("self['root_dir']")
+                if empty(self.prev_root_dir) || self.prev_root_dir[-1] != self.root_dir
+                    call add(self.prev_root_dir, self.root_dir)
+                endif
+            endif
+            " if len(self.prev_root_dir) == 0 || self.prev_root_dir[-1] != root_dir
+            " if len(self.prev_root_dir) == 0 || self.prev_root_dir[-1] != root_dir
+            "     call add(self.prev_root_dir, root_dir)
+            " endif
         endif
         let self.root_dir = root_dir
         " get a new buf reference
@@ -458,7 +460,7 @@ function! s:NewDirectoryViewer()
         endif
         let l:target = self.jump_map[line(".")].full_path
         if self.jump_map[line(".")].is_dir
-            call self.open(l:target)
+            call self.open_dir(l:target, 1)
         else
             call self.visit_path(l:target, a:split_cmd)
         endif
@@ -471,11 +473,23 @@ function! s:NewDirectoryViewer()
     endfunction
 
     function! l:directory_viewer.visit_parent_dir() dict
-        call self.open(s:parent_dir(self.root_dir))
+        let pdir = fnamemodify(s:parent_dir(self.root_dir), ":p")
+        if pdir != self.root_dir
+            call self.open_dir(pdir, 1)
+        else
+            call s:_filebeagle_messenger.send_info("No parent directory available")
+        endif
     endfunction
 
     function! l:directory_viewer.visit_prev_dir() dict
-        call self.open(self.prev_root_dir)
+        " if len(self.prev_root_dir) == 0
+        if empty(self.prev_root_dir)
+            call s:_filebeagle_messenger.send_info("No previous directory available")
+        else
+            let new_root_dir = self.prev_root_dir[-1]
+            call remove(self.prev_root_dir, -1)
+            call self.open_dir(new_root_dir, 0)
+        endif
     endfunction
 
     function! l:directory_viewer.refresh() dict
@@ -551,7 +565,7 @@ function! filebeagle#FileBeagleOpen(root_dir)
     else
         let root_dir = a:root_dir
     endif
-    call directory_viewer.open(root_dir)
+    call directory_viewer.open_dir(root_dir, 1)
 endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
@@ -561,7 +575,7 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
     endif
     let directory_viewer = s:NewDirectoryViewer()
     let root_dir = expand('%:p:h')
-    call directory_viewer.open(root_dir)
+    call directory_viewer.open_dir(root_dir, 1)
 endfunction
 
 " }}}1
