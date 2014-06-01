@@ -37,9 +37,9 @@ function! s:NewMessenger(name)
     let l:messenger = {}
     let l:messenger["name"] = a:name
     if empty(a:name)
-        let l:messenger["title"] = "filebeagle"
+        let l:messenger["title"] = "FileBeagle"
     else
-        let l:messenger["title"] = "filebeagle (" . l:messenger["name"] . ")"
+        let l:messenger["title"] = "FileBeagle (" . l:messenger["name"] . ")"
     endif
 
     function! l:messenger.format_message(leader, msg) dict
@@ -99,7 +99,7 @@ function! s:parent_dir(current_dir)
 endfunction
 
 function! s:is_path_exists(path)
-    if filereadable(path) || !empty(glob(path))
+    if filereadable(a:path) || !empty(glob(a:path))
         return 1
     else
         return 0
@@ -363,6 +363,16 @@ function! s:NewDirectoryViewer()
         call self.render_buffer()
     endfunction
 
+    function! l:directory_viewer.goto_pattern(pattern) dict
+        " call cursor(1, 0)
+        let old_ignorecase = &ignorecase
+        set noignorecase
+        " let lnum = search("^" . a:pattern . "$", "cwn")
+        call search("^" . a:pattern . "$", "cw")
+        let &ignorecase = old_ignorecase
+        " call cursor(lnum, 0)
+    endfunction
+
     function! l:directory_viewer.new_file(parent_dir, create, open) dict
         let new_fname = input("Add file: ".a:parent_dir)
         if !empty(new_fname)
@@ -379,6 +389,8 @@ function! s:NewDirectoryViewer()
             endif
             if a:open
                 call self.visit_file(new_fpath, "edit")
+            else
+                call self.goto_pattern(new_fname)
             endif
         endif
     endfunction
