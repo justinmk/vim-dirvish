@@ -357,12 +357,12 @@ function! s:NewDirectoryViewer()
             endtry
         endfor
 
-        """" Index buffer management
+        """ Index buffer management
         noremap <buffer> <silent> r       :call b:filebeagle_directory_viewer.refresh()<CR>
         noremap <buffer> <silent> q       :call b:filebeagle_directory_viewer.close()<CR>
         noremap <buffer> <silent> <ESC>   :call b:filebeagle_directory_viewer.close()<CR>
 
-        """"" Selection: show target and switch focus
+        """ Selection: show target and switch focus
         noremap <buffer> <silent> <CR>  :call b:filebeagle_directory_viewer.visit_target("edit")<CR>
         noremap <buffer> <silent> o     :call b:filebeagle_directory_viewer.visit_target("edit")<CR>
         noremap <buffer> <silent> s     :call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
@@ -372,9 +372,13 @@ function! s:NewDirectoryViewer()
         noremap <buffer> <silent> t     :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
         noremap <buffer> <silent> <C-t> :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
 
-        """"" Directory changing
+        """ Directory changing
         noremap <buffer> <silent> -  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
         noremap <buffer> <silent> <BS>  :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
+
+        """ File operations
+        noremap <buffer> <silent> +     :call b:filebeagle_directory_viewer.open_new_file()<CR>
+        noremap <buffer> <silent> a     :call b:filebeagle_directory_viewer.open_new_file()<CR>
 
     endfunction
 
@@ -456,11 +460,14 @@ function! s:NewDirectoryViewer()
         if self.jump_map[line(".")].is_dir
             call self.open(l:target)
         else
-            execute "b " . self.prev_buf_num
-            execute a:split_cmd . " " . fnameescape(l:target)
-            execute "bwipe " . self.buf_num
-            " echomsg shellescape(l:target)
+            call self.visit_path(l:target, a:split_cmd)
         endif
+    endfunction
+
+    function! l:directory_viewer.visit_path(full_path, split_cmd)
+        execute "b " . self.prev_buf_num
+        execute a:split_cmd . " " . fnameescape(a:full_path)
+        execute "bwipe " . self.buf_num
     endfunction
 
     function! l:directory_viewer.visit_parent_dir() dict
@@ -475,6 +482,19 @@ function! s:NewDirectoryViewer()
         let old_prev = self.prev_root_dir
         call self.open(self.root_dir)
         let self.prev_root_dir = old_prev
+    endfunction
+
+    function! l:directory_viewer.open_new_file(...) dict
+        if a:0 == 0
+            let parent_dir = fnamemodify(self.root_dir, ":p")
+        else
+            let parent_dir = fnamemodify(a:1, ":p")
+        endif
+        let new_fname = input("Add file: ".parent_dir)
+        if !empty(new_fname)
+            let new_fpath = parent_dir . new_fname
+            call self.visit_path(new_fpath, "edit")
+        endif
     endfunction
 
     " return object
