@@ -376,7 +376,9 @@ function! s:NewDirectoryViewer()
 
         """ Directory changing
         noremap <buffer> <silent> -  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
+        noremap <buffer> <silent> u  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
         noremap <buffer> <silent> <BS>  :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
+        noremap <buffer> <silent> b  :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
 
         """ File operations
         noremap <buffer> <silent> +     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.root_dir, 0, 1)<CR>

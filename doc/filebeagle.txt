@@ -55,8 +55,8 @@ a           Add (create) a new file to the current directory.
 -------------------------------------------------------------------------------
 Directory Navigation~
 
--, u        Move up a directory.
-<BS>        Return to the previous directory.
+-, u        Move up to the parent directory of the current directory.
+<BS>,b      Go back to the previous directory in the directory history.
 
 ===============================================================================
                                                            *filebeagle-options*
