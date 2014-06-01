@@ -106,7 +106,7 @@ function! s:is_path_exists(path)
     endif
 endfunction
 
-function! s:GetCurrentParentDirEntry(current_dir)
+function! s:build_current_parent_dir_entry(current_dir)
     let entry = {
                 \ "full_path" : s:parent_dir(a:current_dir),
                 \ "basename" : "..",
@@ -120,7 +120,7 @@ function! s:DiscoverPaths(current_dir, glob_pattern)
     let dir_paths = []
     let file_paths = []
     " call add(dir_paths, s:GetCurrentDirEntry(a:current_dir))
-    call add(dir_paths, s:GetCurrentParentDirEntry(a:current_dir))
+    call add(dir_paths, s:build_current_parent_dir_entry(a:current_dir))
     for path in paths
         let full_path = fnamemodify(path, ":p")
         let basename = fnamemodify(path, ":t")
@@ -142,7 +142,7 @@ endfunction
 " DirectoryViewer {{{1
 " ==============================================================================
 
-function! s:GetNewBufferName()
+function! s:get_filebeagle_buffer_name()
     let stemname = "filebeagle"
     let idx = 1
     let bname = stemname
@@ -160,7 +160,7 @@ function! s:NewDirectoryViewer()
     let l:directory_viewer = {}
 
     " Initialize object state.
-    let l:directory_viewer["buf_name"] = s:GetNewBufferName()
+    let l:directory_viewer["buf_name"] = s:get_filebeagle_buffer_name()
     let l:directory_viewer["buf_num"] = bufnr(l:directory_viewer["buf_name"], 1)
 
     function! l:directory_viewer.open_dir(root_dir, add_to_history) dict
@@ -414,22 +414,6 @@ function! FileBeagleStatusLineCurrentLineInfo()
         return "[not a valid FileBeagle viewer]"
     endif
     let l:status_line = '[[FileBeagle]] "' . b:filebeagle_directory_viewer.root_dir . '" '
-    " if b:buffersaurus_catalog_viewer.filter_regime && !empty(b:buffersaurus_catalog_viewer.filter_pattern)
-    "     let l:status_line .= "*filtered* | "
-    " endif
-    " if has_key(b:buffersaurus_catalog_viewer.jump_map, l:line)
-    "     let l:jump_line = b:buffersaurus_catalog_viewer.jump_map[l:line]
-    "     if l:jump_line.entry_index >= 0
-    "         let l:status_line .= string(l:jump_line.entry_index + 1) . " of " . b:buffersaurus_catalog_viewer.catalog.size()
-    "         let l:status_line .= " | "
-    "         let l:status_line .= 'File: "' . expand(bufname(l:jump_line.target[0]))
-    "         let l:status_line .= '" (L:' . l:jump_line.target[1] . ', C:' . l:jump_line.target[2] . ')'
-    "     else
-    "         let l:status_line .= '(Indexed File) | "' . expand(bufname(l:jump_line.target[0])) . '"'
-    "     endif
-    " else
-    "     let l:status_line .= "(not a valid indexed line)"
-    " endif
     return l:status_line
 endfunction
 " }}}1
