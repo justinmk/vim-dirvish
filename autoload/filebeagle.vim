@@ -377,8 +377,8 @@ function! s:NewDirectoryViewer()
         noremap <buffer> <silent> <BS>  :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
 
         """ File operations
-        noremap <buffer> <silent> +     :call b:filebeagle_directory_viewer.open_new_file()<CR>
-        noremap <buffer> <silent> a     :call b:filebeagle_directory_viewer.open_new_file()<CR>
+        noremap <buffer> <silent> +     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.root_dir, 0, 1)<CR>
+        noremap <buffer> <silent> a     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.root_dir, 1, 0)<CR>
 
     endfunction
 
@@ -479,21 +479,26 @@ function! s:NewDirectoryViewer()
     endfunction
 
     function! l:directory_viewer.refresh() dict
-        let old_prev = self.prev_root_dir
-        call self.open(self.root_dir)
-        let self.prev_root_dir = old_prev
+        call self.render_buffer()
     endfunction
 
-    function! l:directory_viewer.open_new_file(...) dict
-        if a:0 == 0
-            let parent_dir = fnamemodify(self.root_dir, ":p")
-        else
-            let parent_dir = fnamemodify(a:1, ":p")
-        endif
-        let new_fname = input("Add file: ".parent_dir)
+    function! l:directory_viewer.new_file(parent_dir, create, open) dict
+        let new_fname = input("Add file: ".a:parent_dir)
         if !empty(new_fname)
-            let new_fpath = parent_dir . new_fname
-            call self.visit_path(new_fpath, "edit")
+            let new_fpath = a:parent_dir . new_fname
+            if a:create
+                if isdirectory(new_fpath)
+                    call s:_filebeagle_messenger.send_error("Directory already exists: '" . new_fpath . "'")
+                elseif filereadable(new_fpath) || !empty(glob(new_fpath))
+                    call s:_filebeagle_messenger.send_error("File already exists: '" . new_fpath . "'")
+                else
+                    call writefile([], new_fpath)
+                    call self.refresh()
+                endif
+            endif
+            if a:open
+                call self.visit_path(new_fpath, "edit")
+            endif
         endif
     endfunction
 

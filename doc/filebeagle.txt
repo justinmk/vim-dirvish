@@ -1,16 +1,17 @@
 *filebeagle.txt*	For Vim version 7.3	Last change: 2014 May 31
 
 ===============================================================================
-CONTENTS                                     *filebeagle* *filebeagle-contents*
+                                             *filebeagle* *filebeagle-contents*
+CONTENTS~
 
     1. Invocation Commands ................... |filebeagle-invocation-commands|
     2. Invocation Key Mappings ............... |filebeagle-invocation-key-maps|
-    1. Viewer Commands ....................... |filebeagle-viewer-commands|
-    2. Viewer Key Mappings ................... |filebeagle-viewer-key-maps|
-    3. Options and Settings .................. |filebeagle-options|
+    3. Viewer Key Mappings ................... |filebeagle-viewer-key-maps|
+    4. Options and Settings .................. |filebeagle-options|
 
 ===============================================================================
-INVOCATION COMMANDS                            *filebeagle-invocation-commands*
+                                               *filebeagle-invocation-commands*
+INVOCATION COMMANDS~
 
 :FileBeagle [{path}]                                              *:FileBeagle*
     Open the FileBeagle directory viewer on {path} or current working directory
@@ -21,7 +22,8 @@ INVOCATION COMMANDS                            *filebeagle-invocation-commands*
     buffer.
 
 ===============================================================================
-INVOCATION KEY MAPPINGS                        *filebeagle-invocation-key-maps*
+                                               *filebeagle-invocation-key-maps*
+INVOCATION KEY MAPPINGS~
 
 By default (unless |g:filebeagle_suppress_keymaps| is defined to be 1, the
 following key maps are provided:
@@ -33,30 +35,39 @@ following key maps are provided:
             on the directory of the current buffer.
 
 ===============================================================================
-VIEWER COMMANDS                                    *filebeagle-viewer-commands*
+                                                   *filebeagle-viewer-key-maps*
+VIEWER KEY MAPPINGS~
+
+-------------------------------------------------------------------------------
+File Selection~
+
+<CR>, o     Open the currently selected file in the current window.
+<C-V>, s    Open the currently selected file in a new vertical split.
+<C-S>, i    Open the currently selected file in a new horizontal split.
+<C-T>, t    Open the currently selected file in a new tab.
+
+-------------------------------------------------------------------------------
+File Operations~
+
+a           Add (create) a new file to the current directory.
++           Edit a new empty buffer in the current directory.
+
+-------------------------------------------------------------------------------
+Directory Navigation~
+
+-, u        Move up a directory.
+<BS>        Return to the previous directory.
 
 ===============================================================================
-VIEWER KEY MAPPINGS                                *filebeagle-viewer-key-maps*
-
-<CR>, o             Open the currently-selected file.
-s                   Open the currently-selected file in a new vertical
-                    split.
-<C-V>               As above (compatibility with Ctrl-P/Command-T)
-i                   Open the currently-selected file in a new horizontal
-                    split.
-<C-S>               As above (compatibility with Ctrl-P/Command-T)
-i                   Open the currently-selected file in a new tab.
-<C-T>               As above (compatibility with Ctrl-P/Command-T)
-
-===============================================================================
-OPTIONS AND SETTTINGS                                      *filebeagle-options*
+                                                           *filebeagle-options*
+OPTIONS AND SETTTINGS~
 
 g:filebeagle_suppress_keymaps~                  *g:filebeagle_suppress_keymaps*
     Default: 0
     If specified as 1, then key-mappings to invoke FileBeagle will not be defined.
 
-                                                         *g:filebeagle_hijack_netrw*
-g:filebeagle_hijack_netrw
+
+g:filebeagle_hijack_netrw~                          *g:filebeagle_hijack_netrw*
     Default: 0
     If specified as 1, directories will be opened by FileBeagle instead of |netrw|.
 
