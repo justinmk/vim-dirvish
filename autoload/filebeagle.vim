@@ -25,141 +25,8 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}1
 
-" Global Plugin Options {{{1
-" =============================================================================
-if !exists("g:filebeagle_autodismiss_on_select")
-    let g:filebeagle_autodismiss_on_select = 1
-endif
-if !exists("g:filebeagle_sort_regime")
-    let g:filebeagle_sort_regime = 'fl'
-endif
-if !exists("g:filebeagle_context_size")
-    let g:filebeagle_context_size = [4, 4]
-endif
-if !exists("g:filebeagle_viewport_split_policy")
-    let g:filebeagle_viewport_split_policy = "B"
-endif
-if !exists("g:filebeagle_move_wrap")
-    let g:filebeagle_move_wrap  = 1
-endif
-if !exists("g:filebeagle_flash_jumped_line")
-    let g:filebeagle_flash_jumped_line  = 1
-endif
-" }}}1
-
-" Script Data and Variables {{{1
-" =============================================================================
-
-"  Display column sizes {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" Display columns.
-let s:filebeagle_lnum_field_width = 6
-let s:filebeagle_entry_label_field_width = 4
-" TODO: populate the following based on user setting, as well as allow
-" abstraction from the actual Vim command (e.g., option "top" => "zt")
-let s:filebeagle_post_move_cmd = "normal! zz"
-
-" }}}2
-
-" Split Modes {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" Split modes are indicated by a single letter. Upper-case letters indicate
-" that the SCREEN (i.e., the entire application "window" from the operating
-" system's perspective) should be split, while lower-case letters indicate
-" that the VIEWPORT (i.e., the "window" in Vim's terminology, referring to the
-" various subpanels or splits within Vim) should be split.
-" Split policy indicators and their corresponding modes are:
-"   ``/`d`/`D'  : use default splitting mode
-"   `n`/`N`     : NO split, use existing window.
-"   `L`         : split SCREEN vertically, with new split on the left
-"   `l`         : split VIEWPORT vertically, with new split on the left
-"   `R`         : split SCREEN vertically, with new split on the right
-"   `r`         : split VIEWPORT vertically, with new split on the right
-"   `T`         : split SCREEN horizontally, with new split on the top
-"   `t`         : split VIEWPORT horizontally, with new split on the top
-"   `B`         : split SCREEN horizontally, with new split on the bottom
-"   `b`         : split VIEWPORT horizontally, with new split on the bottom
-let s:filebeagle_viewport_split_modes = {
-            \ "d"   : "sp",
-            \ "D"   : "sp",
-            \ "N"   : "buffer",
-            \ "n"   : "buffer",
-            \ "L"   : "topleft vert sbuffer",
-            \ "l"   : "leftabove vert sbuffer",
-            \ "R"   : "botright vert sbuffer",
-            \ "r"   : "rightbelow vert sbuffer",
-            \ "T"   : "topleft sbuffer",
-            \ "t"   : "leftabove sbuffer",
-            \ "B"   : "botright sbuffer",
-            \ "b"   : "rightbelow sbuffer",
-            \ }
-" }}}2
-
-" }}}1
-
 " Utilities {{{1
 " ==============================================================================
-
-" Text Formatting {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-function! s:Format_AlignLeft(text, width, fill_char)
-    let l:fill = repeat(a:fill_char, a:width-len(a:text))
-    return a:text . l:fill
-endfunction
-
-function! s:Format_AlignRight(text, width, fill_char)
-    let l:fill = repeat(a:fill_char, a:width-len(a:text))
-    return l:fill . a:text
-endfunction
-
-function! s:Format_Time(secs)
-    if exists("*strftime")
-        return strftime("%Y-%m-%d %H:%M:%S", a:secs)
-    else
-        return (localtime() - a:secs) . " secs ago"
-    endif
-endfunction
-
-function! s:Format_EscapedFilename(file)
-  if exists('*fnameescape')
-    return fnameescape(a:file)
-  else
-    return escape(a:file," \t\n*?[{`$\\%#'\"|!<")
-  endif
-endfunction
-
-" trunc: -1 = truncate left, 0 = no truncate, +1 = truncate right
-function! s:Format_Truncate(str, max_len, trunc)
-    if len(a:str) > a:max_len
-        if a:trunc > 0
-            return strpart(a:str, a:max_len - 4) . " ..."
-        elseif a:trunc < 0
-            return '... ' . strpart(a:str, len(a:str) - a:max_len + 4)
-        endif
-    else
-        return a:str
-    endif
-endfunction
-
-" Pads/truncates text to fit a given width.
-" align: -1/0 = align left, 0 = no align, 1 = align right
-" trunc: -1 = truncate left, 0 = no truncate, +1 = truncate right
-function! s:Format_Fill(str, width, align, trunc)
-    let l:prepped = a:str
-    if a:trunc != 0
-        let l:prepped = s:Format_Truncate(a:str, a:width, a:trunc)
-    endif
-    if len(l:prepped) < a:width
-        if a:align > 0
-            let l:prepped = s:Format_AlignRight(l:prepped, a:width, " ")
-        elseif a:align < 0
-            let l:prepped = s:Format_AlignLeft(l:prepped, a:width, " ")
-        endif
-    endif
-    return l:prepped
-endfunction
-
-" }}}2
 
 " Messaging {{{2
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -229,6 +96,14 @@ endfunction
 function! s:parent_dir(current_dir)
     let d = fnamemodify(a:current_dir . "/..", ":p")
     return d
+endfunction
+
+function! s:is_path_exists(path)
+    if filereadable(path) || !empty(glob(path))
+        return 1
+    else
+        return 0
+    endif
 endfunction
 
 function! s:GetCurrentParentDirEntry(current_dir)
@@ -462,7 +337,13 @@ function! s:NewDirectoryViewer()
         endif
         let l:target = self.jump_map[line(".")].full_path
         if self.jump_map[line(".")].is_dir
-            call self.open_dir(l:target, 1)
+            if a:split_cmd == "edit"
+                call self.open_dir(l:target, 1)
+            else
+                execute a:split_cmd . " " . bufname(self.prev_buf_num)
+                let directory_viewer = s:NewDirectoryViewer()
+                call directory_viewer.open_dir(l:target, 1)
+            endif
         else
             call self.visit_path(l:target, a:split_cmd)
         endif
@@ -505,7 +386,7 @@ function! s:NewDirectoryViewer()
             if a:create
                 if isdirectory(new_fpath)
                     call s:_filebeagle_messenger.send_error("Directory already exists: '" . new_fpath . "'")
-                elseif filereadable(new_fpath) || !empty(glob(new_fpath))
+                elseif s:is_path_exists(new_fpath)
                     call s:_filebeagle_messenger.send_error("File already exists: '" . new_fpath . "'")
                 else
                     call writefile([], new_fpath)
@@ -575,9 +456,13 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
         " Do not open nested filebeagle viewers
         return
     endif
-    let directory_viewer = s:NewDirectoryViewer()
-    let root_dir = expand('%:p:h')
-    call directory_viewer.open_dir(root_dir, 1)
+    if empty(expand("%"))
+        call filebeagle#FileBeagleOpen(getcwd())
+    else
+        let directory_viewer = s:NewDirectoryViewer()
+        let root_dir = expand('%:p:h')
+        call directory_viewer.open_dir(root_dir, 1)
+    endif
 endfunction
 
 " }}}1
