@@ -115,7 +115,7 @@ function! s:build_current_parent_dir_entry(current_dir)
     return entry
 endfunction
 
-function! s:DiscoverPaths(current_dir, glob_pattern)
+function! s:discover_paths(current_dir, glob_pattern)
     let paths = split(globpath(a:current_dir, a:glob_pattern), '\n')
     let dir_paths = []
     let file_paths = []
@@ -137,11 +137,8 @@ function! s:DiscoverPaths(current_dir, glob_pattern)
 endfunction
 " }}}2
 
-" }}}1
-
-" DirectoryViewer {{{1
-" ==============================================================================
-
+" FileBeagle Buffer Management {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 function! s:get_filebeagle_buffer_name()
     let stemname = "filebeagle"
     let idx = 1
@@ -152,6 +149,12 @@ function! s:get_filebeagle_buffer_name()
     endwhile
     return bname
 endfunction
+" }}}2
+
+" }}}1
+
+" DirectoryViewer {{{1
+" ==============================================================================
 
 " Display the catalog.
 function! s:NewDirectoryViewer()
@@ -272,7 +275,7 @@ function! s:NewDirectoryViewer()
         call self.clear_buffer()
         let self.jump_map = {}
         call self.setup_buffer_syntax()
-        let paths = s:DiscoverPaths(self.root_dir, "*")
+        let paths = s:discover_paths(self.root_dir, "*")
         for path in paths[0] + paths[1]
             let l:line_map = {
                         \ "full_path" : path["full_path"],
