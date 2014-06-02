@@ -107,9 +107,11 @@ function! s:is_path_exists(path)
 endfunction
 
 function! s:build_current_parent_dir_entry(current_dir)
+    let parent = s:parent_dir(a:current_dir)
     let entry = {
-                \ "full_path" : s:parent_dir(a:current_dir),
+                \ "full_path" : parent,
                 \ "basename" : "..",
+                \ "dirname" : fnamemodify(parent, ":h"),
                 \ "is_dir" : 1
                 \ }
     return entry
@@ -124,7 +126,8 @@ function! s:discover_paths(current_dir, glob_pattern)
     for path in paths
         let full_path = fnamemodify(path, ":p")
         let basename = fnamemodify(path, ":t")
-        let entry = { "full_path": full_path, "basename" : basename }
+        let dirname = fnamemodify(path, ":h")
+        let entry = { "full_path": full_path, "basename" : basename, "dirname" : dirname}
         if isdirectory(path)
             let entry["is_dir"] = 1
             call add(dir_paths, entry)
@@ -219,6 +222,8 @@ function! s:NewDirectoryViewer()
 
     " Sets buffer commands.
     function! l:directory_viewer.setup_buffer_commands() dict
+        command! -buffer -nargs=0 ClipPathname   :call b:filebeagle_directory_viewer.yank_target_name("full_path", "+")
+        command! -buffer -nargs=0 ClipDirname    :call b:filebeagle_directory_viewer.yank_current_dirname("+")
     endfunction
 
     " Sets buffer key maps.
@@ -280,6 +285,7 @@ function! s:NewDirectoryViewer()
             let l:line_map = {
                         \ "full_path" : path["full_path"],
                         \ "basename" : path["basename"],
+                        \ "dirname" : path["dirname"],
                         \ "is_dir" : path["is_dir"]
                         \ }
             let text = path["basename"]
@@ -330,6 +336,26 @@ function! s:NewDirectoryViewer()
         else
             call self.visit_file(l:target, a:split_cmd)
         endif
+    endfunction
+
+    function! l:directory_viewer.yank_target_name(part, register) dict
+        let l:cur_line = line(".")
+        if !has_key(self.jump_map, l:cur_line)
+            call s:_filebeagle_messenger.send_info("Not a valid path")
+            return 0
+        endif
+        if a:part == "dirname"
+            let l:target = self.jump_map[line(".")].dirname
+        elseif a:part == "basename"
+            let l:target = self.jump_map[line(".")].basename
+        else
+            let l:target = self.jump_map[line(".")].full_path
+        endif
+        execute "let @" . a:register . " = '" . fnameescape(l:target) . "'"
+    endfunction
+
+    function! l:directory_viewer.yank_current_dirname(register) dict
+        execute "let @" . a:register . " = '" . fnameescape(self.focus_dir) . "'"
     endfunction
 
     function! l:directory_viewer.set_focus_dir(new_dir, add_to_history) dict

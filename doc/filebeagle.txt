@@ -7,7 +7,8 @@ CONTENTS~
     1. Invocation Commands ................... |filebeagle-invocation-commands|
     2. Invocation Key Mappings ............... |filebeagle-invocation-key-maps|
     3. Viewer Key Mappings ................... |filebeagle-viewer-key-maps|
-    4. Options and Settings .................. |filebeagle-options|
+    4. Viewer Commands ....................... |filebeagle-viewer-commands|
+    5. Options and Settings .................. |filebeagle-options|
 
 ===============================================================================
                                                *filebeagle-invocation-commands*
@@ -77,6 +78,19 @@ File Operations~
 a           Add (create) a new file to the current directory.
 +           Edit a new empty buffer in the current directory.
 
+===============================================================================
+                                                 *filebeagle-viewer-commands*
+VIEWER COMMANDS~
+
+The following commands are available from within the directory listing viewer:
+
+:ClipPathname
+   Copy the full path of the currently selected file or directory to the system
+   clipboard (i.e., the "+" register).
+
+:ClipDirname
+   Copy the full path of the current focal directory (i.e., the directory
+   currently listed) to the system clipboard (i.e., the "+" register).
 
 ===============================================================================
                                                            *filebeagle-options*
