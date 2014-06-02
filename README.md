@@ -60,7 +60,12 @@ last selected in each directory as your enter or leave directories. Each time
 you return to a directory that you have visited before, the cursor is
 automatically placed at the entry which you selected the last time you visited
 that directory. This means that you can quickly traverse up and down a
-directory chain by typing "`-`" and/or "`<ENTER>`".
+directory chain by typing "`-`" and/or "`<ENTER>`". Use "`-`" to bounce up and
+up as high as you can go, and then "`<ENTER>`" to drill back down and down to
+as deep as you can go (before hitting a file or a empty directory). Once you
+have tried it, you will not want to traverse directories in any other way
+(well, except for fuzzy-querying to "teleport" you directly where you want to
+go).
 
 The only file management functionality provided is to create a new file: for
 everything else, use the operating system.
