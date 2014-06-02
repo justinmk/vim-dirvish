@@ -446,7 +446,7 @@ function! FileBeagleStatusLineCurrentLineInfo()
     if !exists("b:filebeagle_directory_viewer")
         return "[not a valid FileBeagle viewer]"
     endif
-    let l:status_line = '[[FileBeagle]] "' . b:filebeagle_directory_viewer.focus_dir . '" '
+    let l:status_line = ' "' . b:filebeagle_directory_viewer.focus_dir . '" '
     return l:status_line
 endfunction
 
