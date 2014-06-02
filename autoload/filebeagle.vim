@@ -94,7 +94,13 @@ endfunction
 " endfunction
 
 function! s:parent_dir(current_dir)
-    let d = fnamemodify(a:current_dir . "/..", ":p")
+    let l:current_dir = fnamemodify(a:current_dir, ":p")
+    " if l:current_dir[-1] != "/"
+    "     let l:current_dir .= "/"
+    " endif
+    " let d = fnamemodify(l:current_dir . "../", ":p")
+    " let d = fnamemodify(l:current_dir . "../", ":p")
+    let d = "/" . join(split(l:current_dir, '/')[:-2], '/')
     return d
 endfunction
 
@@ -168,6 +174,11 @@ function! s:NewDirectoryViewer()
     " Initialize object state.
     let l:directory_viewer["buf_name"] = s:get_filebeagle_buffer_name()
     let l:directory_viewer["buf_num"] = bufnr(l:directory_viewer["buf_name"], 1)
+    if has("title")
+        let l:directory_viewer["old_titlestring"] = &titlestring
+    else
+        let l:directory_viewer["old_titlestring"] = ""
+    endif
 
     function! l:directory_viewer.open_dir(focus_dir, calling_buf_num, prev_focus_dirs, is_filtered, filter_exp) dict
         " save previous buffer
@@ -307,13 +318,24 @@ function! s:NewDirectoryViewer()
         endtry
         setlocal nomodifiable
         call cursor(1, 1)
-        let &titlestring = expand(self.focus_dir)
+        if has("title")
+            let &titlestring = expand(self.focus_dir)
+        endif
     endfunction
+
+    " Restore title and anything else changed
+    function! l:directory_viewer.restore_all() dict
+        " if has("title")
+        "     let &titlestring = self.old_titlestring
+        " endif
+    endfunction
+
 
     " Close and quit the viewer.
     function! l:directory_viewer.close() dict
         execute "b " . self.prev_buf_num
         execute "bwipe " . self.buf_num
+        call self.restore_all()
     endfunction
 
     " Clears the buffer contents.
@@ -356,10 +378,11 @@ function! s:NewDirectoryViewer()
         execute "b " . self.prev_buf_num
         execute a:split_cmd . " " . fnameescape(a:full_path)
         execute "bwipe " . self.buf_num
+        call self.restore_all()
     endfunction
 
     function! l:directory_viewer.visit_parent_dir() dict
-        let pdir = fnamemodify(s:parent_dir(self.focus_dir), ":p")
+        let pdir = s:parent_dir(self.focus_dir)
         if pdir != self.focus_dir
             call self.set_focus_dir(pdir, 1)
         else
@@ -407,6 +430,7 @@ function! s:NewDirectoryViewer()
         endif
         execute "b " . self.prev_buf_num
         execute "bwipe " . self.buf_num
+        call self.restore_all()
         execute l:cmd . " " . fnameescape(l:target)
         echomsg l:target
     endfunction
