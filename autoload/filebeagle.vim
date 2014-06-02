@@ -307,7 +307,7 @@ function! s:NewDirectoryViewer()
         endtry
         setlocal nomodifiable
         call cursor(1, 1)
-        " call self.goto_index_entry("n", 0, 1)
+        let &titlestring = expand(self.focus_dir)
     endfunction
 
     " Close and quit the viewer.
