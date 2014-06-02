@@ -104,6 +104,12 @@ function! s:parent_dir(current_dir)
     return d
 endfunction
 
+function! s:base_dirname(dirname)
+    let l:dirname = fnamemodify(a:dirname, ":p")
+    let d = split(l:dirname, '/')[-1] . "/"
+    return d
+endfunction
+
 function! s:is_path_exists(path)
     if filereadable(a:path) || !empty(glob(a:path))
         return 1
@@ -180,7 +186,7 @@ function! s:NewDirectoryViewer()
         let l:directory_viewer["old_titlestring"] = ""
     endif
 
-    function! l:directory_viewer.open_dir(focus_dir, calling_buf_num, prev_focus_dirs, is_filtered, filter_exp) dict
+    function! l:directory_viewer.open_dir(focus_dir, focus_file, calling_buf_num, prev_focus_dirs, is_filtered, filter_exp) dict
         " save previous buffer
         if empty(a:calling_buf_num)
             let prev_buf_num = bufnr('%')
@@ -189,6 +195,7 @@ function! s:NewDirectoryViewer()
         endif
         let self.prev_focus_dirs = deepcopy(a:prev_focus_dirs)
         let self.focus_dir = fnamemodify(a:focus_dir, ":p")
+        let self.focus_file = fnamemodify(a:focus_file, ":p:t")
         " get a new buf reference
         " get a viewport onto it
         execute "silent keepalt keepjumps buffer " . self.buf_num
@@ -321,6 +328,7 @@ function! s:NewDirectoryViewer()
         if has("title")
             let &titlestring = expand(self.focus_dir)
         endif
+        call self.goto_pattern(self.focus_file)
     endfunction
 
     " Restore title and anything else changed
@@ -353,24 +361,26 @@ function! s:NewDirectoryViewer()
         let l:target = self.jump_map[line(".")].full_path
         if self.jump_map[line(".")].is_dir
             if a:split_cmd == "edit"
-                call self.set_focus_dir(l:target, 1)
+                call self.set_focus_dir(l:target, "", 1)
             else
                 execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
                 let directory_viewer = s:NewDirectoryViewer()
-                call directory_viewer.open_dir(l:target, self.prev_buf_num, self.prev_focus_dirs, self.is_filtered, self.filter_exp)
+                call directory_viewer.open_dir(l:target, l:target, self.prev_buf_num, self.prev_focus_dirs, self.is_filtered, self.filter_exp)
             endif
         else
             call self.visit_file(l:target, a:split_cmd)
         endif
     endfunction
 
-    function! l:directory_viewer.set_focus_dir(new_dir, add_to_history) dict
+    function! l:directory_viewer.set_focus_dir(new_dir, focus_file, add_to_history) dict
         if a:add_to_history && exists("self['focus_dir']")
-            if empty(self.prev_focus_dirs) || self.prev_focus_dirs[-1] != self.focus_dir
-                call add(self.prev_focus_dirs, self.focus_dir)
+            if empty(self.prev_focus_dirs) || self.prev_focus_dirs[-1][0] != self.focus_dir
+                call add(self.prev_focus_dirs, [self.focus_dir, self.focus_file])
             endif
         endif
         let self.focus_dir = fnamemodify(a:new_dir, ":p")
+        " let self.focus_file = fnamemodify(a:focus_file, ":p:t")
+        let self.focus_file = a:focus_file
         call self.refresh()
     endfunction
 
@@ -384,7 +394,8 @@ function! s:NewDirectoryViewer()
     function! l:directory_viewer.visit_parent_dir() dict
         let pdir = s:parent_dir(self.focus_dir)
         if pdir != self.focus_dir
-            call self.set_focus_dir(pdir, 1)
+            let new_focus_file = s:base_dirname(self.focus_dir)
+            call self.set_focus_dir(pdir, new_focus_file, 1)
         else
             call s:_filebeagle_messenger.send_info("No parent directory available")
         endif
@@ -395,9 +406,10 @@ function! s:NewDirectoryViewer()
         if empty(self.prev_focus_dirs)
             call s:_filebeagle_messenger.send_info("No previous directory available")
         else
-            let new_focus_dir = self.prev_focus_dirs[-1]
+            let new_focus_dir = self.prev_focus_dirs[-1][0]
+            let new_focus_file = self.prev_focus_dirs[-1][1]
             call remove(self.prev_focus_dirs, -1)
-            call self.set_focus_dir(new_focus_dir, 0)
+            call self.set_focus_dir(new_focus_dir, new_focus_file, 0)
         endif
     endfunction
 
@@ -544,7 +556,7 @@ function! filebeagle#FileBeagleOpen(focus_dir)
     else
         let focus_dir = a:focus_dir
     endif
-    call directory_viewer.open_dir(focus_dir, bufnr("%"), [], 0, "")
+    call directory_viewer.open_dir(focus_dir, bufname("%"), bufnr("%"), [], 0, "")
 endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
@@ -557,7 +569,7 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
     else
         let directory_viewer = s:NewDirectoryViewer()
         let focus_dir = expand('%:p:h')
-        call directory_viewer.open_dir(focus_dir, bufnr("%"), [], 0, "")
+        call directory_viewer.open_dir(focus_dir, bufname("%"), bufnr("%"), [], 0, "")
     endif
 endfunction
 
