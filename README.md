@@ -10,12 +10,11 @@ can be opened in new splits or tabs, and new directory catalogs can be spawned.
 
 And that is about it.
 
-FileBeagle conforms to the "VINE" philosophy: Vim Is Not Emacs.
+FileBeagle is "VINE-spired": **V**im **I**s **N**ot **E**macs.
 
-In other words, Vim is a text editor, not an operating system that can edit
-text.
-
-FileBeagle respects this, and attempts to confirm to this.
+In other words, Vim is a text editor, *not* an operating system that can edit
+text. FileBeagle respects this, and attempts to conform to this in spirit and
+in practice.
 
 If you are looking for a plugin to serve as a filesystem manager from within
 Vim, FileBeagle is not it. FileBeagle does not support copying, deleting,
@@ -40,7 +39,7 @@ opens the FileBeagle directory viewer on the current working directory. This
 command can take an optional argument which specifies the path of the directory
 to open instead of the current working directory.
 
-Alternatively, the command "`:FileBeagleBufferDir`" (by default, ampped to
+Alternatively, the command "`:FileBeagleBufferDir`" (by default, mapped to
 "`-`") opens the FileBeagle directory viewer on the directory of the current
 buffer.
 
