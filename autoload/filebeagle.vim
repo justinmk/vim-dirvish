@@ -333,18 +333,21 @@ function! s:NewDirectoryViewer()
     endfunction
 
     " Restore title and anything else changed
-    function! l:directory_viewer.restore_all() dict
+    function! l:directory_viewer.wipe_and_restore() dict
         " if has("title")
         "     let &titlestring = self.old_titlestring
         " endif
+        try
+            execute "bwipe " . self.buf_num
+        catch // " E517: No buffers were wiped out
+        endtry
     endfunction
 
 
     " Close and quit the viewer.
     function! l:directory_viewer.close() dict
         execute "b " . self.prev_buf_num
-        execute "bwipe " . self.buf_num
-        call self.restore_all()
+        call self.wipe_and_restore()
     endfunction
 
     " Clears the buffer contents.
@@ -388,8 +391,7 @@ function! s:NewDirectoryViewer()
     function! l:directory_viewer.visit_file(full_path, split_cmd)
         execute "b " . self.prev_buf_num
         execute a:split_cmd . " " . fnameescape(a:full_path)
-        execute "bwipe " . self.buf_num
-        call self.restore_all()
+        call self.wipe_and_restore()
     endfunction
 
     function! l:directory_viewer.visit_parent_dir() dict
@@ -442,8 +444,7 @@ function! s:NewDirectoryViewer()
             let l:cmd = "cd"
         endif
         execute "b " . self.prev_buf_num
-        execute "bwipe " . self.buf_num
-        call self.restore_all()
+        call self.wipe_and_restore()
         execute l:cmd . " " . fnameescape(l:target)
         echomsg l:target
     endfunction
