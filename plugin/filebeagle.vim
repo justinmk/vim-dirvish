@@ -41,8 +41,8 @@ endif
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -nargs=* FileBeagle                 :call filebeagle#FileBeagleOpen(<q-args>)
-command! -nargs=0 FileBeagleBufferDir        :call filebeagle#FileBeagleOpenCurrentBufferDir()
+command! -complete=dir -nargs=* FileBeagle  :call filebeagle#FileBeagleOpen(<q-args>)
+command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpenCurrentBufferDir()
 
 nnoremap <silent> <Plug>FileBeagleOpenCurrentWorkingDir     :FileBeagle<CR>
 nnoremap <silent> <Plug>FileBeagleOpenCurrentBufferDir      :FileBeagleBufferDir<CR>
