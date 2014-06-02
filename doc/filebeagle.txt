@@ -79,12 +79,6 @@ a           Add (create) a new file to the current directory.
 +           Edit a new empty buffer in the current directory.
 
 -------------------------------------------------------------------------------
-File Operations~
-
-a           Add (create) a new file to the current directory.
-+           Edit a new empty buffer in the current directory.
-
--------------------------------------------------------------------------------
 Directory Operations~
 
 cd          Change Vim working directory to current focal (i.e., edited, not
