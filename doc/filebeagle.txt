@@ -34,6 +34,17 @@ following key maps are provided:
 -           Invokes ":FileBeagleBufferDir": open the directory viewer
             on the directory of the current buffer.
 
+If you want to define your own key mappings, then add something like the
+following to your '~/.vimrc':
+>
+    let g:filebeagle_suppress_keymaps = 1
+    map <silent> <Leader>f  <Plug>FileBeagleOpenCurrentWorkingDir
+    map <silent> -          <Plug>FileBeagleOpenCurrentBufferDir
+>
+
+The above replicate the default key mappings. You should, of course,
+substitute '<Leader>f' and '-' for whatever you prefer.
+
 ===============================================================================
                                                    *filebeagle-viewer-key-maps*
 VIEWER KEY MAPPINGS~
