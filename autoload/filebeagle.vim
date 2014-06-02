@@ -535,7 +535,7 @@ endfunction
 
 function! filebeagle#FileBeagleOpen(focus_dir)
     if exists("b:filebeagle_directory_viewer")
-        " Do not open nested filebeagle viewers
+        call s:_filebeagle_messenger.send_info("Use '<C-V>' or '<C-S>' to open a new FileBeagle listing on the selected directory")
         return
     endif
     let directory_viewer = s:NewDirectoryViewer()
@@ -549,7 +549,7 @@ endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
     if exists("b:filebeagle_directory_viewer")
-        " Do not open nested filebeagle viewers
+        call s:_filebeagle_messenger.send_info("Use '<C-V>' or '<C-S>' to open a new FileBeagle listing on the selected directory")
         return
     endif
     if empty(expand("%"))
