@@ -1,6 +1,6 @@
 # FileBeagle
 
-![FileBeagle screen](http://jeetworks.org/wp-content/uploads/filebeagle1.png)
+![FileBeagle screen](http://jeetworks.org/wp-content/uploads/filebeagle2.png)
 
 ## Introduction
 
