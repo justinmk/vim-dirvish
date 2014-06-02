@@ -1,5 +1,7 @@
 # FileBeagle
 
+[FileBeagle screen](http://jeetworks.org/wp-content/uploads/filebeagle1.png)
+
 ## Introduction
 
 FileBeagle is a utility to display a directory listing and select a file for
