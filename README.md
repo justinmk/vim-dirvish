@@ -10,7 +10,7 @@ can be opened in new splits or tabs, and new directory catalogs can be spawned.
 
 And that is about it.
 
-FileBeagle is "VINE-spired": that is, inpsired by the design principle of "Vim
+FileBeagle is "VINE-spired": that is, inspired by the design principle of "Vim
 Is Not Emacs".
 
 Vim is a text editor, *not* an operating system that can edit text. FileBeagle
