@@ -254,7 +254,7 @@ function! s:NewDirectoryViewer()
         noremap <buffer> <silent> t     :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
         noremap <buffer> <silent> <C-t> :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
 
-        """ Directory changing
+        """ Focal directory changing
         noremap <buffer> <silent> -  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
         noremap <buffer> <silent> u  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
         noremap <buffer> <silent> <BS>  :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
@@ -263,6 +263,10 @@ function! s:NewDirectoryViewer()
         """ File operations
         noremap <buffer> <silent> +     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 0, 1)<CR>
         noremap <buffer> <silent> a     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
+
+        """ Directory Operations
+        noremap <buffer> <silent> cd     :call b:filebeagle_directory_viewer.change_vim_working_directory(0)<CR>
+        noremap <buffer> <silent> cl     :call b:filebeagle_directory_viewer.change_vim_working_directory(1)<CR>
 
     endfunction
 
@@ -338,26 +342,6 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
-    function! l:directory_viewer.yank_target_name(part, register) dict
-        let l:cur_line = line(".")
-        if !has_key(self.jump_map, l:cur_line)
-            call s:_filebeagle_messenger.send_info("Not a valid path")
-            return 0
-        endif
-        if a:part == "dirname"
-            let l:target = self.jump_map[line(".")].dirname
-        elseif a:part == "basename"
-            let l:target = self.jump_map[line(".")].basename
-        else
-            let l:target = self.jump_map[line(".")].full_path
-        endif
-        execute "let @" . a:register . " = '" . fnameescape(l:target) . "'"
-    endfunction
-
-    function! l:directory_viewer.yank_current_dirname(register) dict
-        execute "let @" . a:register . " = '" . fnameescape(self.focus_dir) . "'"
-    endfunction
-
     function! l:directory_viewer.set_focus_dir(new_dir, add_to_history) dict
         if a:add_to_history && exists("self['focus_dir']")
             if empty(self.prev_focus_dirs) || self.prev_focus_dirs[-1] != self.focus_dir
@@ -392,6 +376,43 @@ function! s:NewDirectoryViewer()
             call remove(self.prev_focus_dirs, -1)
             call self.set_focus_dir(new_focus_dir, 0)
         endif
+    endfunction
+
+    function! l:directory_viewer.yank_target_name(part, register) dict
+        let l:cur_line = line(".")
+        if !has_key(self.jump_map, l:cur_line)
+            call s:_filebeagle_messenger.send_info("Not a valid path")
+            return 0
+        endif
+        if a:part == "dirname"
+            let l:target = self.jump_map[line(".")].dirname
+        elseif a:part == "basename"
+            let l:target = self.jump_map[line(".")].basename
+        else
+            let l:target = self.jump_map[line(".")].full_path
+        endif
+        execute "let @" . a:register . " = '" . fnameescape(l:target) . "'"
+    endfunction
+
+    function! l:directory_viewer.yank_current_dirname(register) dict
+        execute "let @" . a:register . " = '" . fnameescape(self.focus_dir) . "'"
+    endfunction
+
+    function! l:directory_viewer.change_vim_working_directory(local) dict
+        let l:target = self.focus_dir
+        if a:local
+            let l:cmd = "lcd"
+        else
+            let l:cmd = "cd"
+        endif
+        execute "b " . self.prev_buf_num
+        execute "bwipe " . self.buf_num
+        execute l:cmd . " " . fnameescape(l:target)
+        echomsg l:target
+    endfunction
+
+    function! l:directory_viewer.yank_current_dirname(register) dict
+        execute "let @" . a:register . " = '" . fnameescape(self.focus_dir) . "'"
     endfunction
 
     function! l:directory_viewer.refresh() dict
