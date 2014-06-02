@@ -10,11 +10,11 @@ can be opened in new splits or tabs, and new directory catalogs can be spawned.
 
 And that is about it.
 
-FileBeagle is "VINE-spired": Vim Is Not Emacs.
+FileBeagle is "VINE-spired": that is, inpsired by the design principle of "Vim
+Is Not Emacs".
 
-In other words, Vim is a text editor, *not* an operating system that can edit
-text. FileBeagle respects this, and attempts to conform to this in spirit and
-in practice.
+Vim is a text editor, *not* an operating system that can edit text. FileBeagle
+respects this, and attempts to conform to this both in spirit and in practice.
 
 If you are looking for a plugin to serve as a filesystem manager from within
 Vim, FileBeagle is not it. FileBeagle does not support copying, deleting,
