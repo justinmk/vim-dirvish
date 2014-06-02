@@ -53,7 +53,10 @@ edit it in a new tab.
 
 You can navigate to a directory by selecting it using the same key maps that
 you use to select files. In addition, you can use "`-`" to go a parent
-directory or backspace "`<BS>`" to go back to the previous directory.
+directory or backspace "`<BS>`" to go back to the previous directory. Each time
+you change a directory, the cursor is automatically placed at the entry which
+was selected the last time you visited that directory. This means that you can
+quickly traverse up and down a directory stack by typing "`-`" and "`<ENTER>`".
 
 The only file management functionality provided is to create a new file: for
 everything else, use the operating system.
