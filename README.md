@@ -34,14 +34,12 @@ splits or project drawers. FileBeagle lists and opens files.
 
 ## Overview of Basic Usage
 
-Invoking the command "`:FileBeagle`" (by default, mapped to "`<Leader>f`")
-opens the FileBeagle directory viewer on the current working directory. This
-command can take an optional argument which specifies the path of the directory
-to open instead of the current working directory.
-
-Alternatively, the command "`:FileBeagleBufferDir`" (by default, mapped to
-"`-`") opens the FileBeagle directory viewer on the directory of the current
-buffer.
+Type '`-`' to open the FileBeagle directory viewer on the directory of the
+current buffer. Alternatively, you can use '`<Leader>f`' to open the FileBeagle
+directory viewer on the current working directory. This latter key is mapped to
+the command "`:FileBeagle`": if the command is used directly, it can actually
+take an optional argument which specifies the path of the directory to open
+instead of the current working directory.
 
 In either case, once a directory viewer is open, you can use any of your normal
 navigation keys/commands to move to a file or directory of your choice.
@@ -58,7 +56,7 @@ directory or backspace "`<BS>`" to go back to the previous directory.
 For each independent invocation of FileBeagle, it remembers the entry which you
 last selected in each directory as your enter or leave directories. Each time
 you return to a directory that you have visited before, the cursor is
-automatically placed at the entry which you selected the last time you visited
+automatically placed at the entry which you selected the just before leaving
 that directory. This means that you can quickly traverse up and down a
 directory chain by typing "`-`" and/or "`<ENTER>`". Use "`-`" to move up and
 up, until you get to the root, and then "`<ENTER>`" to drill seamlessly back
