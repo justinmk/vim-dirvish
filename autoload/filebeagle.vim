@@ -280,13 +280,24 @@ function! s:NewDirectoryViewer()
             endtry
         endfor
 
-        """ Index buffer management
+        """ Directory listing buffer management
         noremap <buffer> <silent> r       :call b:filebeagle_directory_viewer.refresh()<CR>
         noremap <buffer> <silent> f       :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
         noremap <buffer> <silent> F       :call b:filebeagle_directory_viewer.toggle_filter()<CR>
         noremap <buffer> <silent> gh      :call b:filebeagle_directory_viewer.toggle_hidden_and_ignored()<CR>
         noremap <buffer> <silent> q       :call b:filebeagle_directory_viewer.close()<CR>
         noremap <buffer> <silent> <ESC>   :call b:filebeagle_directory_viewer.close()<CR>
+
+        """ Directory listing splitting
+        noremap <buffer> <silent> <C-W><C-V>  :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
+        noremap <buffer> <silent> <C-W>v  :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
+        noremap <buffer> <silent> <C-W>V  :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
+        noremap <buffer> <silent> <C-W><C-S>  :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
+        noremap <buffer> <silent> <C-W>s  :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
+        noremap <buffer> <silent> <C-W>S  :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
+        noremap <buffer> <silent> <C-W><C-T>  :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
+        noremap <buffer> <silent> <C-W>t  :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
+        noremap <buffer> <silent> <C-W>T  :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
 
         """ Selection: show target and switch focus
         noremap <buffer> <silent> <CR>  :call b:filebeagle_directory_viewer.visit_target("edit")<CR>
@@ -411,6 +422,23 @@ function! s:NewDirectoryViewer()
             call self.visit_file(l:target, a:split_cmd)
         endif
     endfunction
+
+    function! l:directory_viewer.new_viewer(split_cmd) dict
+        execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
+        let directory_viewer = s:NewDirectoryViewer()
+        call directory_viewer.open_dir(
+                \ self.focus_dir,
+                \ self.focus_file,
+                \ self.prev_buf_num,
+                \ self.prev_focus_dirs,
+                \ self.default_targets_for_directory,
+                \ self.is_filtered,
+                \ self.filter_exp,
+                \ self.is_include_hidden,
+                \ self.is_include_ignored
+                \ )
+    endfunction
+
 
     function! l:directory_viewer.set_focus_dir(new_dir, focus_file, add_to_history) dict
         if a:add_to_history && exists("self['focus_dir']")
