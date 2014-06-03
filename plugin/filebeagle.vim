@@ -31,15 +31,11 @@ set cpo&vim
 
 " Options {{{1
 " ==============================================================================
-if !exists('g:filebeagle_hijack_netrw')
-    let g:filebeagle_hijack_netrw = 1
-endif
-if !exists('g:filebeagle_suppress_keymaps')
-    let g:filebeagle_suppress_keymaps = 0
-endif
-if !exists('g:filebeagle_show_hidden')
-    let g:filebeagle_show_hidden = 0
-endif
+
+let g:filebeagle_hijack_netrw = get(g:, 'filebeagle_hijack_netrw', 1)
+let g:filebeagle_suppress_keymaps = get(g:, 'filebeagle_suppress_keymaps', 0)
+let g:filebeagle_show_hidden = get(g:, 'filebeagle_show_hidden', 0)
+
 " 1}}}
 
 " Public Command and Key Maps {{{1
