@@ -150,6 +150,7 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_incl
     " call add(dir_paths, s:GetCurrentDirEntry(a:current_dir))
     call add(dir_paths, s:build_current_parent_dir_entry(a:current_dir))
     for path in paths
+        let path = simplify(path)
         let full_path = fnamemodify(path, ":p")
         let basename = fnamemodify(path, ":t")
         let dirname = fnamemodify(path, ":h")
