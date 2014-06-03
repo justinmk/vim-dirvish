@@ -626,7 +626,7 @@ endfunction
 
 function! filebeagle#FileBeagleOpen(focus_dir)
     if exists("b:filebeagle_directory_viewer")
-        call s:_filebeagle_messenger.send_info("Use '<C-V>' or '<C-S>' to open a new FileBeagle listing on the selected directory")
+        call s:_filebeagle_messenger.send_info("Use 'CTRL-W CTRL-V' or 'CTRL-W CTRL-S' to spawn a new FileBeagle viewer on the current directory")
         return
     endif
     let directory_viewer = s:NewDirectoryViewer()
@@ -650,7 +650,7 @@ endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
     if exists("b:filebeagle_directory_viewer")
-        call s:_filebeagle_messenger.send_info("Use '<C-V>' or '<C-S>' to open a new FileBeagle listing on the selected directory")
+        call s:_filebeagle_messenger.send_info("Use 'CTRL-W CTRL-V' or 'CTRL-W CTRL-S' to spawn a new FileBeagle viewer on the current directory")
         return
     endif
     if empty(expand("%"))
