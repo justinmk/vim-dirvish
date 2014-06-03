@@ -129,8 +129,22 @@ function! s:build_current_parent_dir_entry(current_dir)
     return entry
 endfunction
 
-function! s:discover_paths(current_dir, glob_pattern)
-    let paths = split(globpath(a:current_dir, a:glob_pattern), '\n')
+function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_include_ignored)
+    let old_wildignore = &wildignore
+    let old_suffixes = &suffixes
+    if a:is_include_ignored
+        let &wildignore = ""
+        let &suffixes = ""
+    endif
+    if a:is_include_hidden
+        let path_str = glob(a:current_dir.'/.[^.]'.a:glob_pattern)."\n".glob(a:current_dir.'/'.a:glob_pattern)
+    else
+        let path_str = glob(a:current_dir.'/'.a:glob_pattern)
+    endif
+    let paths = split(path_str, '\n')
+    call sort(paths)
+    let &wildignore = old_wildignore
+    let &suffixes = old_suffixes
     let dir_paths = []
     let file_paths = []
     " call add(dir_paths, s:GetCurrentDirEntry(a:current_dir))
@@ -196,6 +210,8 @@ function! s:NewDirectoryViewer()
         endif
         let self.prev_focus_dirs = deepcopy(a:prev_focus_dirs)
         let self.default_targets_for_directory = deepcopy(a:default_targets_for_directory)
+        let self.is_include_hidden = 0
+        let self.is_include_ignored = 0
         " get a new buf reference
         " get a viewport onto it
         execute "silent keepalt keepjumps buffer " . self.buf_num
@@ -259,6 +275,7 @@ function! s:NewDirectoryViewer()
         noremap <buffer> <silent> r       :call b:filebeagle_directory_viewer.refresh()<CR>
         noremap <buffer> <silent> f       :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
         noremap <buffer> <silent> F       :call b:filebeagle_directory_viewer.toggle_filter()<CR>
+        noremap <buffer> <silent> gh      :call b:filebeagle_directory_viewer.toggle_hidden_and_ignored()<CR>
         noremap <buffer> <silent> q       :call b:filebeagle_directory_viewer.close()<CR>
         noremap <buffer> <silent> <ESC>   :call b:filebeagle_directory_viewer.close()<CR>
 
@@ -299,7 +316,7 @@ function! s:NewDirectoryViewer()
         call self.clear_buffer()
         let self.jump_map = {}
         call self.setup_buffer_syntax()
-        let paths = s:discover_paths(self.focus_dir, "*")
+        let paths = s:discover_paths(self.focus_dir, "*", self.is_include_hidden, self.is_include_ignored)
         for path in paths[0] + paths[1]
             if !path.is_dir && self.is_filtered && !empty(self.filter_exp) && (path["basename"] !~# self.filter_exp)
                 continue
@@ -515,6 +532,19 @@ function! s:NewDirectoryViewer()
                 call self.set_filter_exp()
             endif
         endif
+    endfunction
+
+    function! l:directory_viewer.toggle_hidden_and_ignored() dict
+        if self.is_include_hidden || self.is_include_ignored
+            let self.is_include_hidden = 0
+            let self.is_include_ignored = 0
+            call s:_filebeagle_messenger.send_info("Not showing hidden/ignored files")
+        else
+            let self.is_include_hidden = 1
+            let self.is_include_ignored = 1
+            call s:_filebeagle_messenger.send_info("Showing hidden/ignored files")
+        endif
+        call self.refresh()
     endfunction
 
     " return object
