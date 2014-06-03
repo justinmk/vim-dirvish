@@ -331,7 +331,7 @@ function! s:NewDirectoryViewer()
 
     " Sets buffer status line.
     function! l:directory_viewer.setup_buffer_statusline() dict
-        setlocal statusline=%{FileBeagleStatusLineCurrentLineInfo()}%=%{FileBeagleStatusLineFilterInfo()}
+        setlocal statusline=%{FileBeagleStatusLineCurrentDirInfo()}%=%{FileBeagleStatusLineFilterAndHiddenInfo()}
     endfunction
 
     " Populates the buffer with the catalog index.
@@ -615,7 +615,7 @@ endfunction
 " Status Line Functions {{{1
 " ==============================================================================
 
-function! FileBeagleStatusLineCurrentLineInfo()
+function! FileBeagleStatusLineCurrentDirInfo()
     if !exists("b:filebeagle_directory_viewer")
         return "[not a valid FileBeagle viewer]"
     endif
@@ -623,10 +623,14 @@ function! FileBeagleStatusLineCurrentLineInfo()
     return l:status_line
 endfunction
 
-function! FileBeagleStatusLineFilterInfo()
+function! FileBeagleStatusLineFilterAndHiddenInfo()
     let l:status_line = ""
+    if b:filebeagle_directory_viewer.is_include_hidden || b:filebeagle_directory_viewer.is_include_ignored
+    else
+        let l:status_line .= "[+HIDE]"
+    endif
     if b:filebeagle_directory_viewer.is_filtered && !empty(b:filebeagle_directory_viewer.filter_exp)
-        let l:status_line .= " | FILTER: ".b:filebeagle_directory_viewer.filter_exp . " "
+        let l:status_line .= "[+FILTER:".b:filebeagle_directory_viewer.filter_exp . "]"
     endif
     return l:status_line
 endfunction
