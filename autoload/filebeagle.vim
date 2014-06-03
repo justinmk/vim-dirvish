@@ -149,13 +149,13 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_incl
     let file_paths = []
     " call add(dir_paths, s:GetCurrentDirEntry(a:current_dir))
     call add(dir_paths, s:build_current_parent_dir_entry(a:current_dir))
-    for path in paths
-        let path = simplify(path)
-        let full_path = fnamemodify(path, ":p")
-        let basename = fnamemodify(path, ":t")
-        let dirname = fnamemodify(path, ":h")
+    for path_entry in paths
+        let path_entry = substitute(path_entry, '/\+', '/', 'g')
+        let full_path = fnamemodify(path_entry, ":p")
+        let basename = fnamemodify(path_entry, ":t")
+        let dirname = fnamemodify(path_entry, ":h")
         let entry = { "full_path": full_path, "basename" : basename, "dirname" : dirname}
-        if isdirectory(path)
+        if isdirectory(path_entry)
             let entry["is_dir"] = 1
             call add(dir_paths, entry)
         else
