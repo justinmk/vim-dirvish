@@ -106,7 +106,10 @@ endfunction
 
 function! s:base_dirname(dirname)
     let l:dirname = fnamemodify(a:dirname, ":p")
-    let d = split(l:dirname, '/')[-1] . "/"
+    if l:dirname == '/'
+        return '/'
+    endif
+    let d = split(l:dirname, '/')[-1] . '/'
     return d
 endfunction
 
@@ -400,16 +403,23 @@ function! s:NewDirectoryViewer()
             call s:_filebeagle_messenger.send_info("Not a valid navigation entry")
             return 0
         endif
-        let l:target = self.jump_map[line(".")].full_path
-        if self.jump_map[line(".")].is_dir
+        let l:target = self.jump_map[l:cur_line].full_path
+        if self.jump_map[l:cur_line].is_dir
+            if self.jump_map[l:cur_line].basename == ".."
+                let new_focus_file = s:base_dirname(self.focus_dir)
+            elseif a:split_cmd == "edit"
+                let new_focus_file = get(self.default_targets_for_directory, l:target, "")
+            else
+                let new_focus_file = l:target
+            endif
             if a:split_cmd == "edit"
-                call self.set_focus_dir(l:target, get(self.default_targets_for_directory, l:target, ""),  1)
+                call self.set_focus_dir(l:target, new_focus_file,  1)
             else
                 execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
                 let directory_viewer = s:NewDirectoryViewer()
                 call directory_viewer.open_dir(
                         \ l:target,
-                        \ l:target,
+                        \ new_focus_file,
                         \ self.prev_buf_num,
                         \ self.prev_focus_dirs,
                         \ self.default_targets_for_directory,
