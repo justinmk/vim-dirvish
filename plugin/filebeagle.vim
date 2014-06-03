@@ -62,7 +62,9 @@ function! s:OpenDirHere(dir)
 endfunction
 
 function! s:DisableFileExplorer()
-    au! FileExplorer
+    if exists("#FileExplorer")
+        au! FileExplorer
+    endif
 endfunction
 
 augroup FileBeagle
