@@ -200,7 +200,16 @@ function! s:NewDirectoryViewer()
         let l:directory_viewer["old_titlestring"] = ""
     endif
 
-    function! l:directory_viewer.open_dir(focus_dir, focus_file, calling_buf_num, prev_focus_dirs, default_targets_for_directory, is_filtered, filter_exp) dict
+    function! l:directory_viewer.open_dir(focus_dir,
+                \ focus_file,
+                \ calling_buf_num,
+                \ prev_focus_dirs,
+                \ default_targets_for_directory,
+                \ is_filtered,
+                \ filter_exp,
+                \ is_include_hidden,
+                \ is_include_ignored
+                \) dict
         let self.focus_dir = fnamemodify(a:focus_dir, ":p")
         let self.focus_file = fnamemodify(a:focus_file, ":p:t")
         if empty(a:calling_buf_num)
@@ -210,8 +219,8 @@ function! s:NewDirectoryViewer()
         endif
         let self.prev_focus_dirs = deepcopy(a:prev_focus_dirs)
         let self.default_targets_for_directory = deepcopy(a:default_targets_for_directory)
-        let self.is_include_hidden = 0
-        let self.is_include_ignored = 0
+        let self.is_include_hidden = a:is_include_hidden
+        let self.is_include_ignored = a:is_include_ignored
         " get a new buf reference
         " get a viewport onto it
         execute "silent keepalt keepjumps buffer " . self.buf_num
@@ -386,7 +395,17 @@ function! s:NewDirectoryViewer()
             else
                 execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
                 let directory_viewer = s:NewDirectoryViewer()
-                call directory_viewer.open_dir(l:target, l:target, self.prev_buf_num, self.prev_focus_dirs, self.default_targets_for_directory, self.is_filtered, self.filter_exp)
+                call directory_viewer.open_dir(
+                        \ l:target,
+                        \ l:target,
+                        \ self.prev_buf_num,
+                        \ self.prev_focus_dirs,
+                        \ self.default_targets_for_directory,
+                        \ self.is_filtered,
+                        \ self.filter_exp,
+                        \ self.is_include_hidden,
+                        \ self.is_include_ignored
+                        \ )
             endif
         else
             call self.visit_file(l:target, a:split_cmd)
@@ -588,7 +607,17 @@ function! filebeagle#FileBeagleOpen(focus_dir)
     else
         let focus_dir = a:focus_dir
     endif
-    call directory_viewer.open_dir(focus_dir, bufname("%"), bufnr("%"), [], {}, 0, "")
+    call directory_viewer.open_dir(
+            \ focus_dir,
+            \ bufname("%"),
+            \ bufnr("%"),
+            \ [],
+            \ {},
+            \ 0,
+            \ "",
+            \ g:filebeagle_show_hidden,
+            \ g:filebeagle_show_hidden
+            \)
 endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
@@ -601,7 +630,16 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
     else
         let directory_viewer = s:NewDirectoryViewer()
         let focus_dir = expand('%:p:h')
-        call directory_viewer.open_dir(focus_dir, bufname("%"), bufnr("%"), [], {}, 0, "")
+        call directory_viewer.open_dir(focus_dir,
+                \ bufname("%"),
+                \ bufnr("%"),
+                \ [],
+                \ {},
+                \ 0,
+                \ "",
+                \ g:filebeagle_show_hidden,
+                \ g:filebeagle_show_hidden
+                \)
     endif
 endfunction
 

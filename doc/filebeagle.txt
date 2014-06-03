@@ -56,6 +56,7 @@ Listing Control~
 r           Refresh the directory listing.
 f           Define and apply a regular expression filter for the file entries.
 F           Toggle application of the regular expression filter.
+gh          Toggle showing of hidden/(wild-)ignored files.
 <ESC>, q    Quit and exit the viewer.
 
 -------------------------------------------------------------------------------
@@ -115,7 +116,13 @@ g:filebeagle_suppress_keymaps~                  *g:filebeagle_suppress_keymaps*
 
 
 g:filebeagle_hijack_netrw~                          *g:filebeagle_hijack_netrw*
+    Default: 1
+    If specified as 0, directories will be opened by |netrw| instead of
+    FileBeagle.
+
+g:filebeagle_show_hidden~                          *g:filebeagle_show_hidden*
     Default: 0
-    If specified as 1, directories will be opened by FileBeagle instead of |netrw|.
+    Show hidden and (wild-)ignored files by default (can be toggled when
+    viewing a directory using 'gh').
 
  vim:tw=78:ts=8:ft=help:norl:

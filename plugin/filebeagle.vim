@@ -37,6 +37,9 @@ endif
 if !exists('g:filebeagle_suppress_keymaps')
     let g:filebeagle_suppress_keymaps = 0
 endif
+if !exists('g:filebeagle_show_hidden')
+    let g:filebeagle_show_hidden = 0
+endif
 " 1}}}
 
 " Public Command and Key Maps {{{1
