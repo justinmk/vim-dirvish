@@ -302,9 +302,9 @@ function! s:NewDirectoryViewer()
         """ Selection: show target and switch focus
         noremap <buffer> <silent> <CR>  :call b:filebeagle_directory_viewer.visit_target("edit")<CR>
         noremap <buffer> <silent> o     :call b:filebeagle_directory_viewer.visit_target("edit")<CR>
-        noremap <buffer> <silent> s     :call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
+        noremap <buffer> <silent> v     :call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
         noremap <buffer> <silent> <C-v> :call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
-        noremap <buffer> <silent> i     :call b:filebeagle_directory_viewer.visit_target("sp")<CR>
+        noremap <buffer> <silent> s     :call b:filebeagle_directory_viewer.visit_target("sp")<CR>
         noremap <buffer> <silent> <C-s> :call b:filebeagle_directory_viewer.visit_target("sp")<CR>
         noremap <buffer> <silent> t     :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
         noremap <buffer> <silent> <C-t> :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>

@@ -69,8 +69,8 @@ Directory Navigation~
 File Selection~
 
 <CR>, o     Open the currently selected file in the current window.
-<C-V>, s    Open the currently selected file in a new vertical split.
-<C-S>, i    Open the currently selected file in a new horizontal split.
+<C-V>, v    Open the currently selected file in a new vertical split.
+<C-S>, s    Open the currently selected file in a new horizontal split.
 <C-T>, t    Open the currently selected file in a new tab.
 
 -------------------------------------------------------------------------------
