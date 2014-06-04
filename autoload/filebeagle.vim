@@ -623,7 +623,7 @@ function! s:NewDirectoryViewer()
     endfunction
 
     function! l:directory_viewer.new_file(parent_dir, create, open) dict
-        let new_fname = input("Add file: ".a:parent_dir)
+        let new_fname = input("Add file: ".a:parent_dir, "", "file")
         if !empty(new_fname)
             let new_fpath = a:parent_dir . new_fname
             if a:create
