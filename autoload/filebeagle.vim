@@ -293,15 +293,22 @@ function! s:NewDirectoryViewer()
             setlocal nobuflisted
         endif
 
-        " set bufhidden=hide
-        " setlocal nobuflisted
+        if g:filebeagle_show_line_numbers == 0
+            setlocal nonumber
+        elseif g:filebeagle_show_line_numbers == 1
+            setlocal number
+        endif
+        if g:filebeagle_show_line_relativenumbers == 0
+            setlocal nornu
+        elseif g:filebeagle_show_line_relativenumbers == 1
+            setlocal rnu
+        endif
 
         setlocal buftype=nofile
         setlocal noswapfile
         setlocal nowrap
         setlocal nolist
         setlocal noinsertmode
-        " setlocal nonumber
         setlocal cursorline
         setlocal nospell
         set ft=filebeagle

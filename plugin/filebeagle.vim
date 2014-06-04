@@ -35,6 +35,8 @@ set cpo&vim
 let g:filebeagle_hijack_netrw = get(g:, 'filebeagle_hijack_netrw', 1)
 let g:filebeagle_suppress_keymaps = get(g:, 'filebeagle_suppress_keymaps', 0)
 let g:filebeagle_show_hidden = get(g:, 'filebeagle_show_hidden', 0)
+let g:filebeagle_show_line_numbers = get(g:, 'filebeagle_show_line_numbers', -1)
+let g:filebeagle_show_line_relativenumbers = get(g:, 'filebeagle_show_line_relativenumbers', -1)
 
 " 1}}}
 
