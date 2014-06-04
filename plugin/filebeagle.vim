@@ -40,7 +40,7 @@ let g:filebeagle_show_hidden = get(g:, 'filebeagle_show_hidden', 0)
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -complete=dir -nargs=* FileBeagle  :call filebeagle#FileBeagleOpen(<q-args>)
+command! -complete=dir -nargs=* FileBeagle  :call filebeagle#FileBeagleOpen(<q-args>, -1)
 command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpenCurrentBufferDir()
 
 nnoremap <silent> <Plug>FileBeagleOpenCurrentWorkingDir     :FileBeagle<CR>
@@ -57,7 +57,7 @@ endif
 " (from EasyTree by Dmitry "troydm" Geurkov <d.geurkov@gmail.com>)
 function! s:OpenDirHere(dir)
     if isdirectory(a:dir)
-        call filebeagle#FileBeagleOpen(a:dir)
+        call filebeagle#FileBeagleOpen(a:dir, bufnr("%"))
     endif
 endfunction
 
