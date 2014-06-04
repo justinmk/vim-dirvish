@@ -46,12 +46,12 @@ navigation keys/commands to move to a file or directory of your choice. Once
 you have selected a file or directory, you can type `<ENTER>` or "`o`" to open
 it for editing in the current window. Or you can type `<C-V>` to edit it in a
 new vertical split, `<C-S>` to edit it in a new horizontal split, or `<C-T>` to
-edit it in a new tab. Even better, if you make sure than line numbers are
-enabled, you can simply type the line number followed by one of the open key
-maps to instantly open the file or directory at the line number. So, for
-example, '`42o`' will open the file or directory at line 42 in the same window,
-while '`42<C-V>`' will open it in a new vertical split, and '`42<C-T>`' will
-open it in a new tab.
+edit it in a new tab. Even better, if you make sure that line numbers are
+enabled, you can simply type the line number followed by '`o`' or any of the
+other maps to instantly open the file or directory listed at the given line
+number. So, for example, '`42o`' will open the file or directory at line 42 in
+the same window, while '`42<C-V>`' will open it in a new vertical split, and
+'`42<C-T>`' will open it in a new tab.
 
 You can navigate to a directory by selecting it using the same key maps that
 you use to select files. In addition, you can use "`-`" to go a parent
