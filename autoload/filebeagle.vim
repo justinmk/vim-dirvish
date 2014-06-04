@@ -380,7 +380,12 @@ function! s:NewDirectoryViewer()
 
     " Sets buffer status line.
     function! l:directory_viewer.setup_buffer_statusline() dict
-        setlocal statusline=%{FileBeagleStatusLineCurrentDirInfo()}%=%{FileBeagleStatusLineFilterAndHiddenInfo()}
+        if has("statusline")
+            let self.old_statusline=&l:statusline
+            setlocal statusline=%{FileBeagleStatusLineCurrentDirInfo()}%=%{FileBeagleStatusLineFilterAndHiddenInfo()}
+        else
+            let self.old_statusline=""
+        endif
     endfunction
 
     " Populates the buffer with the catalog index.
@@ -424,14 +429,20 @@ function! s:NewDirectoryViewer()
 
     " Restore title and anything else changed
     function! l:directory_viewer.wipe_and_restore() dict
-        " if has("title")
-        "     let &titlestring = self.old_titlestring
-        " endif
         if self.prev_buf_num != self.buf_num
             try
                 execute "bwipe " . self.buf_num
             catch // " E517: No buffers were wiped out
             endtry
+            if has("statusline") && exists("self['old_statusline']")
+                try
+                    let &l:statusline=self.old_statusline
+                catch //
+                endtry
+            endif
+            " if has("title")
+            "     let &titlestring = self.old_titlestring
+            " endif
         endif
     endfunction
 
@@ -679,13 +690,16 @@ endfunction
 
 function! FileBeagleStatusLineCurrentDirInfo()
     if !exists("b:filebeagle_directory_viewer")
-        return "[not a valid FileBeagle viewer]"
+        return ""
     endif
     let l:status_line = ' "' . b:filebeagle_directory_viewer.focus_dir . '" '
     return l:status_line
 endfunction
 
 function! FileBeagleStatusLineFilterAndHiddenInfo()
+    if !exists("b:filebeagle_directory_viewer")
+        return ""
+    endif
     let l:status_line = ""
     if b:filebeagle_directory_viewer.is_include_hidden || b:filebeagle_directory_viewer.is_include_ignored
     else
