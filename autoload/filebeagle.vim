@@ -184,6 +184,24 @@ function! s:get_filebeagle_buffer_name()
 endfunction
 " }}}2
 
+" Global Support Functions {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function! FileBeagleCompleteNewFileName(A, L, P)
+    if !exists("b:filebeagle_directory_viewer")
+        return ""
+    endif
+    let basenames = []
+    for key in keys(b:filebeagle_directory_viewer.jump_map)
+        let entry = b:filebeagle_directory_viewer.jump_map[key]
+        if !entry.is_dir
+            call add(basenames, entry.basename)
+        endif
+    endfor
+    return join(basenames, "\n")
+endfunction
+" }}}2
+
+
 " }}}1
 
 " DirectoryViewer {{{1
@@ -623,7 +641,9 @@ function! s:NewDirectoryViewer()
     endfunction
 
     function! l:directory_viewer.new_file(parent_dir, create, open) dict
-        let new_fname = input("Add file: ".a:parent_dir, "", "file")
+        call inputsave()
+        let new_fname = input("Add file: ".a:parent_dir, "", "custom,FileBeagleCompleteNewFileName")
+        call inputrestore()
         if !empty(new_fname)
             let new_fpath = a:parent_dir . new_fname
             if a:create
