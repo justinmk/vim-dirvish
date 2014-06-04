@@ -69,8 +69,8 @@ came. Once you have tried it, you will not want to traverse directories in any
 other way (well, except for fuzzy-querying to "teleport" you directly where you
 want to go).
 
-The only file management functionality provided is to create a new file: for
-everything else, use the operating system.
+The only file management functionality provided is to create a new file ('`%`'
+or '`+`'). For everything else, use the operating system.
 
 At any time, you can type "`<ESC>`" or "`q`" to close FileBeagle.
 

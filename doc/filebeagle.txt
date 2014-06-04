@@ -66,51 +66,52 @@ Directory Navigation~
 <BS>, b     Go back to the previous directory in the directory history.
 
 -------------------------------------------------------------------------------
-File/Directory Selection~
+Opening Selected Files and Directories~
 
-<CR>, o     Open the currently selected file or directory in the current
-            window.
+<CR>, o             Open the currently selected file or directory in the
+                    current window.
 [count]<CR>,
-[count]o    Open the file or directory at line [count] in the current window.
+[count]o            Open the file or directory at line [count] in the current
+                    window.
 
-<C-V>, v    Open the currently selected file or directory in a new vertical
-            split.
+<C-V>, v            Open the currently selected file or directory in a new
+                    vertical split.
 [count]<C-V>,
-[count]v    Open the file or directory at line [count] in a new vertical
-            split.
+[count]v            Open the file or directory at line [count] in a new
+                    vertical split.
 
-<C-V>, V    Open the currently selected file or directory in a new vertical
-            split in the background.
-[count]g<C-V>,
-[count]V    Open the file or directory at line [count] in a new vertical
-            split in the background.
-
-<C-S>, s    Open the currently selected file or directory in a new horizontal
-            split.
+<C-S>, s            Open the currently selected file or directory in a new
+                    horizontal split.
 [count]<C-s>,
-[count]s    Open the file or directory at line [count] in a new horizontal
-            split.
+[count]s            Open the file or directory at line [count] in a new
+                    horizontal split.
 
-<C-S>, S    Open the currently selected file or directory in a new horizontal
-            split in the background.
-[count]g<C-s>,
-[count]S    Open the file or directory at line [count] in a new horizontal
-            split in the background.
+<C-T>, t            Open the currently selected file in a new tab.
+[count]<C-T>        Open the file or directory at line [count] in a new tab.
 
-<C-T>, t    Open the currently selected file in a new tab.
-[count]<C-T>,
-[count]t    Open the file or directory at line [count] in a new tab.
+-------------------------------------------------------------------------------
+Opening Selected Files and Directories in the Background~
 
-<C-T>, T    Open the currently selected file in a new tab in the background.
-[count]g<C-T>,
-[count]T    Open the file or directory at line [count] in a new tab in the
-            background.
+g<C-V>              Open the currently selected file or directory in a new
+                    vertical split in the background.
+[count]g<C-V>       Open the file or directory at line [count] in a new
+                    vertical split in the background.
+
+g<C-S>              Open the currently selected file or directory in a new
+                    horizontal split in the background.
+[count]g<C-s>       Open the file or directory at line [count] in a new
+                    horizontal split in the background.
+
+g<C-T>              Open the currently selected file in a new tab in the
+                    background.
+[count]g<C-T>       Open the file or directory at line [count] in a new tab in
+                    the background.
 
 -------------------------------------------------------------------------------
 File Operations~
 
-a           Add (create) a new file to the current directory.
-+           Edit a new empty buffer in the current directory.
++           Add (create) a new file to FileBeagle's current directory.
+%           Open a new empty buffer in FileBeagle's current directory.
 
 -------------------------------------------------------------------------------
 Directory Operations~
