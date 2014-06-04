@@ -202,6 +202,39 @@ function! s:NewDirectoryViewer()
         let l:directory_viewer["old_titlestring"] = ""
     endif
 
+    " filebeagle_buf_num, int
+    "   - The buffer number to use, or -1 if we should generate and use our
+    "     own buffer.
+    " focus_dir, string
+    "   - The full path to the directory being listed/viewed
+    " focus_file, string
+    "   - The full path to the file or directory that is should be the initial
+    "     target or focus
+    " calling_buf_num, int
+    "   - The buffer number of the buffer from which FileBeagle was invoked.
+    "     If `filebeagle_buf_num` > -1, and `calling_buf_num` ==
+    "     `filebeagle_buf_num`, generally it is because FileBeagle was
+    "     automagically invoked as a result of Vim being called upon to edit a
+    "     directory.
+    " prev_focus_dirs, list of tuples, [ (string, string) ]
+    "   - The history stack, with the first element of the tuple being the
+    "     directory previously visited and the second element of the tuple being
+    "     the last selected entry in that directory
+    " default_targets_for_directory, dictionary {string: string}
+    "   - Keys are directories and values are the correspondign default target
+    "     or selected item when that directory will be visited again.
+    " is_filtered, boolean
+    "   - If 1, then entries will be filtered following `filter_exp` if
+    "     `filter_exp` is not empty; otherwise, entries will not be filtered
+    " filter_exp, regular expression pattern string
+    "   - Regular expression pattern to be used to filter entries if
+    "     `is_filtered` is 1
+    " is_include_hidden, boolean
+    "   -  If 1, hidden files and directories (paths beginning with '.') will
+    "      be listed; otherwise, they will not be shown.
+    " is_include_ignored, boolean
+    "   -  If 1, files and directories matching patterns in ``wildignore``
+    "      will be listed; otherwise, they will not be shown.
     function! l:directory_viewer.open_dir(
                 \ filebeagle_buf_num,
                 \ focus_dir,
