@@ -406,7 +406,7 @@ function! s:NewDirectoryViewer()
         """ File operations
         noremap <buffer> <silent> +     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 0, 1)<CR>
         noremap <buffer> <silent> %     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 0, 1)<CR>
-        noremap <buffer> <silent> a     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
+        " noremap <buffer> <silent> a     :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
 
         """ Directory Operations
         noremap <buffer> <silent> cd     :call b:filebeagle_directory_viewer.change_vim_working_directory(0)<CR>
