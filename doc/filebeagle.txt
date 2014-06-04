@@ -66,12 +66,28 @@ Directory Navigation~
 <BS>, b     Go back to the previous directory in the directory history.
 
 -------------------------------------------------------------------------------
-File Selection~
+File/Directory Selection~
 
-<CR>, o     Open the currently selected file in the current window.
-<C-V>, v    Open the currently selected file in a new vertical split.
-<C-S>, s    Open the currently selected file in a new horizontal split.
+<CR>, o     Open the currently selected file or directory in the current
+            window.
+[count]<CR>,
+[count]o    Open the file or directory at line [count] in the current window.
+
+<C-V>, v    Open the currently selected file or directory in a new vertical
+            split.
+[count]<C-V>,
+[count]v    Open the file or directory at line [count] in a new vertical
+            split.
+
+<C-S>, s    Open the currently selected file or directory in a new horizontal
+            split.
+[count]<C-s>,
+[count]s    Open the file or directory at line [count] in a new horizontal
+            split.
+
 <C-T>, t    Open the currently selected file in a new tab.
+[count]<C-T>,
+[count]t    Open the file or directory at line [count] in a new tab.
 
 -------------------------------------------------------------------------------
 File Operations~

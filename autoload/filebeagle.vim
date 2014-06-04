@@ -353,14 +353,14 @@ function! s:NewDirectoryViewer()
         noremap <buffer> <silent> <C-W>T  :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
 
         """ Selection: show target and switch focus
-        noremap <buffer> <silent> <CR>  :call b:filebeagle_directory_viewer.visit_target("edit")<CR>
-        noremap <buffer> <silent> o     :call b:filebeagle_directory_viewer.visit_target("edit")<CR>
-        noremap <buffer> <silent> v     :call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
-        noremap <buffer> <silent> <C-v> :call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
-        noremap <buffer> <silent> s     :call b:filebeagle_directory_viewer.visit_target("sp")<CR>
-        noremap <buffer> <silent> <C-s> :call b:filebeagle_directory_viewer.visit_target("sp")<CR>
-        noremap <buffer> <silent> t     :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
-        noremap <buffer> <silent> <C-t> :call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
+        noremap <buffer> <silent> <CR>  :<C-U>call b:filebeagle_directory_viewer.visit_target("edit")<CR>
+        noremap <buffer> <silent> o     :<C-U>call b:filebeagle_directory_viewer.visit_target("edit")<CR>
+        noremap <buffer> <silent> v     :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
+        noremap <buffer> <silent> <C-v> :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
+        noremap <buffer> <silent> s     :<C-U>call b:filebeagle_directory_viewer.visit_target("sp")<CR>
+        noremap <buffer> <silent> <C-s> :<C-U>call b:filebeagle_directory_viewer.visit_target("sp")<CR>
+        noremap <buffer> <silent> t     :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
+        noremap <buffer> <silent> <C-t> :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
 
         """ Focal directory changing
         noremap <buffer> <silent> -  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
@@ -453,8 +453,12 @@ function! s:NewDirectoryViewer()
         exec 'silent! normal! "_dG'
     endfunction
 
-    function! l:directory_viewer.visit_target(split_cmd) dict
-        let l:cur_line = line(".")
+    function! l:directory_viewer.visit_target(split_cmd) dict range
+        if v:count == 0
+            let l:cur_line = line(".")
+        else
+            let l:cur_line = v:count
+        endif
         if !has_key(self.jump_map, l:cur_line)
             call s:_filebeagle_messenger.send_info("Not a valid navigation entry")
             return 0
