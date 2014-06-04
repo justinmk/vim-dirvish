@@ -98,9 +98,9 @@ a           Add (create) a new file to the current directory.
 -------------------------------------------------------------------------------
 Directory Operations~
 
-gcd         Change Vim working directory to current focal (i.e., edited, not
+cd          Change Vim working directory to current focal (i.e., edited, not
             selected) directory.
-glcd        Change Vim local directory to current focal (i.e., edited, not
+cl          Change Vim local directory to current focal (i.e., edited, not
             selected) directory.
 
 ===============================================================================
