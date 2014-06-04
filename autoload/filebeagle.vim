@@ -365,6 +365,7 @@ function! s:NewDirectoryViewer()
         noremap <buffer> <silent> gh      :call b:filebeagle_directory_viewer.toggle_hidden_and_ignored()<CR>
         noremap <buffer> <silent> q       :call b:filebeagle_directory_viewer.close()<CR>
         noremap <buffer> <silent> <ESC>   :call b:filebeagle_directory_viewer.close()<CR>
+        noremap <buffer> <silent> <C-W>c  :call b:filebeagle_directory_viewer.close()<CR>
 
         """ Directory listing splitting
         noremap <buffer> <silent> <C-W><C-V>  :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
@@ -378,14 +379,20 @@ function! s:NewDirectoryViewer()
         noremap <buffer> <silent> <C-W>T  :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
 
         """ Selection: show target and switch focus
-        noremap <buffer> <silent> <CR>  :<C-U>call b:filebeagle_directory_viewer.visit_target("edit")<CR>
-        noremap <buffer> <silent> o     :<C-U>call b:filebeagle_directory_viewer.visit_target("edit")<CR>
-        noremap <buffer> <silent> v     :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
-        noremap <buffer> <silent> <C-v> :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp")<CR>
-        noremap <buffer> <silent> s     :<C-U>call b:filebeagle_directory_viewer.visit_target("sp")<CR>
-        noremap <buffer> <silent> <C-s> :<C-U>call b:filebeagle_directory_viewer.visit_target("sp")<CR>
-        noremap <buffer> <silent> t     :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
-        noremap <buffer> <silent> <C-t> :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit")<CR>
+        noremap <buffer> <silent> <CR>      :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        noremap <buffer> <silent> o         :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        noremap <buffer> <silent> v         :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
+        noremap <buffer> <silent> <C-v>     :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
+        noremap <buffer> <silent> V         :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
+        noremap <buffer> <silent> g<C-V>    :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
+        noremap <buffer> <silent> s         :<C-U>call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
+        noremap <buffer> <silent> <C-s>     :<C-U>call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
+        noremap <buffer> <silent> S         :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
+        noremap <buffer> <silent> g<C-s>    :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
+        noremap <buffer> <silent> t         :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
+        noremap <buffer> <silent> <C-t>     :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
+        noremap <buffer> <silent> T         :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
+        noremap <buffer> <silent> g<C-t>     :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
 
         """ Focal directory changing
         noremap <buffer> <silent> -  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
@@ -489,7 +496,7 @@ function! s:NewDirectoryViewer()
         exec 'silent! normal! "_dG'
     endfunction
 
-    function! l:directory_viewer.visit_target(split_cmd) dict range
+    function! l:directory_viewer.visit_target(split_cmd, open_in_background) dict range
         if v:count == 0
             let l:cur_line = line(".")
         else
@@ -499,6 +506,7 @@ function! s:NewDirectoryViewer()
             call s:_filebeagle_messenger.send_info("Not a valid navigation entry")
             return 0
         endif
+        let l:cur_tab_num = tabpagenr()
         let l:target = self.jump_map[l:cur_line].full_path
         if self.jump_map[l:cur_line].is_dir
             if self.jump_map[l:cur_line].basename == ".."
@@ -511,7 +519,11 @@ function! s:NewDirectoryViewer()
             if a:split_cmd == "edit"
                 call self.set_focus_dir(l:target, new_focus_file,  1)
             else
-                execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
+                if a:open_in_background
+                    execute "silent keepalt keepjumps " . a:split_cmd . " " . self.buf_name
+                else
+                    execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
+                endif
                 let directory_viewer = s:NewDirectoryViewer()
                 call directory_viewer.open_dir(
                             \ -1,
@@ -525,13 +537,18 @@ function! s:NewDirectoryViewer()
                             \ self.is_include_hidden,
                             \ self.is_include_ignored
                             \ )
+                if a:open_in_background
+                    execute "tabnext " . l:cur_tab_num
+                    execute bufwinnr(self.buf_num) . "wincmd w"
+                endif
             endif
         else
-            call self.visit_file(l:target, a:split_cmd)
+            call self.visit_file(l:target, a:split_cmd, a:open_in_background)
         endif
     endfunction
 
     function! l:directory_viewer.new_viewer(split_cmd) dict
+        let l:cur_tab_num = tabpagenr()
         execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
         let directory_viewer = s:NewDirectoryViewer()
         call directory_viewer.open_dir(
@@ -548,7 +565,6 @@ function! s:NewDirectoryViewer()
                     \ )
     endfunction
 
-
     function! l:directory_viewer.set_focus_dir(new_dir, focus_file, add_to_history) dict
         if a:add_to_history && exists("self['focus_dir']")
             if empty(self.prev_focus_dirs) || self.prev_focus_dirs[-1][0] != self.focus_dir
@@ -561,10 +577,17 @@ function! s:NewDirectoryViewer()
         call self.refresh()
     endfunction
 
-    function! l:directory_viewer.visit_file(full_path, split_cmd)
-        execute "b " . self.prev_buf_num
-        execute a:split_cmd . " " . fnameescape(a:full_path)
-        call self.wipe_and_restore()
+    function! l:directory_viewer.visit_file(full_path, split_cmd, open_in_background)
+        let l:cur_tab_num = tabpagenr()
+        if a:open_in_background
+            execute a:split_cmd . " " . fnameescape(a:full_path)
+            execute "tabnext " . l:cur_tab_num
+            execute bufwinnr(self.buf_num) . "wincmd w"
+        else
+            execute "b " . self.prev_buf_num
+            execute a:split_cmd . " " . fnameescape(a:full_path)
+            call self.wipe_and_restore()
+        endif
     endfunction
 
     function! l:directory_viewer.visit_parent_dir() dict
@@ -657,7 +680,7 @@ function! s:NewDirectoryViewer()
                 endif
             endif
             if a:open
-                call self.visit_file(new_fpath, "edit")
+                call self.visit_file(new_fpath, "edit", 0)
             else
                 call self.goto_pattern(new_fname)
             endif

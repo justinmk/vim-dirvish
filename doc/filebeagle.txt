@@ -79,15 +79,32 @@ File/Directory Selection~
 [count]v    Open the file or directory at line [count] in a new vertical
             split.
 
+<C-V>, V    Open the currently selected file or directory in a new vertical
+            split in the background.
+[count]g<C-V>,
+[count]V    Open the file or directory at line [count] in a new vertical
+            split in the background.
+
 <C-S>, s    Open the currently selected file or directory in a new horizontal
             split.
 [count]<C-s>,
 [count]s    Open the file or directory at line [count] in a new horizontal
             split.
 
+<C-S>, S    Open the currently selected file or directory in a new horizontal
+            split in the background.
+[count]g<C-s>,
+[count]S    Open the file or directory at line [count] in a new horizontal
+            split in the background.
+
 <C-T>, t    Open the currently selected file in a new tab.
 [count]<C-T>,
 [count]t    Open the file or directory at line [count] in a new tab.
+
+<C-T>, T    Open the currently selected file in a new tab in the background.
+[count]g<C-T>,
+[count]T    Open the file or directory at line [count] in a new tab in the
+            background.
 
 -------------------------------------------------------------------------------
 File Operations~
