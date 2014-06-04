@@ -753,7 +753,7 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
         return
     endif
     if empty(expand("%"))
-        call filebeagle#FileBeagleOpen(getcwd())
+        call filebeagle#FileBeagleOpen(getcwd(), -1)
     else
         let directory_viewer = s:NewDirectoryViewer()
         let focus_dir = expand('%:p:h')
