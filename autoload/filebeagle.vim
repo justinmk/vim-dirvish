@@ -793,7 +793,7 @@ function! filebeagle#FileBeagleOpen(focus_dir, filebeagle_buf_num)
     if empty(a:focus_dir)
         let focus_dir = getcwd()
     else
-        let focus_dir = a:focus_dir
+        let focus_dir = fnamemodify(a:focus_dir, ":p")
     endif
     if !isdirectory(focus_dir)
         call s:_filebeagle_messenger.send_error("Not a valid directory: '" . focus_dir . "'")
