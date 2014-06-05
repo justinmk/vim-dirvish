@@ -25,6 +25,15 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}1
 
+" Script Globals {{{1
+" ============================================================================
+if has("win32")
+    let s:sep = '\'
+else
+    let s:sep = '/'
+endif
+" }}}1
+
 " Utilities {{{1
 " ==============================================================================
 
@@ -84,32 +93,28 @@ endfunction
 " Path Discovery {{{2
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-" function! s:GetCurrentDirEntry(current_dir)
-"     let entry = {
-"                 \ "full_path" : fnamemodify(a:current_dir, ":p"),
-"                 \ "basename" : ".",
-"                 \ "is_dir" : 1
-"                 \ }
-"     return entry
-" endfunction
-
 function! s:parent_dir(current_dir)
     let l:current_dir = fnamemodify(a:current_dir, ":p")
-    " if l:current_dir[-1] != "/"
-    "     let l:current_dir .= "/"
-    " endif
-    " let d = fnamemodify(l:current_dir . "../", ":p")
-    " let d = fnamemodify(l:current_dir . "../", ":p")
-    let d = "/" . join(split(l:current_dir, '/')[:-2], '/')
+    if has("win32")
+        let d = join(split(l:current_dir, s:sep)[:-2], s:sep)
+        if empty(d)
+            let d = a:current_dir
+        endif
+        if d =~ ":$"
+            let d = d . s:sep
+        endif
+    else
+        let d = s:sep . join(split(l:current_dir, s:sep)[:-2], s:sep)
+    endif
     return d
 endfunction
 
 function! s:base_dirname(dirname)
     let l:dirname = fnamemodify(a:dirname, ":p")
-    if l:dirname == '/'
-        return '/'
+    if l:dirname == s:sep
+        return s:sep
     endif
-    let d = split(l:dirname, '/')[-1] . '/'
+    let d = split(l:dirname, s:sep)[-1] . s:sep
     return d
 endfunction
 
@@ -140,9 +145,9 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_incl
         let &suffixes = ""
     endif
     if a:is_include_hidden
-        let path_str = glob(a:current_dir.'/.[^.]'.a:glob_pattern)."\n".glob(a:current_dir.'/'.a:glob_pattern)
+        let path_str = glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern)."\n".glob(a:current_dir.s:sep.a:glob_pattern)
     else
-        let path_str = glob(a:current_dir.'/'.a:glob_pattern)
+        let path_str = glob(a:current_dir.s:sep.a:glob_pattern)
     endif
     let paths = split(path_str, '\n')
     call sort(paths)
@@ -153,7 +158,7 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_incl
     " call add(dir_paths, s:GetCurrentDirEntry(a:current_dir))
     call add(dir_paths, s:build_current_parent_dir_entry(a:current_dir))
     for path_entry in paths
-        let path_entry = substitute(path_entry, '/\+', '/', 'g')
+        let path_entry = substitute(path_entry, s:sep.'\+', s:sep, 'g')
         let full_path = fnamemodify(path_entry, ":p")
         let basename = fnamemodify(path_entry, ":t")
         let dirname = fnamemodify(path_entry, ":h")
@@ -336,7 +341,7 @@ function! s:NewDirectoryViewer()
     function! l:directory_viewer.setup_buffer_syntax() dict
         if has("syntax")
             syntax clear
-            syn match FileBeagleDirectoryEntry              '^.*/$'
+            syn match FileBeagleDirectoryEntry              '^.*[/\\]$'
             highlight! link FileBeagleDirectoryEntry        Directory
         endif
     endfunction
@@ -443,7 +448,7 @@ function! s:NewDirectoryViewer()
                         \ }
             let text = path["basename"]
             if path["is_dir"]
-                let text .= "/"
+                let text .= s:sep
             endif
             let self.jump_map[line("$")] = l:line_map
             call append(line("$")-1, text)
