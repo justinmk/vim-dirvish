@@ -524,7 +524,12 @@ function! s:NewDirectoryViewer()
                 call self.set_focus_dir(l:target, new_focus_file,  1)
             else
                 if a:open_in_background
-                    execute "silent keepalt keepjumps " . a:split_cmd . " " . self.buf_name
+                    if a:split_cmd == "tabedit"
+                        " execute "silent keepalt keepjumps " . a:split_cmd . " " . self.buf_name
+                        execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
+                    else
+                        execute "silent keepalt keepjumps " . a:split_cmd
+                    endif
                 else
                     execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
                 endif
