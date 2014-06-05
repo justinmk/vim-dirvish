@@ -785,18 +785,22 @@ function! filebeagle#FileBeagleOpen(focus_dir, filebeagle_buf_num)
     else
         let focus_dir = a:focus_dir
     endif
-    call directory_viewer.open_dir(
-                \ a:filebeagle_buf_num,
-                \ focus_dir,
-                \ bufname("%"),
-                \ bufnr("%"),
-                \ [],
-                \ {},
-                \ 0,
-                \ "",
-                \ g:filebeagle_show_hidden,
-                \ g:filebeagle_show_hidden
-                \)
+    if !isdirectory(focus_dir)
+        call s:_filebeagle_messenger.send_error("Not a valid directory: '" . focus_dir . "'")
+    else
+        call directory_viewer.open_dir(
+                    \ a:filebeagle_buf_num,
+                    \ focus_dir,
+                    \ bufname("%"),
+                    \ bufnr("%"),
+                    \ [],
+                    \ {},
+                    \ 0,
+                    \ "",
+                    \ g:filebeagle_show_hidden,
+                    \ g:filebeagle_show_hidden
+                    \)
+    endif
 endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
