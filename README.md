@@ -72,7 +72,8 @@ want to go).
 The only file management functionality provided is to create a new file ('`%`'
 or '`+`'). For everything else, use the operating system.
 
-At any time, you can type "`<ESC>`" or "`q`" to close FileBeagle.
+At any time, you can type "`q`" to close FileBeagle and restore the previous
+buffer.
 
 ## Acknowledgements
 

@@ -57,7 +57,7 @@ r           Refresh the directory listing.
 f           Define and apply a regular expression filter for the file entries.
 F           Toggle application of the regular expression filter.
 gh          Toggle showing of hidden/(wild-)ignored files.
-<ESC>, q    Quit and exit the viewer.
+q           Quit and exit the viewer.
 
 -------------------------------------------------------------------------------
 Directory Navigation~
