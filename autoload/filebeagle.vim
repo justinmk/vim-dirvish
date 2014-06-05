@@ -29,8 +29,10 @@ set cpo&vim
 " ============================================================================
 if has("win32")
     let s:sep = '\'
+    let s:sep_as_pattern = '\\'
 else
     let s:sep = '/'
+    let s:sep_as_pattern = '/'
 endif
 " }}}1
 
@@ -158,7 +160,7 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_incl
     " call add(dir_paths, s:GetCurrentDirEntry(a:current_dir))
     call add(dir_paths, s:build_current_parent_dir_entry(a:current_dir))
     for path_entry in paths
-        let path_entry = substitute(path_entry, s:sep.'\+', s:sep, 'g')
+        let path_entry = substitute(path_entry, s:sep_as_pattern.'\+', s:sep, 'g')
         let full_path = fnamemodify(path_entry, ":p")
         let basename = fnamemodify(path_entry, ":t")
         let dirname = fnamemodify(path_entry, ":h")
@@ -522,6 +524,10 @@ function! s:NewDirectoryViewer()
                 let new_focus_file = s:base_dirname(self.focus_dir)
             elseif a:split_cmd == "edit"
                 let new_focus_file = get(self.default_targets_for_directory, l:target, "")
+                " echo "Current (" . l:target . "): " . new_focus_file
+                " for key in keys(self.default_targets_for_directory)
+                "     echo "'".key."':'".self.default_targets_for_directory[key]."'"
+                " endfor
             else
                 let new_focus_file = l:target
             endif
@@ -586,6 +592,9 @@ function! s:NewDirectoryViewer()
             endif
         endif
         let self.focus_dir = fnamemodify(a:new_dir, ":p")
+        if s:sep == '\'
+            let self.focus_dir = substitute(self.focus_dir, '\\\+', s:sep, 'g')
+        endif
         " let self.focus_file = fnamemodify(a:focus_file, ":p:t")
         let self.focus_file = a:focus_file
         call self.refresh()
@@ -669,11 +678,11 @@ function! s:NewDirectoryViewer()
 
     function! l:directory_viewer.goto_pattern(pattern) dict
         " call cursor(1, 0)
-        let old_ignorecase = &ignorecase
-        set noignorecase
-        " let lnum = search("^" . a:pattern . "$", "cwn")
-        call search("^" . a:pattern . "$", "cw")
-        let &ignorecase = old_ignorecase
+        " let old_ignorecase = &ignorecase
+        " set noignorecase
+        let full_pattern = '^\V\C' . escape(a:pattern, '/\') . '\$'
+        call search(full_pattern, "cw")
+        " let &ignorecase = old_ignorecase
         " call cursor(lnum, 0)
     endfunction
 
