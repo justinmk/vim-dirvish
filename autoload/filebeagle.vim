@@ -592,10 +592,6 @@ function! s:NewDirectoryViewer()
             endif
         endif
         let self.focus_dir = fnamemodify(a:new_dir, ":p")
-        if s:sep == '\'
-            let self.focus_dir = substitute(self.focus_dir, '\\\+', s:sep, 'g')
-        endif
-        " let self.focus_file = fnamemodify(a:focus_file, ":p:t")
         let self.focus_file = a:focus_file
         call self.refresh()
     endfunction
