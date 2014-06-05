@@ -98,7 +98,7 @@ endfunction
 function! s:parent_dir(current_dir)
     let l:current_dir = fnamemodify(a:current_dir, ":p")
     if has("win32")
-        let d = join(split(l:current_dir, s:sep)[:-2], s:sep)
+        let d = join(split(l:current_dir, s:sep_as_pattern)[:-2], s:sep)
         if empty(d)
             let d = a:current_dir
         endif
@@ -106,7 +106,7 @@ function! s:parent_dir(current_dir)
             let d = d . s:sep
         endif
     else
-        let d = s:sep . join(split(l:current_dir, s:sep)[:-2], s:sep)
+        let d = s:sep . join(split(l:current_dir, s:sep_as_pattern)[:-2], s:sep)
     endif
     return d
 endfunction
@@ -116,7 +116,7 @@ function! s:base_dirname(dirname)
     if l:dirname == s:sep
         return s:sep
     endif
-    let d = split(l:dirname, s:sep)[-1] . s:sep
+    let d = split(l:dirname, s:sep_as_pattern)[-1] . s:sep
     return d
 endfunction
 
