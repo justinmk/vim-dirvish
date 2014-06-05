@@ -62,50 +62,61 @@ q           Quit and exit the viewer.
 -------------------------------------------------------------------------------
 Directory Navigation~
 
--, u        Move up to the parent directory of the current directory.
+-, u        Move up to the parent directory of the current focal directory.
 <BS>, b     Go back to the previous directory in the directory history.
 
 -------------------------------------------------------------------------------
 Opening Selected Files and Directories~
 
-<CR>, o             Open the currently selected file or directory in the
-                    current window.
-[count]<CR>,
-[count]o            Open the file or directory at line [count] in the current
-                    window.
+<CR>
+o               Open the file or directory under the cursor in the current
+                window.
+{count} <CR>
+{count} o       Open the file or directory at line [count] in the current
+                window.
 
-<C-V>, v            Open the currently selected file or directory in a new
-                    vertical split.
-[count]<C-V>,
-[count]v            Open the file or directory at line [count] in a new
-                    vertical split.
+CTRL-V
+v               Open the currently selected file or directory in a new
+                vertical split.
+{count} CTRL-V
+{count} v       Open the file or directory at line [count] in a new
+                vertical split.
 
-<C-S>, s            Open the currently selected file or directory in a new
-                    horizontal split.
-[count]<C-s>,
-[count]s            Open the file or directory at line [count] in a new
-                    horizontal split.
+CTRL-S
+s               Open the currently selected file or directory in a new
+                horizontal split.
+{count} CTRL-s
+{count} s       Open the file or directory at line [count] in a new horizontal
+                split.
 
-<C-T>, t            Open the currently selected file in a new tab.
-[count]<C-T>        Open the file or directory at line [count] in a new tab.
+CTRL-T
+t               Open the currently selected file in a new tab.
+{count} CTRL-T
+{count} t       Open the file or directory at line [count] in a new tab.
 
 -------------------------------------------------------------------------------
 Opening Selected Files and Directories in the Background~
 
-g<C-V>              Open the currently selected file or directory in a new
-                    vertical split in the background.
-[count]g<C-V>       Open the file or directory at line [count] in a new
-                    vertical split in the background.
+g CTRL-V
+gv              Open the currently selected file or directory in a new
+                vertical split in the background.
+{count} g CTRL-V
+{count} gv      Open the file or directory at line [count] in a new
+                vertical split in the background.
 
-g<C-S>              Open the currently selected file or directory in a new
-                    horizontal split in the background.
-[count]g<C-s>       Open the file or directory at line [count] in a new
-                    horizontal split in the background.
+g CTRL-S
+g s             Open the currently selected file or directory in a new
+                horizontal split in the background.
+{count} g CTRL-s
+{count} gs      Open the file or directory at line [count] in a new horizontal
+                split in the background.
 
-g<C-T>              Open the currently selected file in a new tab in the
-                    background.
-[count]g<C-T>       Open the file or directory at line [count] in a new tab in
-                    the background.
+g CTRL-T
+gt              Open the currently selected file in a new tab in the
+                background
+{count} g CTRL-T
+{count} gt      Open the file or directory at line [count] in a new tab in
+                the background.
 
 -------------------------------------------------------------------------------
 File Operations~
