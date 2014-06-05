@@ -366,13 +366,14 @@ function! s:NewDirectoryViewer()
         endfor
 
         """ Directory listing buffer management
-        noremap <buffer> <silent> r       :call b:filebeagle_directory_viewer.refresh()<CR>
-        noremap <buffer> <silent> f       :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
-        noremap <buffer> <silent> F       :call b:filebeagle_directory_viewer.toggle_filter()<CR>
-        noremap <buffer> <silent> gh      :call b:filebeagle_directory_viewer.toggle_hidden_and_ignored()<CR>
-        noremap <buffer> <silent> q       :call b:filebeagle_directory_viewer.close()<CR>
-        noremap <buffer> <silent> <ESC>   :call b:filebeagle_directory_viewer.close()<CR>
-        noremap <buffer> <silent> <C-W>c  :call b:filebeagle_directory_viewer.close()<CR>
+        noremap <buffer> <silent> r             :call b:filebeagle_directory_viewer.refresh()<CR>
+        noremap <buffer> <silent> f             :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
+        noremap <buffer> <silent> F             :call b:filebeagle_directory_viewer.toggle_filter()<CR>
+        noremap <buffer> <silent> gh            :call b:filebeagle_directory_viewer.toggle_hidden_and_ignored()<CR>
+        noremap <buffer> <silent> q             :call b:filebeagle_directory_viewer.quit_buffer()<CR>
+        noremap <buffer> <silent> <ESC>         :call b:filebeagle_directory_viewer.quit_buffer()<CR>
+        noremap <buffer> <silent> <C-W>c        :call b:filebeagle_directory_viewer.close_window()<CR>
+        noremap <buffer> <silent> <C-W><C-C>    :call b:filebeagle_directory_viewer.close_window()<CR>
 
         """ Directory listing splitting
         noremap <buffer> <silent> <C-W><C-V>  :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
@@ -474,7 +475,7 @@ function! s:NewDirectoryViewer()
     function! l:directory_viewer.wipe_and_restore() dict
         if self.prev_buf_num != self.buf_num
             try
-                execute "bwipe " . self.buf_num
+                execute "bwipe! " . self.buf_num
             catch // " E517: No buffers were wiped out
             endtry
             if has("statusline") && exists("self['old_statusline']")
@@ -490,7 +491,7 @@ function! s:NewDirectoryViewer()
     endfunction
 
     " Close and quit the viewer.
-    function! l:directory_viewer.close() dict
+    function! l:directory_viewer.quit_buffer() dict
         " if !isdirectory(bufname(self.prev_buf_num))
         if self.prev_buf_num == self.buf_num
             " Avoid switching back to calling buffer if it is a (FileBeagle) directory
@@ -499,6 +500,16 @@ function! s:NewDirectoryViewer()
             execute "b " . self.prev_buf_num
         endif
         call self.wipe_and_restore()
+    endfunction
+
+    " Close and quit the viewer.
+    function! l:directory_viewer.close_window() dict
+        execute "bwipe"
+        " if self.prev_buf_num != self.buf_num
+        "     execute "b " . self.prev_buf_num
+        " endif
+        " call self.wipe_and_restore()
+        " :close
     endfunction
 
     " Clears the buffer contents.
