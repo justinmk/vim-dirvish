@@ -366,58 +366,66 @@ function! s:NewDirectoryViewer()
         endfor
 
         """ Directory listing buffer management
-        noremap <buffer> <silent> r             :call b:filebeagle_directory_viewer.refresh()<CR>
-        noremap <buffer> <silent> f             :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
-        noremap <buffer> <silent> F             :call b:filebeagle_directory_viewer.toggle_filter()<CR>
-        noremap <buffer> <silent> gh            :call b:filebeagle_directory_viewer.toggle_hidden_and_ignored()<CR>
-        noremap <buffer> <silent> q             :call b:filebeagle_directory_viewer.quit_buffer()<CR>
-        noremap <buffer> <silent> <C-W>c        :call b:filebeagle_directory_viewer.close_window()<CR>
-        noremap <buffer> <silent> <C-W><C-C>    :call b:filebeagle_directory_viewer.close_window()<CR>
+        nnoremap <buffer> <silent> r             :call b:filebeagle_directory_viewer.refresh()<CR>
+        nnoremap <buffer> <silent> f             :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
+        nnoremap <buffer> <silent> F             :call b:filebeagle_directory_viewer.toggle_filter()<CR>
+        nnoremap <buffer> <silent> gh            :call b:filebeagle_directory_viewer.toggle_hidden_and_ignored()<CR>
+        nnoremap <buffer> <silent> q             :call b:filebeagle_directory_viewer.quit_buffer()<CR>
+        nnoremap <buffer> <silent> <C-W>c        :call b:filebeagle_directory_viewer.close_window()<CR>
+        nnoremap <buffer> <silent> <C-W><C-C>    :call b:filebeagle_directory_viewer.close_window()<CR>
 
         """ Directory listing splitting
-        noremap <buffer> <silent> <C-W><C-V>    :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
-        noremap <buffer> <silent> <C-W>v        :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
-        noremap <buffer> <silent> <C-W>V        :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
-        noremap <buffer> <silent> <C-W><C-S>    :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
-        noremap <buffer> <silent> <C-W>s        :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
-        noremap <buffer> <silent> <C-W>S        :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
-        noremap <buffer> <silent> <C-W><C-T>    :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
-        noremap <buffer> <silent> <C-W>t        :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
-        noremap <buffer> <silent> <C-W>T        :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
+        nnoremap <buffer> <silent> <C-W><C-V>    :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
+        nnoremap <buffer> <silent> <C-W>v        :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
+        nnoremap <buffer> <silent> <C-W>V        :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
+        nnoremap <buffer> <silent> <C-W><C-S>    :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
+        nnoremap <buffer> <silent> <C-W>s        :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
+        nnoremap <buffer> <silent> <C-W>S        :call b:filebeagle_directory_viewer.new_viewer("sp")<CR>
+        nnoremap <buffer> <silent> <C-W><C-T>    :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
+        nnoremap <buffer> <silent> <C-W>t        :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
+        nnoremap <buffer> <silent> <C-W>T        :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
 
         """ Open selected file/directory
-        noremap <buffer> <silent> <CR>          :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
-        noremap <buffer> <silent> o             :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        nnoremap <buffer> <silent> <CR>          :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        nnoremap <buffer> <silent> o             :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        vnoremap <buffer> <silent> <CR>          :call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        vnoremap <buffer> <silent> o             :call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
 
-        noremap <buffer> <silent> v             :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
-        noremap <buffer> <silent> <C-v>         :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
-        " noremap <buffer> <silent> V             :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
-        noremap <buffer> <silent> g<C-V>        :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
+        nnoremap <buffer> <silent> v             :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
+        nnoremap <buffer> <silent> <C-v>         :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
+        vnoremap <buffer> <silent> v             :call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
+        vnoremap <buffer> <silent> <C-v>         :call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
+        " nnoremap <buffer> <silent> V             :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
+        nnoremap <buffer> <silent> g<C-V>        :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
 
-        noremap <buffer> <silent> s             :<C-U>call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
-        noremap <buffer> <silent> <C-s>         :<C-U>call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
-        " noremap <buffer> <silent> S             :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
-        noremap <buffer> <silent> g<C-s>        :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
+        nnoremap <buffer> <silent> s             :<C-U>call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
+        nnoremap <buffer> <silent> <C-s>         :<C-U>call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
+        vnoremap <buffer> <silent> s             :call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
+        vnoremap <buffer> <silent> <C-s>         :call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
+        " nnoremap <buffer> <silent> S             :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
+        nnoremap <buffer> <silent> g<C-s>        :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
 
-        noremap <buffer> <silent> t             :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
-        noremap <buffer> <silent> <C-t>         :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
-        " noremap <buffer> <silent> T            :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
-        noremap <buffer> <silent> g<C-t>        :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
+        nnoremap <buffer> <silent> t             :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
+        nnoremap <buffer> <silent> <C-t>         :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
+        vnoremap <buffer> <silent> t             :call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
+        vnoremap <buffer> <silent> <C-t>         :call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
+        " nnoremap <buffer> <silent> T            :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
+        nnoremap <buffer> <silent> g<C-t>        :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
 
         """ Focal directory changing
-        noremap <buffer> <silent> -             :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
-        noremap <buffer> <silent> u             :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
-        noremap <buffer> <silent> <BS>          :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
-        noremap <buffer> <silent> b             :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
+        nnoremap <buffer> <silent> -             :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
+        nnoremap <buffer> <silent> u             :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
+        nnoremap <buffer> <silent> <BS>          :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
+        nnoremap <buffer> <silent> b             :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
 
         """ File operations
-        noremap <buffer> <silent> +             :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
-        noremap <buffer> <silent> %             :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 0, 1)<CR>
-        " noremap <buffer> <silent> a            :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
+        nnoremap <buffer> <silent> +             :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
+        nnoremap <buffer> <silent> %             :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 0, 1)<CR>
+        " nnoremap <buffer> <silent> a            :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
 
         """ Directory Operations
-        noremap <buffer> <silent> cd            :call b:filebeagle_directory_viewer.change_vim_working_directory(0)<CR>
-        noremap <buffer> <silent> cl            :call b:filebeagle_directory_viewer.change_vim_working_directory(1)<CR>
+        nnoremap <buffer> <silent> cd            :call b:filebeagle_directory_viewer.change_vim_working_directory(0)<CR>
+        nnoremap <buffer> <silent> cl            :call b:filebeagle_directory_viewer.change_vim_working_directory(1)<CR>
 
     endfunction
 
@@ -519,18 +527,39 @@ function! s:NewDirectoryViewer()
 
     function! l:directory_viewer.visit_target(split_cmd, open_in_background) dict range
         if v:count == 0
-            let l:cur_line = line(".")
+            let l:start_line = a:firstline
+            let l:end_line = a:lastline
         else
-            let l:cur_line = v:count
+            let l:start_line = v:count
+            let l:end_line = v:count
         endif
-        if !has_key(self.jump_map, l:cur_line)
-            call s:_filebeagle_messenger.send_info("Not a valid navigation entry")
+
+        let l:num_dir_targets = 0
+        let l:selected_entries = []
+        for l:cur_line in range(l:start_line, l:end_line)
+            if !has_key(self.jump_map, l:cur_line)
+                call s:_filebeagle_messenger.send_info("Line " . l:cur_line . " is not a valid navigation entry")
+                return 0
+            endif
+            if self.jump_map[l:cur_line].is_dir
+                let l:num_dir_targets += 1
+            endif
+            call add(l:selected_entries, self.jump_map[l:cur_line])
+        endfor
+
+        if l:num_dir_targets > 1 || (l:num_dir_targets == 1 && len(l:selected_entries) > 1)
+            call s:_filebeagle_messenger.send_info("Cannot open multiple selections that include directories")
             return 0
         endif
-        let l:cur_tab_num = tabpagenr()
-        let l:target = self.jump_map[l:cur_line].full_path
-        if self.jump_map[l:cur_line].is_dir
-            if self.jump_map[l:cur_line].basename == ".."
+
+        if l:num_dir_targets == 1
+            let l:cur_tab_num = tabpagenr()
+            let l:target = l:selected_entries[0].full_path
+            if !isdirectory(l:target)
+                call s:_filebeagle_messenger.send_error("Cannot open directory: '" . l:target . "'")
+                return 0
+            endif
+            if l:entry.basename == ".."
                 let new_focus_file = s:base_dirname(self.focus_dir)
             elseif a:split_cmd == "edit"
                 let new_focus_file = get(self.default_targets_for_directory, l:target, "")
@@ -573,7 +602,7 @@ function! s:NewDirectoryViewer()
                 endif
             endif
         else
-            call self.visit_file(l:target, a:split_cmd, a:open_in_background)
+            call self.visit_files(l:selected_entries, a:split_cmd, a:open_in_background)
         endif
     endfunction
 
@@ -606,15 +635,26 @@ function! s:NewDirectoryViewer()
         call self.refresh()
     endfunction
 
-    function! l:directory_viewer.visit_file(full_path, split_cmd, open_in_background)
+    function! l:directory_viewer.visit_files(selected_entries, split_cmd, open_in_background)
         let l:cur_tab_num = tabpagenr()
+        let l:split_cmd = a:split_cmd
+        if !a:open_in_background
+            execute "b " . self.prev_buf_num
+        endif
+        for l:entry in a:selected_entries
+            try
+                execute l:split_cmd . " " . fnameescape(l:entry.full_path)
+            catch /E36:/
+                " E36: not enough room for any new splits: switch to
+                " opening in-situ
+                let l:split_cmd = "edit"
+                execute l:split_cmd . " " . fnameescape(l:entry.full_path)
+            endtry
+        endfor
         if a:open_in_background
-            execute a:split_cmd . " " . fnameescape(a:full_path)
             execute "tabnext " . l:cur_tab_num
             execute bufwinnr(self.buf_num) . "wincmd w"
         else
-            execute "b " . self.prev_buf_num
-            execute a:split_cmd . " " . fnameescape(a:full_path)
             call self.wipe_and_restore()
         endif
     endfunction
