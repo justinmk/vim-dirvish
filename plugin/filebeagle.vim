@@ -59,7 +59,13 @@ endif
 " (from EasyTree by Dmitry "troydm" Geurkov <d.geurkov@gmail.com>)
 function! s:OpenDirHere(dir)
     if isdirectory(a:dir)
-        call filebeagle#FileBeagleOpen(a:dir, bufnr("%"))
+        let l:focal_dir = a:dir
+        let l:focal_file = bufnr("%")
+        if has("win32")
+            let l:focal_dir = substitute(l:focal_dir, '/', '\\', 'g')
+            let l:focal_file = substitute(l:focal_file, '/', '\\', 'g')
+        endif
+        call filebeagle#FileBeagleOpen(l:focal_dir, l:focal_file)
     endif
 endfunction
 
