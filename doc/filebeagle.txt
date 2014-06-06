@@ -71,6 +71,7 @@ Opening Selected Files and Directories~
 <CR>
 o               Open the file or directory under the cursor in the current
                 window.
+
 {count} <CR>
 {count} o       Open the file or directory at line [count] in the current
                 window.
