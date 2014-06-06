@@ -558,7 +558,8 @@ function! s:NewDirectoryViewer()
 
         if l:num_dir_targets == 1
             let l:cur_tab_num = tabpagenr()
-            let l:target = l:selected_entries[0].full_path
+            let l:entry = l:selected_entries[0]
+            let l:target = l:entry.full_path
             if !isdirectory(l:target)
                 call s:_filebeagle_messenger.send_error("Cannot open directory: '" . l:target . "'")
                 return 0
