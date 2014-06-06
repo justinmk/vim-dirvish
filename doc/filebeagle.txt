@@ -66,57 +66,61 @@ Directory Navigation~
 <BS>, b     Go back to the previous directory in the directory history.
 
 -------------------------------------------------------------------------------
-Opening Selected Files and Directories~
+Opening Files and Directories~
 
 <CR>
 o               Open the file or directory under the cursor in the current
-                window.
-
+                window. Multiple files can be opened simultaneously by
+                selecting them in visual mode.
 {count} <CR>
 {count} o       Open the file or directory at line [count] in the current
                 window.
 
 CTRL-V
 v               Open the currently selected file or directory in a new
-                vertical split.
+                vertical split. Multiple files can be opened simultaneously by
+                selecting them in visual mode.
 {count} CTRL-V
 {count} v       Open the file or directory at line [count] in a new
                 vertical split.
 
 CTRL-S
 s               Open the currently selected file or directory in a new
-                horizontal split.
+                horizontal split. Multiple files can be opened simultaneously
+                by selecting them in visual mode.
 {count} CTRL-s
 {count} s       Open the file or directory at line [count] in a new horizontal
                 split.
 
 CTRL-T
-t               Open the currently selected file in a new tab.
+t               Open the currently selected file in a new tab. Multiple files
+                can be opened simultaneously by selecting them in visual mode.
 {count} CTRL-T
 {count} t       Open the file or directory at line [count] in a new tab.
 
 -------------------------------------------------------------------------------
-Opening Selected Files and Directories in the Background~
+Opening Files and Directories in the Background~
 
 g CTRL-V
-gv              Open the currently selected file or directory in a new
-                vertical split in the background.
+gv              Open the file or directory under the cursor in a new vertical
+                split in the background. Multiple files can be opened
+                simultaneously by selecting them in visual mode.
 {count} g CTRL-V
 {count} gv      Open the file or directory at line [count] in a new
                 vertical split in the background.
 
 g CTRL-S
-g s             Open the currently selected file or directory in a new
-                horizontal split in the background.
+g s             Open the file or directory under the cursor in a new
+                horizontal split in the background. Multiple files can be
+                opened simultaneously by selecting them in visual mode.
 {count} g CTRL-s
 {count} gs      Open the file or directory at line [count] in a new horizontal
                 split in the background.
 
-g CTRL-T
-gt              Open the currently selected file in a new tab in the
-                background
-{count} g CTRL-T
-{count} gt      Open the file or directory at line [count] in a new tab in
+g CTRL-T         Open the file or directory under the cursor in a new tab in
+                the background. Multiple files can be opened simultaneously
+                by selecting them in visual mode.
+{count} g CTRL-T    Open the file or directory at line [count] in a new tab in
                 the background.
 
 -------------------------------------------------------------------------------
