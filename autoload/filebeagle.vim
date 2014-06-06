@@ -387,9 +387,13 @@ function! s:NewDirectoryViewer()
 
         """ Open selected file/directory
         nnoremap <buffer> <silent> <CR>          :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
-        nnoremap <buffer> <silent> o             :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
         vnoremap <buffer> <silent> <CR>          :call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        nnoremap <buffer> <silent> o             :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
         vnoremap <buffer> <silent> o             :call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
+        nnoremap <buffer> <silent> g<CR>         :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 1)<CR>
+        vnoremap <buffer> <silent> g<CR>         :call b:filebeagle_directory_viewer.visit_target("edit", 1)<CR>
+        nnoremap <buffer> <silent> go            :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 1)<CR>
+        vnoremap <buffer> <silent> go            :call b:filebeagle_directory_viewer.visit_target("edit", 1)<CR>
 
         nnoremap <buffer> <silent> v             :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
         vnoremap <buffer> <silent> v             :call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
@@ -642,26 +646,41 @@ function! s:NewDirectoryViewer()
 
     function! l:directory_viewer.visit_files(selected_entries, split_cmd, open_in_background)
         let l:cur_tab_num = tabpagenr()
+        let old_lazyredraw = &lazyredraw
         let l:split_cmd = a:split_cmd
         if !a:open_in_background
-            execute "b " . self.prev_buf_num
+            execute "silent keepalt keepjumps buffer " . self.prev_buf_num
         endif
+        let l:opened_basenames = []
         for l:entry in a:selected_entries
+            let l:path_to_open = fnameescape(l:entry.full_path)
             try
-                execute l:split_cmd . " " . fnameescape(l:entry.full_path)
+                execute l:split_cmd . " " . l:path_to_open
             catch /E36:/
                 " E36: not enough room for any new splits: switch to
                 " opening in-situ
                 let l:split_cmd = "edit"
-                execute l:split_cmd . " " . fnameescape(l:entry.full_path)
+                execute l:split_cmd . " " . l:path_to_open
             endtry
+            call add(l:opened_basenames, '"' . fnameescape(l:entry.basename) . '"')
         endfor
         if a:open_in_background
             execute "tabnext " . l:cur_tab_num
             execute bufwinnr(self.buf_num) . "wincmd w"
+            if a:split_cmd == "edit"
+                execute "silent keepalt keepjumps buffer " .self.buf_num
+            endif
+            redraw
+            if a:split_cmd == "edit" && len(l:opened_basenames) > 1
+                " Opening multiple in background of same window is a little
+                " cryptic so in this special case, we issue some feedback
+                echo join(l:opened_basenames, ", ")
+            endif
         else
             call self.wipe_and_restore()
+            redraw
         endif
+        let &lazyredraw = l:old_lazyredraw
     endfunction
 
     function! l:directory_viewer.visit_parent_dir() dict

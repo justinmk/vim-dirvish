@@ -101,6 +101,14 @@ t               Open the currently selected file in a new tab. Multiple files
 -------------------------------------------------------------------------------
 Opening Files and Directories in the Background~
 
+g <CR>
+go              Open the file or directory under the cursor in the current
+                window in the background. Multiple files can be opened
+                simultaneously by selecting them in visual mode.
+{count} g <CR>
+{count} go      Open the file or directory at line [count] in the current
+                window in the background.
+
 g CTRL-V
 gv              Open the file or directory under the cursor in a new vertical
                 split in the background. Multiple files can be opened
