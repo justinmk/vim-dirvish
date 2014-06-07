@@ -645,6 +645,9 @@ function! s:NewDirectoryViewer()
     endfunction
 
     function! l:directory_viewer.visit_files(selected_entries, split_cmd, open_in_background)
+        if len(a:selected_entries) < 1
+            return
+        endif
         let l:cur_tab_num = tabpagenr()
         let old_lazyredraw = &lazyredraw
         let l:split_cmd = a:split_cmd
@@ -671,10 +674,20 @@ function! s:NewDirectoryViewer()
                 execute "silent keepalt keepjumps buffer " .self.buf_num
             endif
             redraw
-            if a:split_cmd == "edit" && len(l:opened_basenames) > 1
-                " Opening multiple in background of same window is a little
-                " cryptic so in this special case, we issue some feedback
-                echo join(l:opened_basenames, ", ")
+            if a:split_cmd == "edit"
+                " It makes sense (to me, at least) to go to the last buffer
+                " selected & opened upon closing FileBeagle when in this
+                " combination of modes (i.e., split = 'edit' and in
+                " background)
+                let new_prev_buf_num = bufnr(a:selected_entries[-1].full_path)
+                if new_prev_buf_num > 0
+                    let self.prev_buf_num = new_prev_buf_num
+                endif
+                if len(l:opened_basenames) > 1
+                    " Opening multiple in background of same window is a little
+                    " cryptic so in this special case, we issue some feedback
+                    echo join(l:opened_basenames, ", ")
+                endif
             endif
         else
             call self.wipe_and_restore()
