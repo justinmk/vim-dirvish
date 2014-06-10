@@ -429,7 +429,18 @@ function! s:NewDirectoryViewer()
         """ File operations
         nnoremap <buffer> <silent> +             :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
         nnoremap <buffer> <silent> %             :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 0, 1)<CR>
-        " nnoremap <buffer> <silent> a            :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
+        nnoremap <buffer> <silent> R             :<C-U>call b:filebeagle_directory_viewer.read_target("", 0)<CR>
+        vnoremap <buffer> <silent> R             :call b:filebeagle_directory_viewer.read_target("", 0)<CR>
+        nnoremap <buffer> <silent> 0r            :<C-U>call b:filebeagle_directory_viewer.read_target("0", 0)<CR>
+        vnoremap <buffer> <silent> 0r            :call b:filebeagle_directory_viewer.read_target("0", 0)<CR>
+        nnoremap <buffer> <silent> $r            :<C-U>call b:filebeagle_directory_viewer.read_target("$", 0)<CR>
+        vnoremap <buffer> <silent> $r            :call b:filebeagle_directory_viewer.read_target("$", 0)<CR>
+        nnoremap <buffer> <silent> g0r           :<C-U>call b:filebeagle_directory_viewer.read_target("0", 1)<CR>
+        vnoremap <buffer> <silent> g0r           :call b:filebeagle_directory_viewer.read_target("0", 1)<CR>
+        nnoremap <buffer> <silent> g$r           :<C-U>call b:filebeagle_directory_viewer.read_target("$", 1)<CR>
+        vnoremap <buffer> <silent> g$r           :call b:filebeagle_directory_viewer.read_target("$", 1)<CR>
+        nnoremap <buffer> <silent> gr            :<C-U>call b:filebeagle_directory_viewer.read_target("", 1)<CR>
+        vnoremap <buffer> <silent> gr            :call b:filebeagle_directory_viewer.read_target("", 1)<CR>
 
         """ Directory Operations
         nnoremap <buffer> <silent> cd            :call b:filebeagle_directory_viewer.change_vim_working_directory(0)<CR>
@@ -533,6 +544,66 @@ function! s:NewDirectoryViewer()
         exec 'silent! normal! "_dG'
     endfunction
 
+    function! l:directory_viewer.read_target(pos, read_in_background) dict range
+        if self.prev_buf_num == self.buf_num || isdirectory(bufname(self.prev_buf_num))
+            call s:_filebeagle_messenger.send_error("Cannot read into a directory buffer")
+            return 0
+        endif
+        if v:count == 0
+            let l:start_line = a:firstline
+            let l:end_line = a:lastline
+        else
+            let l:start_line = v:count
+            let l:end_line = v:count
+        endif
+        let l:selected_entries = []
+        for l:cur_line in range(l:start_line, l:end_line)
+            if !has_key(self.jump_map, l:cur_line)
+                call s:_filebeagle_messenger.send_info("Line " . l:cur_line . " is not a valid navigation entry")
+                return 0
+            endif
+            if self.jump_map[l:cur_line].is_dir
+                call s:_filebeagle_messenger.send_info("Reading directories into the current buffer is not supported at the current time")
+                return 0
+            endif
+            call add(l:selected_entries, self.jump_map[l:cur_line])
+        endfor
+        if a:pos == "0"
+            call reverse(l:selected_entries)
+        endif
+        let old_lazyredraw = &lazyredraw
+        set lazyredraw
+        execute "silent keepalt keepjumps buffer " . self.prev_buf_num
+        for l:entry in l:selected_entries
+            let l:path_to_open = fnameescape(l:entry.full_path)
+            execute a:pos . "r " . l:path_to_open
+        endfor
+        if a:read_in_background
+            execute "silent keepalt keepjumps buffer " .self.buf_num
+        else
+            call self.wipe_and_restore()
+        endif
+        let &lazyredraw = l:old_lazyredraw
+    endfunction
+
+    function! l:directory_viewer.new_viewer(split_cmd) dict
+        let l:cur_tab_num = tabpagenr()
+        execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
+        let directory_viewer = s:NewDirectoryViewer()
+        call directory_viewer.open_dir(
+                    \ -1,
+                    \ self.focus_dir,
+                    \ self.focus_file,
+                    \ self.prev_buf_num,
+                    \ self.prev_focus_dirs,
+                    \ self.default_targets_for_directory,
+                    \ self.is_filtered,
+                    \ self.filter_exp,
+                    \ self.is_include_hidden,
+                    \ self.is_include_ignored
+                    \ )
+    endfunction
+
     function! l:directory_viewer.visit_target(split_cmd, open_in_background) dict range
         if v:count == 0
             let l:start_line = a:firstline
@@ -615,24 +686,6 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
-    function! l:directory_viewer.new_viewer(split_cmd) dict
-        let l:cur_tab_num = tabpagenr()
-        execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
-        let directory_viewer = s:NewDirectoryViewer()
-        call directory_viewer.open_dir(
-                    \ -1,
-                    \ self.focus_dir,
-                    \ self.focus_file,
-                    \ self.prev_buf_num,
-                    \ self.prev_focus_dirs,
-                    \ self.default_targets_for_directory,
-                    \ self.is_filtered,
-                    \ self.filter_exp,
-                    \ self.is_include_hidden,
-                    \ self.is_include_ignored
-                    \ )
-    endfunction
-
     function! l:directory_viewer.set_focus_dir(new_dir, focus_file, add_to_history) dict
         if a:add_to_history && exists("self['focus_dir']")
             if empty(self.prev_focus_dirs) || self.prev_focus_dirs[-1][0] != self.focus_dir
@@ -650,6 +703,7 @@ function! s:NewDirectoryViewer()
         endif
         let l:cur_tab_num = tabpagenr()
         let old_lazyredraw = &lazyredraw
+        set lazyredraw
         let l:split_cmd = a:split_cmd
         if !a:open_in_background
             execute "silent keepalt keepjumps buffer " . self.prev_buf_num

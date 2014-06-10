@@ -136,6 +136,21 @@ File Operations~
 
 +           Add (create) a new file to FileBeagle's current directory.
 %           Open a new empty buffer in FileBeagle's current directory.
+R           Insert contents of selected file(s) into original buffer at
+            line below the cursor, and close FileBeagle.
+gr          Insert contents of selected file(s) into original buffer at
+            line below the cursor, performing operation in the background
+            and keeping FileBeagle open.
+0r          Insert contents of selected file(s) into original buffer at
+            the first line, and close FileBeagle.
+g0r         Insert contents of selected file(s) into original buffer at
+            the first line, performing operation in the background and
+            keeping FileBeagle open.
+$r          Insert contents of selected file(s) into original buffer after
+            the last line, and close FileBeagle.
+g$r         Insert contents of selected file(s) into original buffer after
+            the last line, performing operation in the background and
+            keeping FileBeagle open.
 
 -------------------------------------------------------------------------------
 Directory Operations~
