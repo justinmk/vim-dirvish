@@ -727,7 +727,7 @@ function! s:NewDirectoryViewer()
             if a:split_cmd == "edit"
                 execute "silent keepalt keepjumps buffer " .self.buf_num
             endif
-            redraw
+            redraw!
             if a:split_cmd == "edit"
                 " It makes sense (to me, at least) to go to the last buffer
                 " selected & opened upon closing FileBeagle when in this
@@ -745,7 +745,7 @@ function! s:NewDirectoryViewer()
             endif
         else
             call self.wipe_and_restore()
-            redraw
+            redraw!
         endif
         let &lazyredraw = l:old_lazyredraw
     endfunction
