@@ -717,7 +717,11 @@ function! s:NewDirectoryViewer()
                 " E36: not enough room for any new splits: switch to
                 " opening in-situ
                 let l:split_cmd = "edit"
-                execute l:split_cmd . " " . l:path_to_open
+                try
+                    execute l:split_cmd . " " . l:path_to_open
+                catch /E325:/ "swap file exists
+                endtry
+            catch /E325:/ "swap file exists
             endtry
             call add(l:opened_basenames, '"' . fnameescape(l:entry.basename) . '"')
         endfor
