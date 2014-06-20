@@ -402,9 +402,9 @@ function! s:NewDirectoryViewer()
             vnoremap <Plug>FileBeagleDirBufferVisitSelected                :call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
             let l:default_visual_plug_map['FileBeagleDirBufferVisitSelected'] = 'o'
             nnoremap <Plug>FileBeagleDirBufferBgVisitCurrent               :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 1)<CR>
-            let l:default_normal_plug_map['FileBeagleDirBufferBgVisitCurrent'] = 'go'
+            let l:default_normal_plug_map['FileBeagleDirBufferBgVisitCurrent'] = g:filebeagle_buffer_background_key_map_prefix . 'o'
             vnoremap <Plug>FileBeagleDirBufferBgVisitSelected              :call b:filebeagle_directory_viewer.visit_target("edit", 1)<CR>
-            let l:default_visual_plug_map['FileBeagleDirBufferBgVisitSelected'] = 'go'
+            let l:default_visual_plug_map['FileBeagleDirBufferBgVisitSelected'] = g:filebeagle_buffer_background_key_map_prefix . 'o'
 
             """ Special case: <CR>
             nmap <buffer> <silent> <CR> <Plug>FileBeagleDirBufferVisitCurrent
@@ -417,27 +417,27 @@ function! s:NewDirectoryViewer()
             vnoremap <Plug>FileBeagleDirBufferSplitVerticalVisitSelected   :call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
             let l:default_visual_plug_map['FileBeagleDirBufferSplitVerticalVisitSelected'] = 'v'
             nnoremap <Plug>FileBeagleDirBufferBgSplitVerticalVisitCurrent  :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
-            let l:default_normal_plug_map['FileBeagleDirBufferBgSplitVerticalVisitCurrent'] = '<C-V>'
+            let l:default_normal_plug_map['FileBeagleDirBufferBgSplitVerticalVisitCurrent'] = g:filebeagle_buffer_background_key_map_prefix . 'v'
             vnoremap <Plug>FileBeagleDirBufferBgSplitVerticalVisitSelected :call b:filebeagle_directory_viewer.visit_target("rightbelow vert sp", 1)<CR>
-            let l:default_visual_plug_map['FileBeagleDirBufferBgSplitVerticalVisitSelected'] = '<C-V>'
+            let l:default_visual_plug_map['FileBeagleDirBufferBgSplitVerticalVisitSelected'] = g:filebeagle_buffer_background_key_map_prefix . 'v'
 
             nnoremap <Plug>FileBeagleDirBufferSplitVisitCurrent            :<C-U>call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
             let l:default_normal_plug_map['FileBeagleDirBufferSplitVisitCurrent'] = 's'
             vnoremap <Plug>FileBeagleDirBufferSplitVisitSelected           :call b:filebeagle_directory_viewer.visit_target("sp", 0)<CR>
             let l:default_visual_plug_map['FileBeagleDirBufferSplitVisitSelected'] = 's'
             nnoremap <Plug>FileBeagleDirBufferBgSplitVisitCurrent          :<C-U>call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
-            let l:default_normal_plug_map['FileBeagleDirBufferBgSplitVisitCurrent'] = '<C-S>'       " note: requires 'stty -ixon' in BASH to work on some terminals
+            let l:default_normal_plug_map['FileBeagleDirBufferBgSplitVisitCurrent'] = g:filebeagle_buffer_background_key_map_prefix . 's'
             vnoremap <Plug>FileBeagleDirBufferBgSplitVisitSelected         :call b:filebeagle_directory_viewer.visit_target("rightbelow sp", 1)<CR>
-            let l:default_visual_plug_map['FileBeagleDirBufferBgSplitVisitSelected'] = '<C-S>'      " note: requires 'stty -ixon' in BASH to work on some terminals
+            let l:default_visual_plug_map['FileBeagleDirBufferBgSplitVisitSelected'] = g:filebeagle_buffer_background_key_map_prefix . 's'
 
             nnoremap <Plug>FileBeagleDirBufferTabVisitCurrent              :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
             let l:default_normal_plug_map['FileBeagleDirBufferTabVisitCurrent'] = 't'
             vnoremap <Plug>FileBeagleDirBufferTabVisitSelected             :call b:filebeagle_directory_viewer.visit_target("tabedit", 0)<CR>
             let l:default_visual_plug_map['FileBeagleDirBufferTabVisitSelected'] = 't'
             nnoremap <Plug>FileBeagleDirBufferBgTabVisitCurrent            :<C-U>call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
-            let l:default_normal_plug_map['FileBeagleDirBufferBgTabVisitCurrent'] = '<C-T>'
+            let l:default_normal_plug_map['FileBeagleDirBufferBgTabVisitCurrent'] = g:filebeagle_buffer_background_key_map_prefix . 't'
             vnoremap <Plug>FileBeagleDirBufferBgTabVisitSelected           :call b:filebeagle_directory_viewer.visit_target("tabedit", 1)<CR>
-            let l:default_visual_plug_map['FileBeagleDirBufferBgTabVisitSelected'] = '<C-T>'
+            let l:default_visual_plug_map['FileBeagleDirBufferBgTabVisitSelected'] = g:filebeagle_buffer_background_key_map_prefix . 't'
 
             """ Focal directory changing
             nnoremap <Plug>FileBeagleDirBufferVisitParent                  :call b:filebeagle_directory_viewer.visit_parent_dir()<CR>
@@ -464,17 +464,17 @@ function! s:NewDirectoryViewer()
             vnoremap <Plug>FileBeagleDirBufferInsertSelectedAtEnd          :call b:filebeagle_directory_viewer.read_target("$", 0)<CR>
             let l:default_visual_plug_map['FileBeagleDirBufferInsertSelectedAtEnd'] = 'r$'
             nnoremap <Plug>FileBeagleDirBufferBgInsertCurrentHere          :<C-U>call b:filebeagle_directory_viewer.read_target("0", 1)<CR>
-            let l:default_normal_plug_map['FileBeagleDirBufferBgInsertCurrentHere'] = '<C-R>.'
+            let l:default_normal_plug_map['FileBeagleDirBufferBgInsertCurrentHere'] = g:filebeagle_buffer_background_key_map_prefix . 'r.'
             vnoremap <Plug>FileBeagleDirBufferBgInsertSelectedHere         :call b:filebeagle_directory_viewer.read_target("0", 1)<CR>
-            let l:default_visual_plug_map['FileBeagleDirBufferBgInsertSelectedHere'] = '<C-R>.'
+            let l:default_visual_plug_map['FileBeagleDirBufferBgInsertSelectedHere'] = g:filebeagle_buffer_background_key_map_prefix . 'r.'
             nnoremap <Plug>FileBeagleDirBufferBgInsertCurrentAtBeginning   :<C-U>call b:filebeagle_directory_viewer.read_target("$", 1)<CR>
-            let l:default_normal_plug_map['FileBeagleDirBufferBgInsertCurrentAtBeginning'] = '<C-R>0'
+            let l:default_normal_plug_map['FileBeagleDirBufferBgInsertCurrentAtBeginning'] = g:filebeagle_buffer_background_key_map_prefix . 'r0'
             vnoremap <Plug>FileBeagleDirBufferBgInsertSelectedAtBeginning  :call b:filebeagle_directory_viewer.read_target("$", 1)<CR>
-            let l:default_visual_plug_map['FileBeagleDirBufferBgInsertSelectedAtBeginning'] = '<C-R>0'
+            let l:default_visual_plug_map['FileBeagleDirBufferBgInsertSelectedAtBeginning'] = g:filebeagle_buffer_background_key_map_prefix . 'r0'
             nnoremap <Plug>FileBeagleDirBufferBgInsertCurrentAtEnd         :<C-U>call b:filebeagle_directory_viewer.read_target("", 1)<CR>
-            let l:default_normal_plug_map['FileBeagleDirBufferBgInsertCurrentAtEnd'] = '<C-R>$'
+            let l:default_normal_plug_map['FileBeagleDirBufferBgInsertCurrentAtEnd'] = g:filebeagle_buffer_background_key_map_prefix . 'r$'
             vnoremap <Plug>FileBeagleDirBufferBgInsertSelectedAtEnd        :call b:filebeagle_directory_viewer.read_target("", 1)<CR>
-            let l:default_visual_plug_map['FileBeagleDirBufferBgInsertSelectedAtEnd'] = '<C-R>$'
+            let l:default_visual_plug_map['FileBeagleDirBufferBgInsertSelectedAtEnd'] = g:filebeagle_buffer_background_key_map_prefix . 'r$'
 
             """ Directory Operations
             nnoremap <Plug>FileBeagleDirBufferChangeVimWorkingDirectory    :call b:filebeagle_directory_viewer.change_vim_working_directory(0)<CR>
