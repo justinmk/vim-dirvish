@@ -409,8 +409,8 @@ function! s:NewDirectoryViewer()
             """ Special case: <CR>
             nmap <buffer> <silent> <CR> <Plug>(FileBeagleBufferVisitTarget)
             vmap <buffer> <silent> <CR> <Plug>(FileBeagleBufferVisitTarget)
-            nmap <buffer> <silent> <C-CR> <Plug>(FileBeagleBufferBgVisitTarget)
-            vmap <buffer> <silent> <C-CR> <Plug>(FileBeagleBufferBgVisitTarget)
+            execute "nmap <buffer> <silent> " . g:filebeagle_buffer_background_key_map_prefix . "<CR> <Plug>(FileBeagleBufferBgVisitTarget)"
+            execute "vmap <buffer> <silent> " . g:filebeagle_buffer_background_key_map_prefix . "<CR> <Plug>(FileBeagleBufferBgVisitTarget)"
 
             nnoremap <Plug>(FileBeagleBufferSplitVerticalVisitTarget)           :<C-U>call b:filebeagle_directory_viewer.visit_target("vert sp", 0)<CR>
             let l:default_normal_plug_map['FileBeagleBufferSplitVerticalVisitTarget'] = 'v'

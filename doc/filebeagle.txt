@@ -63,6 +63,7 @@ q           Quit and exit the viewer.
 Directory Navigation~
 
 -           Move up to the parent directory of the current focal directory.
+
 <BS>,
 b           Go back to the previous directory in the directory history.
 
@@ -96,34 +97,34 @@ t               Open the currently selected file in a new tab. Multiple files
 -------------------------------------------------------------------------------
 Opening Files and Directories in the Background~
 
-CTRL-<CR>
-go              Open the file or directory under the cursor in the current
+&<CR>
+&o              Open the file or directory under the cursor in the current
                 window in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count} CTRL-<CR>
-{count} go      Open the file or directory at line [count] in the current
+{count} &<CR>
+{count} &o      Open the file or directory at line [count] in the current
                 window in the background.
 
-CTRL-V          Open the file or directory under the cursor in a new vertical
+&v              Open the file or directory under the cursor in a new vertical
                 split in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count} CTRL-V  Open the file or directory at line [count] in a new
+{count} &v      Open the file or directory at line [count] in a new
                 vertical split in the background.
 
-CTRL-S          Open the file or directory under the cursor in a new
+&s              Open the file or directory under the cursor in a new
                 horizontal split in the background. Multiple files can be
                 opened simultaneously by selecting them in visual mode.
                 Note: this requires 'stty -ixon' in BASH to work on some
                 terminals.
-{count} CTRL-S  Open the file or directory at line [count] in a new horizontal
+{count} &s      Open the file or directory at line [count] in a new horizontal
                 split in the background.
                 Note: this requires 'stty -ixon' in BASH to work on some
                 terminals.
 
-CTRL-T          Open the file or directory under the cursor in a new tab in
+&t              Open the file or directory under the cursor in a new tab in
                 the background. Multiple files can be opened simultaneously
                 by selecting them in visual mode.
-{count} CTRL-T  Open the file or directory at line [count] in a new tab in
+{count} &t      Open the file or directory at line [count] in a new tab in
                 the background.
 
 -------------------------------------------------------------------------------
@@ -133,17 +134,17 @@ File Operations~
 %           Open a new empty buffer in FileBeagle's current directory.
 r.          Insert contents of selected file(s) into original buffer at
             line below the cursor, and close FileBeagle.
-CTRL-R .    Insert contents of selected file(s) into original buffer at
+&r.         Insert contents of selected file(s) into original buffer at
             line below the cursor, performing operation in the background
             and keeping FileBeagle open.
 r0          Insert contents of selected file(s) into original buffer at
             the first line, and close FileBeagle.
-CTRL-R 0    Insert contents of selected file(s) into original buffer at
+&r0         Insert contents of selected file(s) into original buffer at
             the first line, performing operation in the background and
             keeping FileBeagle open.
 r$          Insert contents of selected file(s) into original buffer after
             the last line, and close FileBeagle.
-CTRL-R $    Insert contents of selected file(s) into original buffer after
+&r$         Insert contents of selected file(s) into original buffer after
             the last line, performing operation in the background and
             keeping FileBeagle open.
 
