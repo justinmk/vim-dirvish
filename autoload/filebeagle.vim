@@ -844,7 +844,8 @@ function! s:NewDirectoryViewer()
                 endif
             endif
             if a:open
-                call self.visit_file(new_fpath, "edit", 0)
+                let entry = { "full_path": new_fpath, "basename" : new_fname, "dirname" : a:parent_dir, "is_dir": 0}
+                call self.visit_files([entry], "edit", 0)
             else
                 call self.goto_pattern(new_fname)
             endif
