@@ -50,12 +50,12 @@ to edit it in a new tab. Even better, if you make sure that line numbers are
 enabled, you can simply type the line number followed by '`o`' or any of the
 other maps to instantly open the file or directory listed at the given line
 number. So, for example, '`42o`' will open the file or directory at line 42 in
-the same window, while '`42v`' (or '`42 CTRL-V`') will open it in a new
-vertical split, and '`42t`' (or '`42 CTRL-T`') will open it in a new tab, etc.
+the same window, while '`42v`' will open it in a new
+vertical split, and '`42t`' will open it in a new tab, etc.
 
 You can navigate to a directory by selecting it using the same key maps that
 you use to select files. In addition, you can use "`-`" to go a parent
-directory or backspace "`<BS>`" to go back to the previous directory.
+directory or backspace "`b`" to go back to the previous directory.
 
 For each independent invocation of FileBeagle, it remembers the entry which you
 last selected in each directory as your enter or leave directories. Each time
