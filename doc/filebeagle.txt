@@ -53,7 +53,7 @@ VIEWER KEY MAPPINGS~
 -------------------------------------------------------------------------------
 Listing Control~
 
-r           Refresh the directory listing.
+R           Refresh the directory listing.
 f           Define and apply a regular expression filter for the file entries.
 F           Toggle application of the regular expression filter.
 gh          Toggle showing of hidden/(wild-)ignored files.
@@ -62,8 +62,8 @@ q           Quit and exit the viewer.
 -------------------------------------------------------------------------------
 Directory Navigation~
 
--, u        Move up to the parent directory of the current focal directory.
-<BS>, b     Go back to the previous directory in the directory history.
+-           Move up to the parent directory of the current focal directory.
+b           Go back to the previous directory in the directory history.
 
 -------------------------------------------------------------------------------
 Opening Files and Directories~
@@ -76,59 +76,53 @@ o               Open the file or directory under the cursor in the current
 {count} o       Open the file or directory at line [count] in the current
                 window.
 
-CTRL-V
 v               Open the currently selected file or directory in a new
                 vertical split. Multiple files can be opened simultaneously by
                 selecting them in visual mode.
-{count} CTRL-V
 {count} v       Open the file or directory at line [count] in a new
                 vertical split.
 
-CTRL-S
 s               Open the currently selected file or directory in a new
                 horizontal split. Multiple files can be opened simultaneously
                 by selecting them in visual mode.
-{count} CTRL-s
 {count} s       Open the file or directory at line [count] in a new horizontal
                 split.
 
-CTRL-T
 t               Open the currently selected file in a new tab. Multiple files
                 can be opened simultaneously by selecting them in visual mode.
-{count} CTRL-T
 {count} t       Open the file or directory at line [count] in a new tab.
 
 -------------------------------------------------------------------------------
 Opening Files and Directories in the Background~
 
-g <CR>
+CTRL-<CR>
 go              Open the file or directory under the cursor in the current
                 window in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count} g <CR>
+{count} CTRL-<CR>
 {count} go      Open the file or directory at line [count] in the current
                 window in the background.
 
-g CTRL-V
-gv              Open the file or directory under the cursor in a new vertical
+CTRL-V          Open the file or directory under the cursor in a new vertical
                 split in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count} g CTRL-V
-{count} gv      Open the file or directory at line [count] in a new
+{count} CTRL-V  Open the file or directory at line [count] in a new
                 vertical split in the background.
 
-g CTRL-S
-g s             Open the file or directory under the cursor in a new
+CTRL-S          Open the file or directory under the cursor in a new
                 horizontal split in the background. Multiple files can be
                 opened simultaneously by selecting them in visual mode.
-{count} g CTRL-s
-{count} gs      Open the file or directory at line [count] in a new horizontal
+                Note: this requires 'stty -ixon' in BASH to work on some
+                terminals.
+{count} CTRL-S  Open the file or directory at line [count] in a new horizontal
                 split in the background.
+                Note: this requires 'stty -ixon' in BASH to work on some
+                terminals.
 
-g CTRL-T         Open the file or directory under the cursor in a new tab in
+CTRL-T          Open the file or directory under the cursor in a new tab in
                 the background. Multiple files can be opened simultaneously
                 by selecting them in visual mode.
-{count} g CTRL-T    Open the file or directory at line [count] in a new tab in
+{count} CTRL-T  Open the file or directory at line [count] in a new tab in
                 the background.
 
 -------------------------------------------------------------------------------
@@ -136,19 +130,19 @@ File Operations~
 
 +           Add (create) a new file to FileBeagle's current directory.
 %           Open a new empty buffer in FileBeagle's current directory.
-R           Insert contents of selected file(s) into original buffer at
+r.          Insert contents of selected file(s) into original buffer at
             line below the cursor, and close FileBeagle.
-gr          Insert contents of selected file(s) into original buffer at
+CTRL-R .    Insert contents of selected file(s) into original buffer at
             line below the cursor, performing operation in the background
             and keeping FileBeagle open.
-0r          Insert contents of selected file(s) into original buffer at
+r0          Insert contents of selected file(s) into original buffer at
             the first line, and close FileBeagle.
-g0r         Insert contents of selected file(s) into original buffer at
+CTRL-R 0    Insert contents of selected file(s) into original buffer at
             the first line, performing operation in the background and
             keeping FileBeagle open.
-$r          Insert contents of selected file(s) into original buffer after
+r$          Insert contents of selected file(s) into original buffer after
             the last line, and close FileBeagle.
-g$r         Insert contents of selected file(s) into original buffer after
+CTRL-R $    Insert contents of selected file(s) into original buffer after
             the last line, performing operation in the background and
             keeping FileBeagle open.
 
