@@ -442,6 +442,7 @@ function! s:NewDirectoryViewer()
         let l:default_normal_plug_map['FileBeagleDirBufferVisitParent'] = '-'
         nnoremap <Plug>FileBeagleDirBufferVisitPrevious                :call b:filebeagle_directory_viewer.visit_prev_dir()<CR>
         let l:default_normal_plug_map['FileBeagleDirBufferVisitPrevious'] = 'b'
+        nmap <buffer> <silent> <CR> <Plug>FileBeagleDirBufferVisitPrevious
 
         """ File operations
         nnoremap <Plug>FileBeagleDirBufferCreateNewFile                :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>

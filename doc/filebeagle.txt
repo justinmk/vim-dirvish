@@ -63,6 +63,7 @@ q           Quit and exit the viewer.
 Directory Navigation~
 
 -           Move up to the parent directory of the current focal directory.
+<BS>,
 b           Go back to the previous directory in the directory history.
 
 -------------------------------------------------------------------------------
