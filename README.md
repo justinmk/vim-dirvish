@@ -55,7 +55,7 @@ vertical split, and '`42t`' will open it in a new tab, etc.
 
 You can navigate to a directory by selecting it using the same key maps that
 you use to select files. In addition, you can use "`-`" to go a parent
-directory or backspace "`b`" to go back to the previous directory.
+directory or backspace ("`<BS>`") to go back to the previous directory.
 
 For each independent invocation of FileBeagle, it remembers the entry which you
 last selected in each directory as your enter or leave directories. Each time

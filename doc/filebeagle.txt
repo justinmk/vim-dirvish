@@ -50,20 +50,28 @@ substitute '<Leader>f' and '-' for whatever you prefer.
                                                    *filebeagle-viewer-key-maps*
 VIEWER KEY MAPPINGS~
 
+Note: The key-mappings in the directory viewer buffer have changed radically
+from the previous version. If you prefer the old scheme then see
+|filebeagle_buffer_legacy_key_maps|.
+
+All key maps to open files or directory generally can take an optional {count},
+which specifies the target to open in terms of the line number in which it is
+listed. In addition, many operations can be carried out in the "background" by
+prefix the key sequence with '`b`': the operation is carried out with the
+FileBeagle directory viewer remaining open and in focus.
+
 -------------------------------------------------------------------------------
-Listing Control~
+Directory Control~
 
-R           Refresh the directory listing.
-f           Define and apply a regular expression filter for the file entries.
-F           Toggle application of the regular expression filter.
-gh          Toggle showing of hidden/(wild-)ignored files.
-q           Quit and exit the viewer.
-
--------------------------------------------------------------------------------
-Directory Navigation~
-
--           Move up to the parent directory of the current focal directory.
-<BS>        Go back to the previous directory in the directory history.
+R               Refresh the directory listing.
+f               Define and apply a regular expression filter for the file
+                entries.
+F               Toggle application of the regular expression filter.
+gh              Toggle showing of hidden/(wild-)ignored files.
+-               Move up to the parent directory of the current focal
+                directory.
+<BS>            Go back to the previous directory in the directory history.
+q               Quit and exit the viewer.
 
 -------------------------------------------------------------------------------
 Opening Files and Directories~
@@ -128,31 +136,31 @@ bt              Open the file or directory under the cursor in a new tab in
 -------------------------------------------------------------------------------
 File Operations~
 
-+           Add (create) a new file to FileBeagle's current directory.
-%           Open a new empty buffer in FileBeagle's current directory.
-r.          Insert contents of selected file(s) into original buffer at
-            line below the cursor, and close FileBeagle.
-br.         Insert contents of selected file(s) into original buffer at
-            line below the cursor, performing operation in the background
-            and keeping FileBeagle open.
-r0          Insert contents of selected file(s) into original buffer at
-            the first line, and close FileBeagle.
-br0         Insert contents of selected file(s) into original buffer at
-            the first line, performing operation in the background and
-            keeping FileBeagle open.
-r$          Insert contents of selected file(s) into original buffer after
-            the last line, and close FileBeagle.
-br$         Insert contents of selected file(s) into original buffer after
-            the last line, performing operation in the background and
-            keeping FileBeagle open.
++               Add (create) a new file to FileBeagle's current directory.
+%               Open a new empty buffer in FileBeagle's current directory.
+r.              Insert contents of selected file(s) into original buffer at
+                line below the cursor, and close FileBeagle.
+br.             Insert contents of selected file(s) into original buffer at
+                line below the cursor, performing operation in the background
+                and keeping FileBeagle open.
+r0              Insert contents of selected file(s) into original buffer at
+                the first line, and close FileBeagle.
+br0             Insert contents of selected file(s) into original buffer at
+                the first line, performing operation in the background and
+                keeping FileBeagle open.
+r$              Insert contents of selected file(s) into original buffer after
+                the last line, and close FileBeagle.
+br$             Insert contents of selected file(s) into original buffer after
+                the last line, performing operation in the background and
+                keeping FileBeagle open.
 
 -------------------------------------------------------------------------------
 Directory Operations~
 
-cd          Change Vim working directory to current focal (i.e., edited, not
-            selected) directory.
-cl          Change Vim local directory to current focal (i.e., edited, not
-            selected) directory.
+cd              Change Vim working directory to current focal (i.e., edited,
+                not selected) directory.
+cl              Change Vim local directory to current focal (i.e., edited, not
+                selected) directory.
 
 ===============================================================================
                                                  *filebeagle-viewer-commands*
@@ -181,6 +189,10 @@ g:filebeagle_suppress_keymaps~                  *g:filebeagle_suppress_keymaps*
     Default: 0
     If specified as 1, then key-mappings to invoke FileBeagle will not be defined.
 
+g:filebeagle_buffer_legacy_key_maps~        *g:filebeagle_buffer_legacy_key_maps*
+    Default: 0
+    If specified as 1, then the key-mapping scheme from release 1.0.0 will be
+    used in the FileBeagle buffer instead of the new ones.
 
 g:filebeagle_hijack_netrw~                          *g:filebeagle_hijack_netrw*
     Default: 1
