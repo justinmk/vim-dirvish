@@ -63,9 +63,7 @@ q           Quit and exit the viewer.
 Directory Navigation~
 
 -           Move up to the parent directory of the current focal directory.
-
-<BS>,
-b           Go back to the previous directory in the directory history.
+<BS>        Go back to the previous directory in the directory history.
 
 -------------------------------------------------------------------------------
 Opening Files and Directories~
@@ -74,57 +72,57 @@ Opening Files and Directories~
 o               Open the file or directory under the cursor in the current
                 window. Multiple files can be opened simultaneously by
                 selecting them in visual mode.
-{count} <CR>
-{count} o       Open the file or directory at line [count] in the current
+{count}<CR>
+{count}o        Open the file or directory at line {count} in the current
                 window.
 
 v               Open the currently selected file or directory in a new
                 vertical split. Multiple files can be opened simultaneously by
                 selecting them in visual mode.
-{count} v       Open the file or directory at line [count] in a new
+{count}v        Open the file or directory at line {count} in a new
                 vertical split.
 
 s               Open the currently selected file or directory in a new
                 horizontal split. Multiple files can be opened simultaneously
                 by selecting them in visual mode.
-{count} s       Open the file or directory at line [count] in a new horizontal
+{count}s        Open the file or directory at line {count} in a new horizontal
                 split.
 
 t               Open the currently selected file in a new tab. Multiple files
                 can be opened simultaneously by selecting them in visual mode.
-{count} t       Open the file or directory at line [count] in a new tab.
+{count}t        Open the file or directory at line {count} in a new tab.
 
 -------------------------------------------------------------------------------
 Opening Files and Directories in the Background~
 
-&<CR>
-&o              Open the file or directory under the cursor in the current
+b<CR>
+bo              Open the file or directory under the cursor in the current
                 window in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count} &<CR>
-{count} &o      Open the file or directory at line [count] in the current
+{count}b<CR>
+{count}bo       Open the file or directory at line {count} in the current
                 window in the background.
 
-&v              Open the file or directory under the cursor in a new vertical
+bv              Open the file or directory under the cursor in a new vertical
                 split in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count} &v      Open the file or directory at line [count] in a new
+{count}bv       Open the file or directory at line {count} in a new
                 vertical split in the background.
 
-&s              Open the file or directory under the cursor in a new
+bs              Open the file or directory under the cursor in a new
                 horizontal split in the background. Multiple files can be
                 opened simultaneously by selecting them in visual mode.
                 Note: this requires 'stty -ixon' in BASH to work on some
                 terminals.
-{count} &s      Open the file or directory at line [count] in a new horizontal
+{count}bs       Open the file or directory at line {count} in a new horizontal
                 split in the background.
                 Note: this requires 'stty -ixon' in BASH to work on some
                 terminals.
 
-&t              Open the file or directory under the cursor in a new tab in
+bt              Open the file or directory under the cursor in a new tab in
                 the background. Multiple files can be opened simultaneously
                 by selecting them in visual mode.
-{count} &t      Open the file or directory at line [count] in a new tab in
+{count}bt       Open the file or directory at line {count} in a new tab in
                 the background.
 
 -------------------------------------------------------------------------------
@@ -134,17 +132,17 @@ File Operations~
 %           Open a new empty buffer in FileBeagle's current directory.
 r.          Insert contents of selected file(s) into original buffer at
             line below the cursor, and close FileBeagle.
-&r.         Insert contents of selected file(s) into original buffer at
+br.         Insert contents of selected file(s) into original buffer at
             line below the cursor, performing operation in the background
             and keeping FileBeagle open.
 r0          Insert contents of selected file(s) into original buffer at
             the first line, and close FileBeagle.
-&r0         Insert contents of selected file(s) into original buffer at
+br0         Insert contents of selected file(s) into original buffer at
             the first line, performing operation in the background and
             keeping FileBeagle open.
 r$          Insert contents of selected file(s) into original buffer after
             the last line, and close FileBeagle.
-&r$         Insert contents of selected file(s) into original buffer after
+br$         Insert contents of selected file(s) into original buffer after
             the last line, performing operation in the background and
             keeping FileBeagle open.
 
