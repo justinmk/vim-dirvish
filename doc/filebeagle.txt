@@ -18,13 +18,13 @@ CONTENTS~
                                                *filebeagle-invocation-commands*
 INVOCATION COMMANDS~
 
-:FileBeagle [{path}]                                              *:FileBeagle*
-    Open the FileBeagle directory buffer on {path} or current working directory
-    if {path} is not given.
-
 :FileBeagleBufferDir                                     *:FileBeagleBufferDir*
     Open the FileBeagle directory buffer on the directory of the current
     buffer.
+
+:FileBeagle [{path}]                                              *:FileBeagle*
+    Open the FileBeagle directory buffer on {path} or current working directory
+    if {path} is not given.
 
 ===============================================================================
                                                *filebeagle-invocation-key-maps*
