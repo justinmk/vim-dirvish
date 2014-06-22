@@ -7,9 +7,10 @@ CONTENTS~
     1. Invocation Commands ................... |filebeagle-invocation-commands|
     2. Invocation Key Mappings ............... |filebeagle-invocation-key-maps|
     3. Directory Buffer Key Mappings ......... |filebeagle-buffer-key-maps|
-       3.1 Opening Files and Directories ..... |filebeagle-opening-files|
-       3.2 Reading/Inserting Files ........... |filebeagle-inserting-files|
-       3.3 Setting the Vim Directories ....... |filebeagle-set-vim-directory|
+       3.1 Directory Listing and View ........ |filebeagle-listing-view|
+       3.2 Opening Files and Directories ..... |filebeagle-opening-files|
+       3.3 Reading/Inserting Files ........... |filebeagle-inserting-files|
+       3.4 Setting the Vim Directories ....... |filebeagle-set-vim-directory|
     4. Directory Buffer Commands ............. |filebeagle-buffer-commands|
     5. Options and Settings .................. |filebeagle-options|
 
@@ -30,14 +31,14 @@ INVOCATION COMMANDS~
 INVOCATION KEY MAPPINGS~
 
 These are key mappings to invoke FileBeagle from a normal Vim Buffer. By
-default (unless |g:filebeagle_suppress_keymaps| is defined to be 1, the
+default (unless |g:filebeagle_suppress_keymaps| is defined to be 1), the
 following key maps are provided:
-
-<leader>f   Invokes ":FileBeagle" with no arguments: open the directory buffer
-            on the current working directory.
 
 -           Invokes ":FileBeagleBufferDir": open the directory buffer
             on the directory of the current buffer.
+
+<leader>f   Invokes ":FileBeagle" with no arguments: open the directory buffer
+            on the current working directory.
 
 If you want to define your own key mappings, then add something like the
 following to your '~/.vimrc':
@@ -58,7 +59,8 @@ They provide ways to open files or directories, or change the current focal
 directory (i.e., the directory being viewed).
 
 -------------------------------------------------------------------------------
-Directory Buffer Management~
+                                                       *filebeagle-listing-view*
+Directory Listing and View~
 
 R               Refresh the directory listing.
 f               Define and apply a regular expression filter for the file
