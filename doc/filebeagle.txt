@@ -79,11 +79,11 @@ Opening Files and Directories~
     | Open in Tab Page          | t          | pt         |
     +---------------------------+------------+------------+
     * If multiple files are selected in visual mode, the
-      action will be carried out on all files in visual
-      selection. The action can also take an optional {count},
+      action will be carried out on all visually-selected
+      files. The action can also take an optional {count},
       which specifies that the action will be carried out on
-      the file listed at line {count} of the FileBeagle buffer,
-      regardless of where the cursor is.
+      the file listed at line {count} of the FileBeagle
+      buffer, regardless of where the cursor is.
 
 (NOTE: THE KEY MAPPINGS IN THE DIRECTORY BUFFER HAVE CHANGED RADICALLY
 FROM THE PREVIOUS VERSION. IF YOU PREFER THE OLD SCHEME THEN SEE
@@ -175,11 +175,11 @@ File Read/Insertion Operations~
     | Read/Insert at End        | r$         | pr$        |
     +---------------------------+------------+------------+
     * If multiple files are selected in visual mode, the
-      action will be carried out on all files in visual
-      selection. The action can also take an optional {count},
+      action will be carried out on all visually-selected
+      files. The action can also take an optional {count},
       which specifies that the action will be carried out on
-      the file listed at line {count} of the FileBeagle buffer,
-      regardless of where the cursor is.
+      the file listed at line {count} of the FileBeagle
+      buffer, regardless of where the cursor is.
 
 At the moment, only files can be read/inserted into the current (original)
 buffer. As above, the basic key maps ('`r.`', '`r0`', '`r$`', for insertion
