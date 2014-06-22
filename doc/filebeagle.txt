@@ -7,6 +7,9 @@ CONTENTS~
     1. Invocation Commands ................... |filebeagle-invocation-commands|
     2. Invocation Key Mappings ............... |filebeagle-invocation-key-maps|
     3. Directory Buffer Key Mappings ......... |filebeagle-buffer-key-maps|
+       3.1 Opening Files and Directories ..... |filebeagle-opening-files|
+       3.2 Reading/Inserting Files ........... |filebeagle-inserting-files|
+       3.3 Setting the Vim Directories ....... |filebeagle-set-vim-directory|
     4. Directory Buffer Commands ............. |filebeagle-buffer-commands|
     5. Options and Settings .................. |filebeagle-options|
 
@@ -68,6 +71,7 @@ gh              Toggle showing of hidden/(wild-)ignored files.
 q               Quit and delete the FileBeagle buffer.
 
 -------------------------------------------------------------------------------
+                                                     *filebeagle-opening-files*
 Opening Files and Directories~
 
     +---------------------------+------------+------------+
@@ -165,7 +169,8 @@ pt              Open the file or directory under the cursor in a new tab in
                 the background.
 
 -------------------------------------------------------------------------------
-File Read/Insertion Operations~
+                                                   *filebeagle-inserting-files*
+Reading/Inserting Files~
 
     +---------------------------+------------+------------+
     | Action*                   | Foreground | Background |
@@ -226,21 +231,25 @@ pr$             Keep FileBeagle open and in focus, and insert contents of the
                 buffer.
 
 -------------------------------------------------------------------------------
+                                                      *filebeagle-adding-files*
 File Creation/Addition Operations~
 
-+               Add (create) a new file to FileBeagle's current directory.
-%               Open a new empty buffer in FileBeagle's current directory.
++               Add (create) a new file to FileBeagle's current focal
+                directory.
+%               Open a new empty buffer in FileBeagle's current focal
+                directory.
 
 -------------------------------------------------------------------------------
-Directory Operations~
+                                                 *filebeagle-set-vim-directory*
+Setting the Vim Directories~
 
-cd              Change Vim working directory to current FileBeagles focal
+cd              Change Vim working directory to FileBeagle's current focal
                 directory.
-cl              Change Vim local directory to current FileBeagle focal
+cl              Change Vim local directory to FileBeagle's current focal
                 directory.
 
 ===============================================================================
-                                                 *filebeagle-buffer-commands*
+                                                   *filebeagle-buffer-commands*
 FILEBEAGLE BUFFER COMMANDS~
 
 The following commands are available from within the directory listing buffer:
@@ -266,7 +275,7 @@ g:filebeagle_suppress_keymaps~                  *g:filebeagle_suppress_keymaps*
     Default: 0
     If specified as 1, then key-mappings to invoke FileBeagle will not be defined.
 
-g:filebeagle_buffer_legacy_key_maps~        *g:filebeagle_buffer_legacy_key_maps*
+g:filebeagle_buffer_legacy_key_maps~      *g:filebeagle_buffer_legacy_key_maps*
     Default: 0
     If specified as 1, then the key-mapping scheme from release 1.0.0 will be
     used in the FileBeagle buffer instead of the new ones.
@@ -276,12 +285,12 @@ g:filebeagle_hijack_netrw~                          *g:filebeagle_hijack_netrw*
     If specified as 0, directories will be opened by |netrw| instead of
     FileBeagle.
 
-g:filebeagle_show_hidden~                          *g:filebeagle_show_hidden*
+g:filebeagle_show_hidden~                            *g:filebeagle_show_hidden*
     Default: 0
     Show hidden and (wild-)ignored files by default (can be toggled when
     viewing a directory using 'gh').
 
-g:filebeagle_show_line_numbers~           *g:filebeagle_show_line_numbers*
+g:filebeagle_show_line_numbers~                *g:filebeagle_show_line_numbers*
     Default: -1
     If 0, then line numbers (see |nu|) will be suppressed in the directory
     buffer (i.e, 'set nonumber' will be invoked). If 1, then line numbers will
