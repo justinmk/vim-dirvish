@@ -204,30 +204,26 @@ pr.             Keep FileBeagle open and in focus, and insert contents of the
                 current cursor position in the original buffer.
 
 r0              Close FileBeagle and insert contents of the current or
-                selected file(s) into original buffer at the beginning of
-                original buffer.
+                selected file(s) into original buffer at the beginning of the
+                buffer.
 {count}r0       Close FileBeagle and insert contents of the file at line
-                {count} into original buffer at line below the current cursor
-                position in the original buffer.
+                {count} into original buffer at the beginning of the buffer.
 pr0             Keep FileBeagle open and in focus, and insert contents of the
-                current or selected file(s) into original buffer at line below
-                the current cursor position in the original buffer.
+                current or selected file(s) into original buffer the beginning.
 {count}pr0      Keep FileBeagle open and in focus, and insert contents of the
-                file at line {count} into original buffer at line below the
-                current cursor position in the original buffer.
+                file at line {count} into original buffer at the beginning of
+                the buffer.
 
 r$              Close FileBeagle and insert contents of the current or
-                selected file(s) into original buffer at line below the
-                current cursor position in the original buffer.
+                selected file(s) into original buffer at the end of the buffer.
 {count}r$       Close FileBeagle and insert contents of the file at line
-                {count} into original buffer at line below the current cursor
-                position in the original buffer.
+                {count} into original buffer at the end of the buffer.
 pr$             Keep FileBeagle open and in focus, and insert contents of the
-                current or selected file(s) into original buffer at line below
-                the current cursor position in the original buffer.
+                current or selected file(s) into original buffer at the end of
+                the buffer.
 {count}pr$      Keep FileBeagle open and in focus, and insert contents of the
-                file at line {count} into original buffer at line below the
-                current cursor position in the original buffer.
+                file at line {count} into original buffer at the end of the
+                buffer.
 
 -------------------------------------------------------------------------------
 File Creation/Addition Operations~
