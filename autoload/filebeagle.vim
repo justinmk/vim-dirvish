@@ -643,30 +643,31 @@ function! s:NewDirectoryViewer()
 
     " Restore title and anything else changed
     function! l:directory_viewer.wipe_and_restore() dict
-        if self.prev_buf_num != self.buf_num
+        try
+            execute "bwipe! " . self.buf_num
+        catch // " E517: No buffers were wiped out
+        endtry
+        if has("statusline") && exists("self['old_statusline']")
             try
-                execute "bwipe! " . self.buf_num
-            catch // " E517: No buffers were wiped out
+                let &l:statusline=self.old_statusline
+            catch //
             endtry
-            if has("statusline") && exists("self['old_statusline']")
-                try
-                    let &l:statusline=self.old_statusline
-                catch //
-                endtry
-            endif
-            " if has("title")
-            "     let &titlestring = self.old_titlestring
-            " endif
         endif
+        " if has("title")
+        "     let &titlestring = self.old_titlestring
+        " endif
     endfunction
 
     " Close and quit the viewer.
     function! l:directory_viewer.quit_buffer() dict
         " if !isdirectory(bufname(self.prev_buf_num))
-        if self.prev_buf_num == self.buf_num
-            " Avoid switching back to calling buffer if it is a (FileBeagle) directory
-            call s:_filebeagle_messenger.send_info("Directory buffer was created by Vim, not FileBeagle: type ':quit<ENTER>' to exit or ':bwipe<ENTER>' to delete")
-        else
+        " if self.prev_buf_num == self.buf_num
+        "     " Avoid switching back to calling buffer if it is a (FileBeagle) directory
+        "     call s:_filebeagle_messenger.send_info("Directory buffer was created by Vim, not FileBeagle: type ':quit<ENTER>' to exit or ':bwipe<ENTER>' to delete")
+        " else
+        "     execute "b " . self.prev_buf_num
+        " endif
+        if self.prev_buf_num != self.buf_num
             execute "b " . self.prev_buf_num
         endif
         call self.wipe_and_restore()
