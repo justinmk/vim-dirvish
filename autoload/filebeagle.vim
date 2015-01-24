@@ -17,16 +17,6 @@
 ""  for more details.
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Compatibility Guard {{{1
-" ============================================================================
-let g:did_filebeagle = 1
-" avoid line continuation issues (see ':help user_41.txt')
-let s:save_cpo = &cpo
-set cpo&vim
-" }}}1
-
-" Script Globals {{{1
-" ============================================================================
 if has("win32")
     let s:sep = '\'
     let s:sep_as_pattern = '\\'
@@ -34,13 +24,6 @@ else
     let s:sep = '/'
     let s:sep_as_pattern = '/'
 endif
-" }}}1
-
-" Utilities {{{1
-" ==============================================================================
-
-" Messaging {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function! s:NewMessenger(name)
 
@@ -90,10 +73,6 @@ function! s:NewMessenger(name)
     return l:messenger
 
 endfunction
-" }}}2
-
-" Path Discovery {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function! s:parent_dir(current_dir)
     let l:current_dir = fnamemodify(a:current_dir, ":p")
@@ -175,10 +154,7 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_incl
     endfor
     return [dir_paths, file_paths]
 endfunction
-" }}}2
 
-" FileBeagle Buffer Management {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 function! s:get_filebeagle_buffer_name()
     let stemname = "filebeagle"
     let idx = 1
@@ -189,9 +165,6 @@ function! s:get_filebeagle_buffer_name()
     endwhile
     return bname
 endfunction
-" }}}2
-
-" }}}1
 
 " DirectoryViewer {{{1
 " ==============================================================================
@@ -996,20 +969,9 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
     endif
 endfunction
 
-" }}}1
-
-" Global Initialization {{{1
-" ==============================================================================
 if exists("s:_filebeagle_messenger")
     unlet s:_filebeagle_messenger
 endif
 let s:_filebeagle_messenger = s:NewMessenger("")
-" }}}1
-
-" Restore State {{{1
-" ============================================================================
-" restore options
-let &cpo = s:save_cpo
-" }}}1
 
 " vim:foldlevel=4:

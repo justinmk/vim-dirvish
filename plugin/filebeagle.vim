@@ -17,20 +17,13 @@
 ""  for more details.
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Reload and Compatibility Guard {{{1
-" ============================================================================
-" Reload protection.
-if (exists('g:did_filebeagle') && g:did_filebeagle) || &cp || version < 700
+if (exists('g:loaded_filebeagle') && g:loaded_filebeagle) || &cp || version < 700
     finish
 endif
-let g:did_filebeagle = 1
+let g:loaded_filebeagle = 1
 " avoid line continuation issues (see ':help user_41.txt')
 let s:save_cpo = &cpo
 set cpo&vim
-" 1}}}
-
-" Options {{{1
-" ==============================================================================
 
 let g:filebeagle_hijack_netrw = get(g:, 'filebeagle_hijack_netrw', 1)
 let g:filebeagle_suppress_keymaps = get(g:, 'filebeagle_suppress_keymaps', 0)
@@ -42,10 +35,7 @@ let g:filebeagle_buffer_background_key_map_prefix = get(g:, 'filebeagle_buffer_b
 let g:filebeagle_buffer_normal_key_maps = get(g:, 'filebeagle_buffer_normal_key_maps', {})
 let g:filebeagle_buffer_visual_key_maps = get(g:, 'filebeagle_buffer_visual_key_maps', {})
 
-" 1}}}
 
-" Public Command and Key Maps {{{1
-" ==============================================================================
 command! -complete=dir -nargs=* FileBeagle  :call filebeagle#FileBeagleOpen(<q-args>, -1)
 command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpenCurrentBufferDir()
 
@@ -56,7 +46,6 @@ if !exists('g:filebeagle_suppress_keymaps') || !g:filebeagle_suppress_keymaps
     map <silent> <Leader>f  <Plug>FileBeagleOpenCurrentWorkingDir
     map <silent> -  <Plug>FileBeagleOpenCurrentBufferDir
 endif
-" 1}}}
 
 " netrw hijacking {{{1
 " ==============================================================================
@@ -73,23 +62,12 @@ function! s:OpenDirHere(dir)
     endif
 endfunction
 
-function! s:DisableFileExplorer()
-    if exists("#FileExplorer")
-        au! FileExplorer
-    endif
-endfunction
-
 augroup FileBeagle
     au!
-    autocmd VimEnter * if g:filebeagle_hijack_netrw | call <SID>DisableFileExplorer() | endif
+    autocmd VimEnter * if g:filebeagle_hijack_netrw | exe 'au! FileExplorer' | endif
     autocmd BufEnter * if g:filebeagle_hijack_netrw | call <SID>OpenDirHere(expand('<amatch>')) | endif
 augroup end
 " }}}1
 
-" Restore State {{{1
-" ============================================================================
-" restore options
 let &cpo = s:save_cpo
-" 1}}}
-
 " vim:foldlevel=4:
