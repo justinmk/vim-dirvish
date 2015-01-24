@@ -191,24 +191,6 @@ function! s:get_filebeagle_buffer_name()
 endfunction
 " }}}2
 
-" Global Support Functions {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-function! FileBeagleCompleteNewFileName(A, L, P)
-    if !exists("b:filebeagle_directory_viewer")
-        return ""
-    endif
-    let basenames = []
-    for key in keys(b:filebeagle_directory_viewer.jump_map)
-        let entry = b:filebeagle_directory_viewer.jump_map[key]
-        if !entry.is_dir
-            call add(basenames, entry.basename)
-        endif
-    endfor
-    return join(basenames, "\n")
-endfunction
-" }}}2
-
-
 " }}}1
 
 " DirectoryViewer {{{1
@@ -445,10 +427,6 @@ function! s:NewDirectoryViewer()
         nmap <buffer> <silent> <BS> <Plug>(FileBeagleBufferFocusOnPrevious)
 
         """ File operations
-        nnoremap <Plug>(FileBeagleBufferCreateNewFile)                      :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 1, 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferCreateNewFile'] = '+'
-        nnoremap <Plug>(FileBeagleBufferVisitNewFile)                       :call b:filebeagle_directory_viewer.new_file(b:filebeagle_directory_viewer.focus_dir, 0, 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferVisitNewFile'] = '%'
         nnoremap <Plug>(FileBeagleBufferInsertTargetBelowCursor)            :<C-U>call b:filebeagle_directory_viewer.read_target("", 0)<CR>
         let l:default_normal_plug_map['FileBeagleBufferInsertTargetBelowCursor'] = 'r.'
         vnoremap <Plug>(FileBeagleBufferInsertTargetBelowCursor)            :call b:filebeagle_directory_viewer.read_target("", 0)<CR>
@@ -884,31 +862,6 @@ function! s:NewDirectoryViewer()
         call search(full_pattern, "cw")
         " let &ignorecase = old_ignorecase
         " call cursor(lnum, 0)
-    endfunction
-
-    function! l:directory_viewer.new_file(parent_dir, create, open) dict
-        call inputsave()
-        let new_fname = input("Add file: ".a:parent_dir, "", "custom,FileBeagleCompleteNewFileName")
-        call inputrestore()
-        if !empty(new_fname)
-            let new_fpath = a:parent_dir . new_fname
-            if a:create
-                if isdirectory(new_fpath)
-                    call s:_filebeagle_messenger.send_error("Directory already exists: '" . new_fpath . "'")
-                elseif s:is_path_exists(new_fpath)
-                    call s:_filebeagle_messenger.send_error("File already exists: '" . new_fpath . "'")
-                else
-                    call writefile([], new_fpath)
-                    call self.refresh()
-                endif
-            endif
-            if a:open
-                let entry = { "full_path": new_fpath, "basename" : new_fname, "dirname" : a:parent_dir, "is_dir": 0}
-                call self.visit_files([entry], "edit", 0)
-            else
-                call self.goto_pattern(new_fname)
-            endif
-        endif
     endfunction
 
     function! l:directory_viewer.set_filter_exp() dict
