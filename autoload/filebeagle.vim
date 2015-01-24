@@ -303,12 +303,6 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
-    " Sets buffer commands.
-    function! l:directory_viewer.setup_buffer_commands() dict
-        command! -buffer -nargs=0 ClipPathname   :call b:filebeagle_directory_viewer.yank_target_name("full_path", "+")
-        command! -buffer -nargs=0 ClipDirname    :call b:filebeagle_directory_viewer.yank_current_dirname("+")
-    endfunction
-
     " Sets buffer key maps.
     function! l:directory_viewer.setup_buffer_keymaps() dict
 
@@ -320,11 +314,10 @@ function! s:NewDirectoryViewer()
             endtry
         endfor
 
-        """ Define these as we go along ...
         let l:default_normal_plug_map = {}
         let l:default_visual_plug_map = {}
 
-        """ Directory listing splitting
+        """ Directory list splitting
         nnoremap <buffer> <silent> <C-W><C-V>    :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
         nnoremap <buffer> <silent> <C-W>v        :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
         nnoremap <buffer> <silent> <C-W>V        :call b:filebeagle_directory_viewer.new_viewer("vert sp")<CR>
@@ -335,7 +328,7 @@ function! s:NewDirectoryViewer()
         nnoremap <buffer> <silent> <C-W>t        :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
         nnoremap <buffer> <silent> <C-W>T        :call b:filebeagle_directory_viewer.new_viewer("tabedit")<CR>
 
-        """ Directory listing buffer management
+        """ Directory list buffer management
         nnoremap <Plug>(FileBeagleBufferRefresh)                            :call b:filebeagle_directory_viewer.refresh()<CR>
         let l:default_normal_plug_map['FileBeagleBufferRefresh'] = 'R'
         nnoremap <Plug>(FileBeagleBufferSetFilter)                          :call b:filebeagle_directory_viewer.set_filter_exp()<CR>
@@ -786,24 +779,12 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
-    function! l:directory_viewer.yank_target_name(part, register) dict
-        let l:cur_line = line(".")
-        if !has_key(self.jump_map, l:cur_line)
+    function! dirvish#get_path_at_line()
+        if !has_key(self.jump_map, line("."))
             call s:_filebeagle_messenger.send_info("Not a valid path")
             return 0
         endif
-        if a:part == "dirname"
-            let l:target = self.jump_map[line(".")].dirname
-        elseif a:part == "basename"
-            let l:target = self.jump_map[line(".")].basename
-        else
-            let l:target = self.jump_map[line(".")].full_path
-        endif
-        execute "let @" . a:register . " = '" . fnameescape(l:target) . "'"
-    endfunction
-
-    function! l:directory_viewer.yank_current_dirname(register) dict
-        execute "let @" . a:register . " = '" . fnameescape(self.focus_dir) . "'"
+        return self.jump_map[line(".")].full_path
     endfunction
 
     function! l:directory_viewer.change_vim_working_directory(local) dict
@@ -817,10 +798,6 @@ function! s:NewDirectoryViewer()
         call self.wipe_and_restore()
         execute l:cmd . " " . fnameescape(l:target)
         echomsg l:target
-    endfunction
-
-    function! l:directory_viewer.yank_current_dirname(register) dict
-        execute "let @" . a:register . " = '" . fnameescape(self.focus_dir) . "'"
     endfunction
 
     function! l:directory_viewer.refresh() dict

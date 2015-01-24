@@ -1,20 +1,6 @@
 *filebeagle.txt*	For Vim version 7.3	Last change: 2014 May 31
 
 ===============================================================================
-                                             *filebeagle* *filebeagle-contents*
-CONTENTS~
-
-    1. Invocation Commands ................... |filebeagle-invocation-commands|
-    2. Invocation Key Mappings ............... |filebeagle-invocation-key-maps|
-    3. Directory Buffer Key Mappings ......... |filebeagle-buffer-key-maps|
-       3.1 Directory Listing and View ........ |filebeagle-listing-view|
-       3.2 Opening Files and Directories ..... |filebeagle-opening-files|
-       3.3 Reading/Inserting Files ........... |filebeagle-inserting-files|
-       3.4 Setting the Vim Directories ....... |filebeagle-set-vim-directory|
-    4. Directory Buffer Commands ............. |filebeagle-buffer-commands|
-    5. Options and Settings .................. |filebeagle-options|
-
-===============================================================================
                                                *filebeagle-invocation-commands*
 INVOCATION COMMANDS~
 
@@ -28,35 +14,23 @@ INVOCATION COMMANDS~
 
 ===============================================================================
                                                *filebeagle-invocation-key-maps*
-INVOCATION KEY MAPPINGS~
+KEY MAPPINGS~
 
-These are key mappings to invoke FileBeagle from a normal Vim Buffer. By
-default (unless |g:filebeagle_suppress_keymaps| is defined to be 1), the
-following key maps are provided:
-
--           Invokes ":FileBeagleBufferDir": open the directory buffer
-            on the directory of the current buffer.
-
-<leader>f   Invokes ":FileBeagle" with no arguments: open the directory buffer
-            on the current working directory.
-
-If you want to define your own key mappings, then add something like the
-following to your '~/.vimrc':
+Example key mappings:
 >
-    let g:filebeagle_suppress_keymaps = 1
-    map <silent> <Leader>f  <Plug>FileBeagleOpenCurrentWorkingDir
-    map <silent> -          <Plug>FileBeagleOpenCurrentBufferDir
+    map <silent> <Leader>f  :<c-u>FileBeagleOpenCurrentWorkingDir<cr>
+    map <silent> -          :<c-u>FileBeagleOpenCurrentBufferDir<cr>
 >
-The above replicate the default key mappings. You should, of course,
-substitute '<Leader>f' and '-' for whatever you prefer.
+===============================================================================
+                                                            *dirvish-functions*
+FUNCTIONS~
+dirvish#get_path_at_line()
 
 ===============================================================================
                                                    *filebeagle-buffer-key-maps*
 FILEBEAGLE BUFFER KEY MAPPINGS~
 
-These are key mappings available from within the FileBeagle directory buffer.
-They provide ways to open files or directories, or change the current focal
-directory (i.e., the directory being viewed).
+These key mappings are available in the FileBeagle directory buffer.
 
 -------------------------------------------------------------------------------
                                                        *filebeagle-listing-view*
@@ -69,7 +43,7 @@ F               Toggle application of the regular expression filter.
 gh              Toggle showing of hidden/(wild-)ignored files.
 -               Move up to the parent directory of the current focal
                 directory.
-<BS>            Go back to the previous directory in the directory history.
+<BS> or u       Go back to the previous directory in the directory history.
 q               Quit and delete the FileBeagle buffer.
 
 -------------------------------------------------------------------------------
@@ -86,14 +60,10 @@ Opening Files and Directories~
     +---------------------------+------------+------------+
     * If multiple files are selected in visual mode, the
       action will be carried out on all visually-selected
-      files. The action can also take an optional {count},
+      files. The action can also take an optional V[count],
       which specifies that the action will be carried out on
-      the file listed at line {count} of the FileBeagle
+      the file listed at line V[count] of the FileBeagle
       buffer, regardless of where the cursor is.
-
-(NOTE: THE KEY MAPPINGS IN THE DIRECTORY BUFFER HAVE CHANGED RADICALLY
-FROM THE PREVIOUS VERSION. IF YOU PREFER THE OLD SCHEME THEN SEE
-|filebeagle_buffer_legacy_key_maps|.)
 
 The basic set of key maps allow for the the opening of the file or directory
 under the cursor, either in the current window or split, or a new horizontal
@@ -106,7 +76,7 @@ visual selection, then '`v`' will result in four vertical splits being
 created, with each one of the selected files being opened in its own split.
 
 Alternatively, all key maps to open files or directory can take an optional
-{count}, which specifies the file or directory to open in terms of the line
+V[count], which specifies the file or directory to open in terms of the line
 number in which it is listed. So, for example, while '`v`' will open the file
 or directory currently listed at the current cursor line in a new vertical
 split, '`42v`' will open the file or directory at line 42 in a new vertical
@@ -119,32 +89,35 @@ FileBeagle buffer remaining open and in focus. So, for example, '`pv`' will
 open the file under the cursor in a new vertical split, while keeping the
 FileBeagle buffer open and in focus. This can also be used with multiple files
 visually-selected to open all of them in the background in new vertical
-splits, or a {count} to open a file/directory at a specific line.
+splits, or a V[count] to open a file/directory at a specific line.
 
 <CR>
 o               Open the file or directory under the cursor in the current
                 window. Multiple files can be opened simultaneously by
                 selecting them in visual mode.
-{count}<CR>
-{count}o        Open the file or directory at line {count} in the current
+V[count]<CR>
+V[count]o       Open the file or directory at line V[count] in the current
                 window.
 p<CR>
 po              Open the file or directory under the cursor in the current
                 window in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count}p<CR>
-{count}po       Open the file or directory at line {count} in the current
+V[count]p<CR>
+V[count]po      Open the file or directory at line V[count] in the current
                 window in the background.
 
 
 v               Open the currently selected file or directory in a new
                 vertical split. Multiple files can be opened simultaneously by
                 selecting them in visual mode.
-{count}v        Open the file or directory at line {count} in a new
+
+V[count]v       Open the file or directory at line V[count] in a new
+
 pv              Open the file or directory under the cursor in a new vertical
                 split in the background. Multiple files can be opened
                 simultaneously by selecting them in visual mode.
-{count}pv       Open the file or directory at line {count} in a new
+
+V[count]pv      Open the file or directory at line V[count] in a new
                 vertical split in the background.
                 vertical split.
 
@@ -152,22 +125,27 @@ pv              Open the file or directory under the cursor in a new vertical
 s               Open the currently selected file or directory in a new
                 horizontal split. Multiple files can be opened simultaneously
                 by selecting them in visual mode.
-{count}s        Open the file or directory at line {count} in a new horizontal
+V[count]s        Open the file or directory at line V[count] in a new horizontal
                 split.
+
 ps              Open the file or directory under the cursor in a new
                 horizontal split in the background. Multiple files can be
                 opened simultaneously by selecting them in visual mode.
-{count}ps       Open the file or directory at line {count} in a new horizontal
+
+V[count]ps      Open the file or directory at line V[count] in a new horizontal
                 split in the background.
 
 
 t               Open the currently selected file in a new tab. Multiple files
                 can be opened simultaneously by selecting them in visual mode.
-{count}t        Open the file or directory at line {count} in a new tab.
+
+V[count]t       Open the file or directory at line V[count] in a new tab.
+
 pt              Open the file or directory under the cursor in a new tab in
                 the background. Multiple files can be opened simultaneously
                 by selecting them in visual mode.
-{count}pt       Open the file or directory at line {count} in a new tab in
+
+V[count]pt      Open the file or directory at line V[count] in a new tab in
                 the background.
 
 -------------------------------------------------------------------------------
@@ -183,63 +161,63 @@ Reading/Inserting Files~
     +---------------------------+------------+------------+
     * If multiple files are selected in visual mode, the
       action will be carried out on all visually-selected
-      files. The action can also take an optional {count},
+      files. The action can also take an optional V[count],
       which specifies that the action will be carried out on
-      the file listed at line {count} of the FileBeagle
+      the file listed at line V[count] of the FileBeagle
       buffer, regardless of where the cursor is.
 
 At the moment, only files can be read/inserted into the current (original)
-buffer. As above, the basic key maps ('`r.`', '`r0`', '`r$`', for insertion
-below current cursor line, at beginning of file, or end of file, respectively)
-can be modified by {count} to target a file at a specific line {count} in the
-FileBeagle buffer or prefixed by '`p`' to be carried out in "pinned" mode or
-the background. In addition, again as above, if a visual selection is active,
-the action will be carried out on all visually-selected files.
+buffer. As above, the basic key maps (`r.`, `r0`, `r$`, for insertion below
+current cursor line, at beginning of file, or end of file, respectively) can
+be modified by V[count] to target a file at a specific line V[count] in the
+FileBeagle buffer or prefixed by `p` to "put" the file in a separate
+tab/window/hidden buffer. In addition, again as above, if a visual selection
+is active, the action will be carried out on all visually-selected files.
 
 
 r.              Close FileBeagle and insert contents of the current or
                 selected file(s) into original buffer at line below the
                 current cursor position in the original buffer.
-{count}r.       Close FileBeagle and insert contents of the file at line
-                {count} into original buffer at line below the current cursor
+
+V[count]r.      Close FileBeagle and insert contents of the file at line
+                V[count] into original buffer at line below the current cursor
                 position in the original buffer.
+
 pr.             Keep FileBeagle open and in focus, and insert contents of the
                 current or selected file(s) into original buffer at line below
                 the current cursor position in the original buffer.
-{count}pr.      Keep FileBeagle open and in focus, and insert contents of the
-                file at line {count} into original buffer at line below the
+
+V[count]pr.     Keep FileBeagle open and in focus, and insert contents of the
+                file at line V[count] into original buffer at line below the
                 current cursor position in the original buffer.
 
 r0              Close FileBeagle and insert contents of the current or
                 selected file(s) into original buffer at the beginning of the
                 buffer.
-{count}r0       Close FileBeagle and insert contents of the file at line
-                {count} into original buffer at the beginning of the buffer.
+
+V[count]r0      Close FileBeagle and insert contents of the file at line
+                V[count] into original buffer at the beginning of the buffer.
+
 pr0             Keep FileBeagle open and in focus, and insert contents of the
                 current or selected file(s) into original buffer the beginning.
-{count}pr0      Keep FileBeagle open and in focus, and insert contents of the
-                file at line {count} into original buffer at the beginning of
+
+V[count]pr0     Keep FileBeagle open and in focus, and insert contents of the
+                file at line V[count] into original buffer at the beginning of
                 the buffer.
 
 r$              Close FileBeagle and insert contents of the current or
                 selected file(s) into original buffer at the end of the buffer.
-{count}r$       Close FileBeagle and insert contents of the file at line
-                {count} into original buffer at the end of the buffer.
+
+V[count]r$      Close FileBeagle and insert contents of the file at line
+                V[count] into original buffer at the end of the buffer.
+
 pr$             Keep FileBeagle open and in focus, and insert contents of the
                 current or selected file(s) into original buffer at the end of
                 the buffer.
-{count}pr$      Keep FileBeagle open and in focus, and insert contents of the
-                file at line {count} into original buffer at the end of the
+
+V[count]pr$     Keep FileBeagle open and in focus, and insert contents of the
+                file at line V[count] into original buffer at the end of the
                 buffer.
-
--------------------------------------------------------------------------------
-                                                      *filebeagle-adding-files*
-File Creation/Addition Operations~
-
-+               Add (create) a new file to FileBeagle's current focal
-                directory.
-%               Open a new empty buffer in FileBeagle's current focal
-                directory.
 
 -------------------------------------------------------------------------------
                                                  *filebeagle-set-vim-directory*
@@ -251,36 +229,12 @@ cl              Change Vim local directory to FileBeagle's current focal
                 directory.
 
 ===============================================================================
-                                                   *filebeagle-buffer-commands*
-FILEBEAGLE BUFFER COMMANDS~
-
-The following commands are available from within the directory listing buffer:
-
-:ClipPathname
-   Copy the full path of the currently selected file or directory to the system
-   clipboard (i.e., the "+" register).
-
-:ClipDirname
-   Copy the full path of the current focal directory (i.e., the directory
-   currently listed) to the system clipboard (i.e., the "+" register).
-
-===============================================================================
                                                            *filebeagle-options*
 OPTIONS AND SETTINGS~
 
-The list of file patterns to ignore can be controlled by setting
-|wildignore|.
+The file patterns to ignore can be controlled via |wildignore|.
 
-Other options are:
-
-g:filebeagle_suppress_keymaps~                  *g:filebeagle_suppress_keymaps*
-    Default: 0
-    If specified as 1, then key-mappings to invoke FileBeagle will not be defined.
-
-g:filebeagle_buffer_legacy_key_maps~      *g:filebeagle_buffer_legacy_key_maps*
-    Default: 0
-    If specified as 1, then the key-mapping scheme from release 1.0.0 will be
-    used in the FileBeagle buffer instead of the new ones.
+More options:
 
 g:filebeagle_hijack_netrw~                          *g:filebeagle_hijack_netrw*
     Default: 1

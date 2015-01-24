@@ -26,11 +26,9 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let g:filebeagle_hijack_netrw = get(g:, 'filebeagle_hijack_netrw', 1)
-let g:filebeagle_suppress_keymaps = get(g:, 'filebeagle_suppress_keymaps', 0)
 let g:filebeagle_show_hidden = get(g:, 'filebeagle_show_hidden', 0)
 let g:filebeagle_show_line_numbers = get(g:, 'filebeagle_show_line_numbers', -1)
 let g:filebeagle_show_line_relativenumbers = get(g:, 'filebeagle_show_line_relativenumbers', -1)
-let g:filebeagle_buffer_legacy_key_maps = get(g:, 'filebeagle_buffer_legacy_key_maps', 0)
 let g:filebeagle_buffer_background_key_map_prefix = get(g:, 'filebeagle_buffer_background_key_map_prefix', 'p')
 let g:filebeagle_buffer_normal_key_maps = get(g:, 'filebeagle_buffer_normal_key_maps', {})
 let g:filebeagle_buffer_visual_key_maps = get(g:, 'filebeagle_buffer_visual_key_maps', {})
@@ -41,11 +39,6 @@ command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpenCurre
 
 nnoremap <silent> <Plug>FileBeagleOpenCurrentWorkingDir     :FileBeagle<CR>
 nnoremap <silent> <Plug>FileBeagleOpenCurrentBufferDir      :FileBeagleBufferDir<CR>
-
-if !exists('g:filebeagle_suppress_keymaps') || !g:filebeagle_suppress_keymaps
-    map <silent> <Leader>f  <Plug>FileBeagleOpenCurrentWorkingDir
-    map <silent> -  <Plug>FileBeagleOpenCurrentBufferDir
-endif
 
 " netrw hijacking {{{1
 " ==============================================================================
@@ -62,11 +55,13 @@ function! s:OpenDirHere(dir)
     endif
 endfunction
 
+if g:filebeagle_hijack_netrw
 augroup FileBeagle
     au!
-    autocmd VimEnter * if g:filebeagle_hijack_netrw | exe 'au! FileExplorer' | endif
-    autocmd BufEnter * if g:filebeagle_hijack_netrw | call <SID>OpenDirHere(expand('<amatch>')) | endif
+    autocmd VimEnter * exe 'au! FileExplorer'
+    autocmd BufEnter * call <SID>OpenDirHere(expand('<amatch>'))
 augroup end
+endif
 " }}}1
 
 let &cpo = s:save_cpo
