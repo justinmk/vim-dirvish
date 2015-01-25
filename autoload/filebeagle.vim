@@ -1,21 +1,4 @@
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-""  FileBeagle
-""
-""  VINE (Vim Is Not Emacs) file system explorer.
-""
 ""  Copyright 2014 Jeet Sukumaran.
-""
-""  This program is free software; you can redistribute it and/or modify
-""  it under the terms of the GNU General Public License as published by
-""  the Free Software Foundation; either version 3 of the License, or
-""  (at your option) any later version.
-""
-""  This program is distributed in the hope that it will be useful,
-""  but WITHOUT ANY WARRANTY; without even the implied warranty of
-""  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-""  GNU General Public License <http://www.gnu.org/licenses/>
-""  for more details.
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 if has("win32")
     let s:sep = '\'
@@ -25,53 +8,33 @@ else
     let s:sep_as_pattern = '/'
 endif
 
-function! s:NewMessenger(name)
+function! s:new_notifier(name)
+    let m = {}
+    let m["name"] = a:name
+    let m["title"] = empty(a:name) ? "dirvish" : "dirvish (" . m["name"] . ")"
 
-    " allocate a new pseudo-object
-    let l:messenger = {}
-    let l:messenger["name"] = a:name
-    if empty(a:name)
-        let l:messenger["title"] = "FileBeagle"
-    else
-        let l:messenger["title"] = "FileBeagle (" . l:messenger["name"] . ")"
-    endif
-
-    function! l:messenger.format_message(leader, msg) dict
+    function! m.format(leader, msg) dict
         return self.title . ": " . a:leader.a:msg
     endfunction
-
-    function! l:messenger.format_exception( msg) dict
-        return a:msg
-    endfunction
-
-    function! l:messenger.send_error(msg) dict
+    function! m.error(msg) dict
         redraw
         echohl ErrorMsg
-        echomsg self.format_message("[ERROR] ", a:msg)
+        echomsg self.format("", a:msg)
         echohl None
     endfunction
-
-    function! l:messenger.send_warning(msg) dict
+    function! m.warn(msg) dict
         redraw
         echohl WarningMsg
-        echomsg self.format_message("[WARNING] ", a:msg)
+        echomsg self.format("", a:msg)
         echohl None
     endfunction
-
-    function! l:messenger.send_status(msg) dict
+    function! m.info(msg) dict
         redraw
         echohl None
-        echomsg self.format_message("", a:msg)
+        echo self.format("", a:msg)
     endfunction
 
-    function! l:messenger.send_info(msg) dict
-        redraw
-        echohl None
-        echo self.format_message("", a:msg)
-    endfunction
-
-    return l:messenger
-
+    return m
 endfunction
 
 function! s:parent_dir(current_dir)
@@ -166,21 +129,10 @@ function! s:get_filebeagle_buffer_name()
     return bname
 endfunction
 
-" DirectoryViewer {{{1
-" ==============================================================================
-
-" Display the catalog.
 function! s:NewDirectoryViewer()
-
-    " initialize
-    let l:directory_viewer = {}
-
-    " Initialize object state.
-    if has("title")
-        let l:directory_viewer["old_titlestring"] = &titlestring
-    else
-        let l:directory_viewer["old_titlestring"] = ""
-    endif
+    let l:directory_viewer = {
+                \"old_titlestring" : has("title") ? &titlestring : "",
+                \}
 
     " filebeagle_buf_num, int
     "   - The buffer number to use, or -1 if we should generate and use our
@@ -252,7 +204,6 @@ function! s:NewDirectoryViewer()
         let b:filebeagle_directory_viewer = self
         call self.setup_buffer_opts()
         call self.setup_buffer_syntax()
-        call self.setup_buffer_commands()
         call self.setup_buffer_keymaps()
         call self.setup_buffer_statusline()
         " let self.prev_buf_num = prev_buf_num
@@ -263,7 +214,6 @@ function! s:NewDirectoryViewer()
         call self.render_buffer()
     endfunction
 
-    " Sets buffer options.
     function! l:directory_viewer.setup_buffer_opts() dict
 
         if self.prev_buf_num != self.buf_num
@@ -294,7 +244,6 @@ function! s:NewDirectoryViewer()
         set ft=filebeagle
     endfunction
 
-    " Sets buffer syntax.
     function! l:directory_viewer.setup_buffer_syntax() dict
         if has("syntax")
             syntax clear
@@ -303,7 +252,6 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
-    " Sets buffer key maps.
     function! l:directory_viewer.setup_buffer_keymaps() dict
 
         """" Disabling of unused modification keys
@@ -339,8 +287,6 @@ function! s:NewDirectoryViewer()
         let l:default_normal_plug_map['FileBeagleBufferToggleHiddenAndIgnored'] = 'gh'
         nnoremap <Plug>(FileBeagleBufferQuit)                               :call b:filebeagle_directory_viewer.quit_buffer()<CR>
         let l:default_normal_plug_map['FileBeagleBufferQuit'] = 'q'
-        nnoremap <Plug>(FileBeagleBufferCloseWindow)                        :call b:filebeagle_directory_viewer.close_window()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferCloseWindow'] = '<C-W><C-C>'
 
         """ Open selected file/directory
         nnoremap <Plug>(FileBeagleBufferVisitTarget)                        :<C-U>call b:filebeagle_directory_viewer.visit_target("edit", 0)<CR>
@@ -424,9 +370,7 @@ function! s:NewDirectoryViewer()
         nnoremap <Plug>(FileBeagleBufferChangeVimLocalDirectory)            :call b:filebeagle_directory_viewer.change_vim_working_directory(1)<CR>
         let l:default_normal_plug_map['FileBeagleBufferChangeVimLocalDirectory'] = 'cl'
 
-        if exists("g:filebeagle_buffer_normal_key_maps")
-            call extend(l:default_normal_plug_map, g:filebeagle_buffer_normal_key_maps)
-        endif
+        call extend(l:default_normal_plug_map, get(g:, 'filebeagle_buffer_normal_key_maps', {}))
 
         for plug_name in keys(l:default_normal_plug_map)
             let plug_key = l:default_normal_plug_map[plug_name]
@@ -448,7 +392,6 @@ function! s:NewDirectoryViewer()
 
     endfunction
 
-    " Sets buffer status line.
     function! l:directory_viewer.setup_buffer_statusline() dict
         if has("statusline")
             let self.old_statusline=&l:statusline
@@ -458,7 +401,6 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
-    " Populates the buffer with the catalog index.
     function! l:directory_viewer.render_buffer() dict
         setlocal modifiable
         call self.clear_buffer()
@@ -497,7 +439,6 @@ function! s:NewDirectoryViewer()
         call self.goto_pattern(self.focus_file)
     endfunction
 
-    " Restore title and anything else changed
     function! l:directory_viewer.wipe_and_restore() dict
         try
             execute "bwipe! " . self.buf_num
@@ -514,32 +455,13 @@ function! s:NewDirectoryViewer()
         " endif
     endfunction
 
-    " Close and quit the viewer.
     function! l:directory_viewer.quit_buffer() dict
-        " if !isdirectory(bufname(self.prev_buf_num))
-        " if self.prev_buf_num == self.buf_num
-        "     " Avoid switching back to calling buffer if it is a (FileBeagle) directory
-        "     call s:_filebeagle_messenger.send_info("Directory buffer was created by Vim, not FileBeagle: type ':quit<ENTER>' to exit or ':bwipe<ENTER>' to delete")
-        " else
-        "     execute "b " . self.prev_buf_num
-        " endif
         if self.prev_buf_num != self.buf_num
             execute "b " . self.prev_buf_num
         endif
         call self.wipe_and_restore()
     endfunction
 
-    " Close and quit the viewer.
-    function! l:directory_viewer.close_window() dict
-        execute "bwipe"
-        " if self.prev_buf_num != self.buf_num
-        "     execute "b " . self.prev_buf_num
-        " endif
-        " call self.wipe_and_restore()
-        " :close
-    endfunction
-
-    " Clears the buffer contents.
     function! l:directory_viewer.clear_buffer() dict
         call cursor(1, 1)
         exec 'silent! normal! "_dG'
@@ -547,7 +469,7 @@ function! s:NewDirectoryViewer()
 
     function! l:directory_viewer.read_target(pos, read_in_background) dict range
         if self.prev_buf_num == self.buf_num || isdirectory(bufname(self.prev_buf_num))
-            call s:_filebeagle_messenger.send_error("Cannot read into a directory buffer")
+            call s:notifier.error("Cannot read into a directory buffer")
             return 0
         endif
         if v:count == 0
@@ -560,11 +482,11 @@ function! s:NewDirectoryViewer()
         let l:selected_entries = []
         for l:cur_line in range(l:start_line, l:end_line)
             if !has_key(self.jump_map, l:cur_line)
-                call s:_filebeagle_messenger.send_info("Line " . l:cur_line . " is not a valid navigation entry")
+                call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
                 return 0
             endif
             if self.jump_map[l:cur_line].is_dir
-                call s:_filebeagle_messenger.send_info("Reading directories into the current buffer is not supported at the current time")
+                call s:notifier.info("Reading directories into the current buffer is not supported at the current time")
                 return 0
             endif
             call add(l:selected_entries, self.jump_map[l:cur_line])
@@ -606,19 +528,14 @@ function! s:NewDirectoryViewer()
     endfunction
 
     function! l:directory_viewer.visit_target(split_cmd, open_in_background) dict range
-        if v:count == 0
-            let l:start_line = a:firstline
-            let l:end_line = a:lastline
-        else
-            let l:start_line = v:count
-            let l:end_line = v:count
-        endif
+        let l:start_line = !v:count ? a:firstline : v:count
+        let l:end_line   = !v:count ? a:lastline  : v:count
 
         let l:num_dir_targets = 0
         let l:selected_entries = []
         for l:cur_line in range(l:start_line, l:end_line)
             if !has_key(self.jump_map, l:cur_line)
-                call s:_filebeagle_messenger.send_info("Line " . l:cur_line . " is not a valid navigation entry")
+                call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
                 return 0
             endif
             if self.jump_map[l:cur_line].is_dir
@@ -628,7 +545,7 @@ function! s:NewDirectoryViewer()
         endfor
 
         if l:num_dir_targets > 1 || (l:num_dir_targets == 1 && len(l:selected_entries) > 1)
-            call s:_filebeagle_messenger.send_info("Cannot open multiple selections that include directories")
+            call s:notifier.info("Cannot open multiple selections that include directories")
             return 0
         endif
 
@@ -637,7 +554,7 @@ function! s:NewDirectoryViewer()
             let l:entry = l:selected_entries[0]
             let l:target = l:entry.full_path
             if !isdirectory(l:target)
-                call s:_filebeagle_messenger.send_error("Cannot open directory: '" . l:target . "'")
+                call s:notifier.error("Cannot open directory: '" . l:target . "'")
                 return 0
             endif
             if l:entry.basename == ".."
@@ -654,14 +571,10 @@ function! s:NewDirectoryViewer()
             if a:split_cmd == "edit"
                 call self.set_focus_dir(l:target, new_focus_file,  1)
             else
-                if a:open_in_background
-                    if a:split_cmd == "tabedit"
-                        execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
-                    else
-                        execute "silent keepalt keepjumps " . a:split_cmd
-                    endif
-                else
+                if !a:open_in_background || a:split_cmd == "tabedit"
                     execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
+                else
+                    execute "silent keepalt keepjumps " . a:split_cmd
                 endif
                 let directory_viewer = s:NewDirectoryViewer()
                 call directory_viewer.open_dir(
@@ -763,14 +676,14 @@ function! s:NewDirectoryViewer()
             let new_focus_file = s:base_dirname(self.focus_dir)
             call self.set_focus_dir(pdir, new_focus_file, 1)
         else
-            call s:_filebeagle_messenger.send_info("No parent directory available")
+            call s:notifier.info("No parent directory available")
         endif
     endfunction
 
     function! l:directory_viewer.visit_prev_dir() dict
         " if len(self.prev_focus_dirs) == 0
         if empty(self.prev_focus_dirs)
-            call s:_filebeagle_messenger.send_info("No previous directory available")
+            call s:notifier.info("No previous directory available")
         else
             let new_focus_dir = self.prev_focus_dirs[-1][0]
             let new_focus_file = self.prev_focus_dirs[-1][1]
@@ -779,9 +692,10 @@ function! s:NewDirectoryViewer()
         endif
     endfunction
 
-    function! dirvish#get_path_at_line()
+    " function! dirvish#get_path_at_line()
+    function! s:foo()
         if !has_key(self.jump_map, line("."))
-            call s:_filebeagle_messenger.send_info("Not a valid path")
+            call s:notifier.info("Not a valid path")
             return 0
         endif
         return self.jump_map[line(".")].full_path
@@ -818,10 +732,10 @@ function! s:NewDirectoryViewer()
         let self.filter_exp = input("Filter expression: ", self.filter_exp)
         if empty(self.filter_exp)
             let self.is_filtered = 0
-            call s:_filebeagle_messenger.send_info("Filter OFF")
+            call s:notifier.info("Filter OFF")
         else
             let self.is_filtered = 1
-            call s:_filebeagle_messenger.send_info("Filter ON")
+            call s:notifier.info("Filter ON")
         endif
         call self.refresh()
     endfunction
@@ -829,12 +743,12 @@ function! s:NewDirectoryViewer()
     function! l:directory_viewer.toggle_filter() dict
         if self.is_filtered
             let self.is_filtered = 0
-            call s:_filebeagle_messenger.send_info("Filter OFF")
+            call s:notifier.info("Filter OFF")
             call self.refresh()
         else
             if !empty(self.filter_exp)
                 let self.is_filtered = 1
-                call s:_filebeagle_messenger.send_info("Filter ON")
+                call s:notifier.info("Filter ON")
                 call self.refresh()
             else
                 call self.set_filter_exp()
@@ -846,11 +760,11 @@ function! s:NewDirectoryViewer()
         if self.is_include_hidden || self.is_include_ignored
             let self.is_include_hidden = 0
             let self.is_include_ignored = 0
-            call s:_filebeagle_messenger.send_info("Not showing hidden/ignored files")
+            call s:notifier.info("Not showing hidden/ignored files")
         else
             let self.is_include_hidden = 1
             let self.is_include_ignored = 1
-            call s:_filebeagle_messenger.send_info("Showing hidden/ignored files")
+            call s:notifier.info("Showing hidden/ignored files")
         endif
         call self.refresh()
     endfunction
@@ -859,8 +773,6 @@ function! s:NewDirectoryViewer()
     return l:directory_viewer
 
 endfunction
-
-" }}}1
 
 " Status Line Functions {{{1
 " ==============================================================================
@@ -894,7 +806,7 @@ endfunction
 
 function! filebeagle#FileBeagleOpen(focus_dir, filebeagle_buf_num)
     if exists("b:filebeagle_directory_viewer")
-        call s:_filebeagle_messenger.send_info("Use 'CTRL-W CTRL-V' or 'CTRL-W CTRL-S' to spawn a new FileBeagle viewer on the current directory")
+        call s:notifier.info("dirvish is already open")
         return
     endif
     let directory_viewer = s:NewDirectoryViewer()
@@ -904,7 +816,7 @@ function! filebeagle#FileBeagleOpen(focus_dir, filebeagle_buf_num)
         let focus_dir = fnamemodify(a:focus_dir, ":p")
     endif
     if !isdirectory(focus_dir)
-        call s:_filebeagle_messenger.send_error("Not a valid directory: '" . focus_dir . "'")
+        call s:notifier.error("dirvish: invalid directory: '" . focus_dir . "'")
     else
         call directory_viewer.open_dir(
                     \ a:filebeagle_buf_num,
@@ -923,7 +835,7 @@ endfunction
 
 function! filebeagle#FileBeagleOpenCurrentBufferDir()
     if exists("b:filebeagle_directory_viewer")
-        call s:_filebeagle_messenger.send_info("Use 'CTRL-W CTRL-V' or 'CTRL-W CTRL-S' to spawn a new FileBeagle viewer on the current directory")
+        call s:notifier.info("already open")
         return
     endif
     if empty(expand("%"))
@@ -946,9 +858,7 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
     endif
 endfunction
 
-if exists("s:_filebeagle_messenger")
-    unlet s:_filebeagle_messenger
-endif
-let s:_filebeagle_messenger = s:NewMessenger("")
+unlet! s:notifier
+let s:notifier = s:new_notifier("")
 
 " vim:foldlevel=4:
