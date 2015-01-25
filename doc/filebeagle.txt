@@ -27,6 +27,11 @@ FUNCTIONS~
 dirvish#get_path_at_line()
 
 ===============================================================================
+                                                              *dirvish-objects*
+OBJECTS~
+b:dirvish
+
+===============================================================================
                                                    *filebeagle-buffer-key-maps*
 FILEBEAGLE BUFFER KEY MAPPINGS~
 
