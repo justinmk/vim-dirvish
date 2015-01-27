@@ -337,31 +337,6 @@ function! s:NewDirectoryViewer()
         nnoremap <Plug>(FileBeagleBufferFocusOnPrevious)                    :call b:dirvish.visit_prev_dir()<CR>
         let l:default_normal_plug_map['FileBeagleBufferFocusOnPrevious'] = 'b'
         nmap <buffer> <silent> <BS> <Plug>(FileBeagleBufferFocusOnPrevious)
-
-        """ File operations
-        nnoremap <Plug>(FileBeagleBufferInsertTargetBelowCursor)            :<C-U>call b:dirvish.read_target("", 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferInsertTargetBelowCursor'] = 'r.'
-        vnoremap <Plug>(FileBeagleBufferInsertTargetBelowCursor)            :call b:dirvish.read_target("", 0)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferInsertTargetBelowCursor'] = 'r.'
-        nnoremap <Plug>(FileBeagleBufferInsertTargetAtBeginning)            :<C-U>call b:dirvish.read_target("0", 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferInsertTargetAtBeginning'] = 'r0'
-        vnoremap <Plug>(FileBeagleBufferInsertTargetAtBeginning)            :call b:dirvish.read_target("0", 0)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferInsertTargetAtBeginning'] = 'r0'
-        nnoremap <Plug>(FileBeagleBufferInsertTargetAtEnd)                  :<C-U>call b:dirvish.read_target("$", 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferInsertTargetAtEnd'] = 'r$'
-        vnoremap <Plug>(FileBeagleBufferInsertTargetAtEnd)                  :call b:dirvish.read_target("$", 0)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferInsertTargetAtEnd'] = 'r$'
-        nnoremap <Plug>(FileBeagleBufferBgInsertTargetBelowCursor)          :<C-U>call b:dirvish.read_target("", 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferBgInsertTargetBelowCursor'] = g:filebeagle_buffer_background_key_map_prefix . 'r.'
-        vnoremap <Plug>(FileBeagleBufferBgInsertTargetBelowCursor)          :call b:dirvish.read_target("", 1)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferBgInsertTargetBelowCursor'] = g:filebeagle_buffer_background_key_map_prefix . 'r.'
-        nnoremap <Plug>(FileBeagleBufferBgInsertTargetAtBeginning)          :<C-U>call b:dirvish.read_target("0", 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferBgInsertTargetAtBeginning'] = g:filebeagle_buffer_background_key_map_prefix . 'r0'
-        vnoremap <Plug>(FileBeagleBufferBgInsertTargetAtBeginning)          :call b:dirvish.read_target("0", 1)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferBgInsertTargetAtBeginning'] = g:filebeagle_buffer_background_key_map_prefix . 'r0'
-        nnoremap <Plug>(FileBeagleBufferBgInsertTargetAtEnd)                :<C-U>call b:dirvish.read_target("$", 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferBgInsertTargetAtEnd'] = g:filebeagle_buffer_background_key_map_prefix . 'r$'
-        vnoremap <Plug>(FileBeagleBufferBgInsertTargetAtEnd)                :call b:dirvish.read_target("$", 1)<CR>
         let l:default_visual_plug_map['FileBeagleBufferBgInsertTargetAtEnd'] = g:filebeagle_buffer_background_key_map_prefix . 'r$'
 
         """ Directory Operations
@@ -465,48 +440,6 @@ function! s:NewDirectoryViewer()
     function! l:directory_viewer.clear_buffer() dict
         call cursor(1, 1)
         exec 'silent! normal! "_dG'
-    endfunction
-
-    function! l:directory_viewer.read_target(pos, read_in_background) dict range
-        if self.prev_buf_num == self.buf_num || isdirectory(bufname(self.prev_buf_num))
-            call s:notifier.error("Cannot read into a directory buffer")
-            return 0
-        endif
-        if v:count == 0
-            let l:start_line = a:firstline
-            let l:end_line = a:lastline
-        else
-            let l:start_line = v:count
-            let l:end_line = v:count
-        endif
-        let l:selected_entries = []
-        for l:cur_line in range(l:start_line, l:end_line)
-            if !has_key(self.jump_map, l:cur_line)
-                call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
-                return 0
-            endif
-            if self.jump_map[l:cur_line].is_dir
-                call s:notifier.info("Reading directories into the current buffer is not supported at the current time")
-                return 0
-            endif
-            call add(l:selected_entries, self.jump_map[l:cur_line])
-        endfor
-        if a:pos == "0"
-            call reverse(l:selected_entries)
-        endif
-        let old_lazyredraw = &lazyredraw
-        set lazyredraw
-        execute "silent keepalt keepjumps buffer " . self.prev_buf_num
-        for l:entry in l:selected_entries
-            let l:path_to_open = fnameescape(l:entry.full_path)
-            execute a:pos . "r " . l:path_to_open
-        endfor
-        if a:read_in_background
-            execute "silent keepalt keepjumps buffer " .self.buf_num
-        else
-            call self.wipe_and_restore()
-        endif
-        let &lazyredraw = l:old_lazyredraw
     endfunction
 
     function! l:directory_viewer.new_viewer(split_cmd) dict
@@ -769,9 +702,7 @@ function! s:NewDirectoryViewer()
         call self.refresh()
     endfunction
 
-    " return object
     return l:directory_viewer
-
 endfunction
 
 " Status Line Functions {{{1
