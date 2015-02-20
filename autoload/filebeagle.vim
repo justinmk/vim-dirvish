@@ -2,7 +2,7 @@
 "
 " Things that are unnecessary when you set the buffer name:
 "
-" - let &titlestring = expand(self.focus_dir)
+" - let &titlestring = expand(self.focus_dir, 1)
 " - specialized 'cd', 'cl'
 "
 " Things that are unnecessary when you conceal the full file paths:
@@ -73,11 +73,7 @@ function! s:base_dirname(dirname)
 endfunction
 
 function! s:is_path_exists(path)
-    if filereadable(a:path) || !empty(glob(a:path))
-        return 1
-    else
-        return 0
-    endif
+    return filereadable(a:path) || !empty(glob(a:path, 1))
 endfunction
 
 function! s:build_current_parent_dir_entry(current_dir)
@@ -91,25 +87,16 @@ function! s:build_current_parent_dir_entry(current_dir)
     return entry
 endfunction
 
-function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_include_ignored)
-    let old_wildignore = &wildignore
-    let old_suffixes = &suffixes
-    if a:is_include_ignored
-        let &wildignore = ""
-        let &suffixes = ""
-    endif
+function! s:discover_paths(current_dir, glob_pattern, is_include_hidden)
     if a:is_include_hidden
-        let path_str = glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern)."\n".glob(a:current_dir.s:sep.a:glob_pattern)
+        let path_str = glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.s:sep.a:glob_pattern, 1)
     else
-        let path_str = glob(a:current_dir.s:sep.a:glob_pattern)
+        let path_str = glob(a:current_dir.s:sep.a:glob_pattern, 1)
     endif
     let paths = split(path_str, '\n')
     call sort(paths)
-    let &wildignore = old_wildignore
-    let &suffixes = old_suffixes
     let dir_paths = []
     let file_paths = []
-    " call add(dir_paths, s:GetCurrentDirEntry(a:current_dir))
     call add(dir_paths, s:build_current_parent_dir_entry(a:current_dir))
     for path_entry in paths
         let path_entry = substitute(path_entry, s:sep_as_pattern.'\+', s:sep, 'g')
@@ -128,21 +115,8 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden, is_incl
     return [dir_paths, file_paths]
 endfunction
 
-function! s:get_filebeagle_buffer_name()
-    let stemname = "filebeagle"
-    let idx = 1
-    let bname = stemname
-    while bufnr(bname, 0) != -1
-        let idx = idx + 1
-        let bname = stemname . "-" . string(idx)
-    endwhile
-    return bname
-endfunction
-
 function! s:new_dirvish()
-    let l:directory_viewer = {
-                \"old_titlestring" : has("title") ? &titlestring : "",
-                \}
+    let l:directory_viewer = {}
 
     " buf_num, int
     "   - The buffer number to use, or -1 to create new
@@ -172,9 +146,6 @@ function! s:new_dirvish()
     " is_include_hidden, boolean
     "   -  If 1, hidden files and directories (paths beginning with '.') will
     "      be listed; otherwise, they will not be shown.
-    " is_include_ignored, boolean
-    "   -  If 1, files and directories matching patterns in ``wildignore``
-    "      will be listed; otherwise, they will not be shown.
     function! l:directory_viewer.open_dir(
                 \ buf_num,
                 \ focus_dir,
@@ -185,7 +156,6 @@ function! s:new_dirvish()
                 \ is_filtered,
                 \ filter_exp,
                 \ is_include_hidden,
-                \ is_include_ignored
                 \) dict
         let self.focus_dir = fnamemodify(a:focus_file, ":p")
 
@@ -197,20 +167,20 @@ function! s:new_dirvish()
         let self.prev_focus_dirs = deepcopy(a:prev_focus_dirs)
         let self.default_targets_for_directory = deepcopy(a:default_targets_for_directory)
         let self.is_include_hidden = a:is_include_hidden
-        let self.is_include_ignored = a:is_include_ignored
-        " get a new buf reference
-        " get a viewport onto it
+
         execute "silent keepalt keepjumps buffer " . self.buf_num
-        " Sets up buffer environment.
+
+        " buffer context
         let b:dirvish = self
         call self.setup_buffer_opts()
         call self.setup_buffer_syntax()
         call self.setup_buffer_keymaps()
         call self.setup_buffer_statusline()
-        " set up filters
+
+        " filters
         let self.is_filtered = a:is_filtered
         let self.filter_exp = a:filter_exp
-        " render it
+
         call self.render_buffer()
     endfunction
 
@@ -276,13 +246,13 @@ function! s:new_dirvish()
         nnoremap <buffer> <silent> <C-W>T        :call b:dirvish.new_viewer("tabedit")<CR>
 
         """ Directory list buffer management
-        nnoremap <Plug>(FileBeagleBufferRefresh)                            :call b:dirvish.refresh()<CR>
+        nnoremap <Plug>(FileBeagleBufferRefresh)                            :call b:dirvish.render_buffer()<CR>
         let l:default_normal_plug_map['FileBeagleBufferRefresh'] = 'R'
         nnoremap <Plug>(FileBeagleBufferSetFilter)                          :call b:dirvish.set_filter_exp()<CR>
         let l:default_normal_plug_map['FileBeagleBufferSetFilter'] = 'f'
         nnoremap <Plug>(FileBeagleBufferToggleFilter)                       :call b:dirvish.toggle_filter()<CR>
         let l:default_normal_plug_map['FileBeagleBufferToggleFilter'] = 'F'
-        nnoremap <Plug>(FileBeagleBufferToggleHiddenAndIgnored)             :call b:dirvish.toggle_hidden_and_ignored()<CR>
+        nnoremap <Plug>(FileBeagleBufferToggleHiddenAndIgnored)             :call b:dirvish.toggle_hidden()<CR>
         let l:default_normal_plug_map['FileBeagleBufferToggleHiddenAndIgnored'] = 'gh'
         nnoremap <Plug>(FileBeagleBufferQuit)                               :call b:dirvish.quit_buffer()<CR>
         let l:default_normal_plug_map['FileBeagleBufferQuit'] = 'q'
@@ -371,10 +341,15 @@ function! s:new_dirvish()
 
     function! l:directory_viewer.render_buffer() dict
         setlocal modifiable
-        call self.clear_buffer()
+
+        silent! normal! gg"_dG
+
+        "change the buffer name
+        exe "file ".fnameescape(self.focus_dir)
+
         let self.jump_map = {}
         call self.setup_buffer_syntax()
-        let paths = s:discover_paths(self.focus_dir, "*", self.is_include_hidden, self.is_include_ignored)
+        let paths = s:discover_paths(self.focus_dir, "*", self.is_include_hidden)
         for path in paths[0] + paths[1]
             if !path.is_dir && self.is_filtered && !empty(self.filter_exp) && (path["basename"] !~# self.filter_exp)
                 continue
@@ -392,7 +367,6 @@ function! s:new_dirvish()
             let self.jump_map[line("$")] = l:line_map
             call append(line("$")-1, text)
         endfor
-        let b:filebeagle_last_render_time = localtime()
 
         " remove extra last line
         silent! normal! GV"_X
@@ -417,11 +391,6 @@ function! s:new_dirvish()
         call self.wipe_and_restore()
     endfunction
 
-    function! l:directory_viewer.clear_buffer() dict
-        call cursor(1, 1)
-        exec 'silent! normal! "_dG'
-    endfunction
-
     function! l:directory_viewer.new_viewer(split_cmd) dict
         execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
         let d = s:new_dirvish()
@@ -435,7 +404,6 @@ function! s:new_dirvish()
                     \ self.is_filtered,
                     \ self.filter_exp,
                     \ self.is_include_hidden,
-                    \ self.is_include_ignored
                     \ )
     endfunction
 
@@ -447,7 +415,7 @@ function! s:new_dirvish()
         let l:selected_entries = []
         for l:cur_line in range(l:start_line, l:end_line)
             if !has_key(self.jump_map, l:cur_line)
-                call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
+                " call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
                 return 0
             endif
             if self.jump_map[l:cur_line].is_dir
@@ -466,7 +434,7 @@ function! s:new_dirvish()
             let l:entry = l:selected_entries[0]
             let l:target = l:entry.full_path
             if !isdirectory(l:target)
-                call s:notifier.error("Cannot open directory: '" . l:target . "'")
+                call s:notifier.error("cannot open: '" . l:target . "'")
                 return 0
             endif
 
@@ -495,7 +463,6 @@ function! s:new_dirvish()
                             \ self.is_filtered,
                             \ self.filter_exp,
                             \ self.is_include_hidden,
-                            \ self.is_include_ignored
                             \ )
                 if a:open_in_background
                     execute "tabnext " . l:cur_tab_num
@@ -515,7 +482,7 @@ function! s:new_dirvish()
         endif
         let self.focus_dir = fnamemodify(a:new_dir, ":p")
         let self.focus_file = a:focus_file
-        call self.refresh()
+        call self.render_buffer()
     endfunction
 
     function! l:directory_viewer.visit_files(selected_entries, split_cmd, open_in_background)
@@ -605,10 +572,6 @@ function! s:new_dirvish()
         return self.jump_map[line(".")].full_path
     endfunction
 
-    function! l:directory_viewer.refresh() dict
-        call self.render_buffer()
-    endfunction
-
     function! l:directory_viewer.goto_pattern(pattern) dict
         let full_pattern = '^\V\C' . escape(a:pattern, '/\') . '$'
         call search(full_pattern, "cw")
@@ -623,36 +586,34 @@ function! s:new_dirvish()
             let self.is_filtered = 1
             call s:notifier.info("Filter ON")
         endif
-        call self.refresh()
+        call self.render_buffer()
     endfunction
 
     function! l:directory_viewer.toggle_filter() dict
         if self.is_filtered
             let self.is_filtered = 0
             call s:notifier.info("Filter OFF")
-            call self.refresh()
+            call self.render_buffer()
         else
             if !empty(self.filter_exp)
                 let self.is_filtered = 1
                 call s:notifier.info("Filter ON")
-                call self.refresh()
+                call self.render_buffer()
             else
                 call self.set_filter_exp()
             endif
         endif
     endfunction
 
-    function! l:directory_viewer.toggle_hidden_and_ignored() dict
-        if self.is_include_hidden || self.is_include_ignored
+    function! l:directory_viewer.toggle_hidden() dict
+        if self.is_include_hidden
             let self.is_include_hidden = 0
-            let self.is_include_ignored = 0
-            call s:notifier.info("Not showing hidden/ignored files")
+            call s:notifier.info("Not showing hidden files")
         else
             let self.is_include_hidden = 1
-            let self.is_include_ignored = 1
-            call s:notifier.info("Showing hidden/ignored files")
+            call s:notifier.info("Showing hidden files")
         endif
-        call self.refresh()
+        call self.render_buffer()
     endfunction
 
     return l:directory_viewer

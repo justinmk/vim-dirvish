@@ -18,7 +18,7 @@ let g:filebeagle_buffer_visual_key_maps = get(g:, 'filebeagle_buffer_visual_key_
 
 
 command! -complete=dir -nargs=* FileBeagle  :call filebeagle#FileBeagleOpen(<q-args>, -1)
-command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpenCurrentBufferDir()
+command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpen("", -1)
 
 nnoremap <silent> <Plug>FileBeagleOpenCurrentWorkingDir     :FileBeagle<CR>
 nnoremap <silent> <Plug>FileBeagleOpenCurrentBufferDir      :FileBeagleBufferDir<CR>
