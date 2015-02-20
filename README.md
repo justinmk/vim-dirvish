@@ -1,1 +1,1 @@
-# vim-dirvish :cyclone:
+# dirvish.vim :cyclone:
