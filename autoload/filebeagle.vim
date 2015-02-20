@@ -144,9 +144,8 @@ function! s:new_dirvish()
                 \"old_titlestring" : has("title") ? &titlestring : "",
                 \}
 
-    " filebeagle_buf_num, int
-    "   - The buffer number to use, or -1 if we should generate and use our
-    "     own buffer.
+    " buf_num, int
+    "   - The buffer number to use, or -1 to create new
     " focus_dir, string
     "   - The full path to the directory being listed/viewed
     " focus_file, string
@@ -154,10 +153,9 @@ function! s:new_dirvish()
     "     target or focus
     " calling_buf_num, int
     "   - The buffer number of the buffer from which FileBeagle was invoked.
-    "     If `filebeagle_buf_num` > -1, and `calling_buf_num` ==
-    "     `filebeagle_buf_num`, generally it is because FileBeagle was
-    "     automagically invoked as a result of Vim being called upon to edit a
-    "     directory.
+    "     If `buf_num` > -1, and `calling_buf_num` == `buf_num`, assume it is
+    "     because FileBeagle was invoked as a result of Vim being called upon
+    "     to edit a directory.
     " prev_focus_dirs, list of tuples, [ (string, string) ]
     "   - The history stack, with the first element of the tuple being the
     "     directory previously visited and the second element of the tuple being
@@ -178,7 +176,7 @@ function! s:new_dirvish()
     "   -  If 1, files and directories matching patterns in ``wildignore``
     "      will be listed; otherwise, they will not be shown.
     function! l:directory_viewer.open_dir(
-                \ filebeagle_buf_num,
+                \ buf_num,
                 \ focus_dir,
                 \ focus_file,
                 \ calling_buf_num,
@@ -189,20 +187,13 @@ function! s:new_dirvish()
                 \ is_include_hidden,
                 \ is_include_ignored
                 \) dict
-        if a:filebeagle_buf_num == -1
-            let self.buf_name = s:get_filebeagle_buffer_name()
-            let self.buf_num = bufnr(self.buf_name, 1)
-        else
-            let self.buf_num = a:filebeagle_buf_num
-            let self.buf_name = bufname(self.buf_num)
-        endif
-        let self.focus_dir = fnamemodify(a:focus_dir, ":p")
+        let self.focus_dir = fnamemodify(a:focus_file, ":p")
+
+        let self.buf_num = a:buf_num == -1 ? bufnr(self.focus_dir, 1) : a:buf_num
+
         let self.focus_file = fnamemodify(a:focus_file, ":p:t")
-        if empty(a:calling_buf_num)
-            let self.prev_buf_num = bufnr('%')
-        else
-            let self.prev_buf_num = a:calling_buf_num
-        endif
+        let self.prev_buf_num = empty(a:calling_buf_num)
+                    \ ? bufnr('%') : a:calling_buf_num
         let self.prev_focus_dirs = deepcopy(a:prev_focus_dirs)
         let self.default_targets_for_directory = deepcopy(a:default_targets_for_directory)
         let self.is_include_hidden = a:is_include_hidden
@@ -216,7 +207,6 @@ function! s:new_dirvish()
         call self.setup_buffer_syntax()
         call self.setup_buffer_keymaps()
         call self.setup_buffer_statusline()
-        " let self.prev_buf_num = prev_buf_num
         " set up filters
         let self.is_filtered = a:is_filtered
         let self.filter_exp = a:filter_exp
@@ -225,7 +215,6 @@ function! s:new_dirvish()
     endfunction
 
     function! l:directory_viewer.setup_buffer_opts() dict
-
         if self.prev_buf_num != self.buf_num
             " Only set these if not directly editing a directory (i.e.,
             " replacing netrw)
@@ -404,11 +393,10 @@ function! s:new_dirvish()
             call append(line("$")-1, text)
         endfor
         let b:filebeagle_last_render_time = localtime()
-        try
-            " remove extra last line
-            execute('normal! GV"_X')
-        catch //
-        endtry
+
+        " remove extra last line
+        silent! normal! GV"_X
+
         setlocal nomodifiable
         call cursor(1, 1)
         let self.default_targets_for_directory[self.focus_dir] = self.focus_file
@@ -416,19 +404,10 @@ function! s:new_dirvish()
     endfunction
 
     function! l:directory_viewer.wipe_and_restore() dict
-        try
-            execute "bwipe! " . self.buf_num
-        catch // " E517: No buffers were wiped out
-        endtry
+        execute "silent! bwipe! " . self.buf_num
         if has("statusline") && exists("self['old_statusline']")
-            try
-                let &l:statusline=self.old_statusline
-            catch //
-            endtry
+            silent! let &l:statusline=self.old_statusline
         endif
-        " if has("title")
-        "     let &titlestring = self.old_titlestring
-        " endif
     endfunction
 
     function! l:directory_viewer.quit_buffer() dict
@@ -444,7 +423,6 @@ function! s:new_dirvish()
     endfunction
 
     function! l:directory_viewer.new_viewer(split_cmd) dict
-        let l:cur_tab_num = tabpagenr()
         execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
         let d = s:new_dirvish()
         call d.open_dir(
@@ -556,18 +534,14 @@ function! s:new_dirvish()
             let l:path_to_open = fnameescape(l:entry.full_path)
             try
                 execute l:split_cmd . " " . l:path_to_open
-            catch /E37:/
-                " E37: No write since last change
-                " skip opening file
-            catch /E36:/
-                " E36: not enough room for any new splits: switch to
-                " opening in-situ
+            catch /E37:/ " E37: No write since last change
+                call s:notifier.info("E37: No write since last change")
+                return
+            catch /E36:/ " E36: no room for any new splits; open in-situ.
                 let l:split_cmd = "edit"
-                try
-                    execute l:split_cmd . " " . l:path_to_open
-                catch /E325:/ "swap file exists
-                endtry
-            catch /E325:/ "swap file exists
+                execute "edit " . l:path_to_open
+            catch /E325:/ " E325: swap file exists
+                call s:notifier.info("E325: swap file exists")
             endtry
             call add(l:opened_basenames, '"' . fnameescape(l:entry.basename) . '"')
         endfor
@@ -606,14 +580,14 @@ function! s:new_dirvish()
             let new_focus_file = s:base_dirname(self.focus_dir)
             call self.set_focus_dir(pdir, new_focus_file, 1)
         else
-            call s:notifier.info("No parent directory available")
+            call s:notifier.info("No parent directory")
         endif
     endfunction
 
     function! l:directory_viewer.visit_prev_dir() dict
         " if len(self.prev_focus_dirs) == 0
         if empty(self.prev_focus_dirs)
-            call s:notifier.info("No previous directory available")
+            call s:notifier.info("No previous directory")
         else
             let new_focus_dir = self.prev_focus_dirs[-1][0]
             let new_focus_file = self.prev_focus_dirs[-1][1]
@@ -636,13 +610,8 @@ function! s:new_dirvish()
     endfunction
 
     function! l:directory_viewer.goto_pattern(pattern) dict
-        " call cursor(1, 0)
-        " let old_ignorecase = &ignorecase
-        " set noignorecase
-        let full_pattern = '^\V\C' . escape(a:pattern, '/\') . '\$'
+        let full_pattern = '^\V\C' . escape(a:pattern, '/\') . '$'
         call search(full_pattern, "cw")
-        " let &ignorecase = old_ignorecase
-        " call cursor(lnum, 0)
     endfunction
 
     function! l:directory_viewer.set_filter_exp() dict
@@ -693,7 +662,7 @@ endfunction
 " ==============================================================================
 
 function! FileBeagleStatusLineCurrentDirInfo()
-    if !exists("b:filebeagle_directory_viewer")
+    if !exists("b:dirvish")
         return ""
     endif
     let l:status_line = ' "' . b:dirvish.focus_dir . '" '
@@ -707,7 +676,7 @@ function! FileBeagleStatusLineFilterAndHiddenInfo()
     let l:status_line = ""
     if b:dirvish.is_include_hidden || b:dirvish.is_include_ignored
     else
-        let l:status_line .= "[+HIDE]"
+        let l:status_line .= "[hidden files]"
     endif
     if b:dirvish.is_filtered && !empty(b:dirvish.filter_exp)
         let l:status_line .= "[filter:".b:dirvish.filter_exp . "]"
@@ -719,47 +688,30 @@ endfunction
 " Command Interface {{{1
 " =============================================================================
 
-function! filebeagle#FileBeagleOpen(focus_dir, filebeagle_buf_num)
-    if exists("b:dirvish")
-        call s:notifier.info("dirvish is already open")
-        return
-    endif
-    let d = s:new_dirvish()
-    if empty(a:focus_dir)
-        let focus_dir = getcwd()
-    else
-        let focus_dir = fnamemodify(a:focus_dir, ":p")
-    endif
-    if !isdirectory(focus_dir)
-        call s:notifier.error("dirvish: invalid directory: '" . focus_dir . "'")
-    else
-        call d.open_dir(
-                    \ a:filebeagle_buf_num,
-                    \ focus_dir,
-                    \ bufname("%"),
-                    \ bufnr("%"),
-                    \ [],
-                    \ {},
-                    \ 0,
-                    \ "",
-                    \ g:filebeagle_show_hidden,
-                    \ g:filebeagle_show_hidden
-                    \)
-    endif
-endfunction
-
-function! filebeagle#FileBeagleOpenCurrentBufferDir()
+function! filebeagle#FileBeagleOpen(focus_dir, buf_num)
     if exists("b:dirvish")
         call s:notifier.info("already open")
         return
     endif
-    if empty(expand("%"))
-        call filebeagle#FileBeagleOpen(getcwd(), -1)
+    let buf = a:buf_num
+
+    if empty(a:focus_dir)
+        let focus_dir = getcwd()
+        if !empty(expand("%", 1)) "open current _buffer_ directory
+            let focus_dir = expand('%:p:h', 1)
+        endif
     else
-        let d = s:new_dirvish()
+        let focus_dir = fnamemodify(a:focus_dir, ":p")
+    endif
+
+    let d = s:new_dirvish()
+
+    if !isdirectory(focus_dir)
+        call s:notifier.error("invalid directory: '" . focus_dir . "'")
+    else
         call d.open_dir(
-                    \ -1,
-                    \ expand('%:p:h', 1),
+                    \ buf,
+                    \ focus_dir,
                     \ bufname("%"),
                     \ bufnr("%"),
                     \ [],
