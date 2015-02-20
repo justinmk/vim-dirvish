@@ -337,13 +337,7 @@ function! s:NewDirectoryViewer()
         nnoremap <Plug>(FileBeagleBufferFocusOnPrevious)                    :call b:dirvish.visit_prev_dir()<CR>
         let l:default_normal_plug_map['FileBeagleBufferFocusOnPrevious'] = 'b'
         nmap <buffer> <silent> <BS> <Plug>(FileBeagleBufferFocusOnPrevious)
-        let l:default_visual_plug_map['FileBeagleBufferBgInsertTargetAtEnd'] = g:filebeagle_buffer_background_key_map_prefix . 'r$'
-
-        """ Directory Operations
-        nnoremap <Plug>(FileBeagleBufferChangeVimWorkingDirectory)          :call b:dirvish.change_vim_working_directory(0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferChangeVimWorkingDirectory'] = 'cd'
-        nnoremap <Plug>(FileBeagleBufferChangeVimLocalDirectory)            :call b:dirvish.change_vim_working_directory(1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferChangeVimLocalDirectory'] = 'cl'
+        nmap <buffer> <silent> u    <BS>
 
         call extend(l:default_normal_plug_map, get(g:, 'filebeagle_buffer_normal_key_maps', {}))
 
@@ -490,21 +484,17 @@ function! s:NewDirectoryViewer()
                 call s:notifier.error("Cannot open directory: '" . l:target . "'")
                 return 0
             endif
-            if l:entry.basename == ".."
-                let new_focus_file = s:base_dirname(self.focus_dir)
-            elseif a:split_cmd == "edit"
-                let new_focus_file = get(self.default_targets_for_directory, l:target, "")
-                " echo "Current (" . l:target . "): " . new_focus_file
-                " for key in keys(self.default_targets_for_directory)
-                "     echo "'".key."':'".self.default_targets_for_directory[key]."'"
-                " endfor
-            else
-                let new_focus_file = l:target
-            endif
+
+            let new_focus_file = l:entry.basename == ".."
+                        \ ? s:base_dirname(self.focus_dir)
+                        \ : (a:split_cmd ==# "edit"
+                        \   ? get(self.default_targets_for_directory, l:target, "")
+                        \   : l:target)
+
             if a:split_cmd == "edit"
                 call self.set_focus_dir(l:target, new_focus_file,  1)
             else
-                if !a:open_in_background || a:split_cmd == "tabedit"
+                if !a:open_in_background || a:split_cmd ==# "tabedit"
                     execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
                 else
                     execute "silent keepalt keepjumps " . a:split_cmd
@@ -632,19 +622,6 @@ function! s:NewDirectoryViewer()
             return 0
         endif
         return self.jump_map[line(".")].full_path
-    endfunction
-
-    function! l:directory_viewer.change_vim_working_directory(local) dict
-        let l:target = self.focus_dir
-        if a:local
-            let l:cmd = "lcd"
-        else
-            let l:cmd = "cd"
-        endif
-        execute "b " . self.prev_buf_num
-        call self.wipe_and_restore()
-        execute l:cmd . " " . fnameescape(l:target)
-        echomsg l:target
     endfunction
 
     function! l:directory_viewer.refresh() dict
