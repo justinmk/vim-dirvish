@@ -1,4 +1,14 @@
 ""  Copyright 2014 Jeet Sukumaran.
+"
+" Things that are unnecessary when you set the buffer name:
+"
+" - let &titlestring = expand(self.focus_dir)
+" - specialized 'cd', 'cl'
+"
+" Things that are unnecessary when you conceal the full file paths:
+" - specialized "read" commands (instead: yy and :r ...)
+
+
 
 if has("win32")
     let s:sep = '\'
@@ -129,7 +139,7 @@ function! s:get_filebeagle_buffer_name()
     return bname
 endfunction
 
-function! s:NewDirectoryViewer()
+function! s:new_dirvish()
     let l:directory_viewer = {
                 \"old_titlestring" : has("title") ? &titlestring : "",
                 \}
@@ -401,9 +411,6 @@ function! s:NewDirectoryViewer()
         endtry
         setlocal nomodifiable
         call cursor(1, 1)
-        if has("title")
-            let &titlestring = expand(self.focus_dir)
-        endif
         let self.default_targets_for_directory[self.focus_dir] = self.focus_file
         call self.goto_pattern(self.focus_file)
     endfunction
@@ -439,8 +446,8 @@ function! s:NewDirectoryViewer()
     function! l:directory_viewer.new_viewer(split_cmd) dict
         let l:cur_tab_num = tabpagenr()
         execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
-        let directory_viewer = s:NewDirectoryViewer()
-        call directory_viewer.open_dir(
+        let d = s:new_dirvish()
+        call d.open_dir(
                     \ -1,
                     \ self.focus_dir,
                     \ self.focus_file,
@@ -499,8 +506,8 @@ function! s:NewDirectoryViewer()
                 else
                     execute "silent keepalt keepjumps " . a:split_cmd
                 endif
-                let directory_viewer = s:NewDirectoryViewer()
-                call directory_viewer.open_dir(
+                let d = s:new_dirvish()
+                call d.open_dir(
                             \ -1,
                             \ l:target,
                             \ new_focus_file,
@@ -717,7 +724,7 @@ function! filebeagle#FileBeagleOpen(focus_dir, filebeagle_buf_num)
         call s:notifier.info("dirvish is already open")
         return
     endif
-    let directory_viewer = s:NewDirectoryViewer()
+    let d = s:new_dirvish()
     if empty(a:focus_dir)
         let focus_dir = getcwd()
     else
@@ -726,7 +733,7 @@ function! filebeagle#FileBeagleOpen(focus_dir, filebeagle_buf_num)
     if !isdirectory(focus_dir)
         call s:notifier.error("dirvish: invalid directory: '" . focus_dir . "'")
     else
-        call directory_viewer.open_dir(
+        call d.open_dir(
                     \ a:filebeagle_buf_num,
                     \ focus_dir,
                     \ bufname("%"),
@@ -749,11 +756,10 @@ function! filebeagle#FileBeagleOpenCurrentBufferDir()
     if empty(expand("%"))
         call filebeagle#FileBeagleOpen(getcwd(), -1)
     else
-        let directory_viewer = s:NewDirectoryViewer()
-        let focus_dir = expand('%:p:h')
-        call directory_viewer.open_dir(
+        let d = s:new_dirvish()
+        call d.open_dir(
                     \ -1,
-                    \ focus_dir,
+                    \ expand('%:p:h', 1),
                     \ bufname("%"),
                     \ bufnr("%"),
                     \ [],
