@@ -6,6 +6,7 @@
 " - specialized 'cd', 'cl'
 "
 " Things that are unnecessary when you conceal the full file paths:
+" - specialized "yank" commands
 " - specialized "read" commands (instead: yy and :r ...)
 
 
@@ -68,8 +69,7 @@ function! s:base_dirname(dirname)
     if l:dirname == s:sep
         return s:sep
     endif
-    let d = split(l:dirname, s:sep_as_pattern)[-1] . s:sep
-    return d
+    return split(l:dirname, s:sep_as_pattern)[-1] . s:sep
 endfunction
 
 function! s:is_path_exists(path)
@@ -185,13 +185,7 @@ function! s:new_dirvish()
     endfunction
 
     function! l:directory_viewer.setup_buffer_opts() dict
-        if self.prev_buf_num != self.buf_num
-            " Only set these if not directly editing a directory (i.e.,
-            " replacing netrw)
-            set bufhidden=hide
-            setlocal nobuflisted
-        endif
-
+        setlocal nobuflisted
         setlocal bufhidden=wipe buftype=nofile noswapfile nowrap nolist cursorline
 
         if &l:spell
@@ -209,19 +203,30 @@ function! s:new_dirvish()
     function! l:directory_viewer.setup_buffer_syntax() dict
         if has("syntax")
             syntax clear
-            syn match FileBeagleDirectoryEntry              '^.*[/\\]$'
-            highlight! link FileBeagleDirectoryEntry        Directory
+            let self.orig_concealcursor = &l:concealcursor
+            let self.orig_conceallevel = &l:conceallevel
+            setlocal concealcursor=nc conceallevel=3
+
+            syntax match DirvishPathHead '\v.+\/\ze[^\/]+\/?$' conceal
+            syntax match DirvishPathTail '\v[^\/]+\/$'
+            highlight! link DirvishPathTail Directory
+
+            augroup dirvish_syntaxteardown
+                autocmd!
+                autocmd BufLeave <buffer> let &l:concealcursor = b:dirvish.orig_concealcursor
+                    \ | let &l:conceallevel = b:dirvish.orig_conceallevel
+                    \ | autocmd! dirvish_syntaxteardown *
+            augroup END
         endif
     endfunction
 
     function! l:directory_viewer.setup_buffer_keymaps() dict
 
-        """" Disabling of unused modification keys
+        " Avoid 'cannot modify' error for  keys.
         for key in [".", "p", "P", "C", "x", "X", "r", "R", "i", "I", "a", "A", "D", "S", "U"]
-            try
+            if !hasmapto(key, 'n')
                 execute "nnoremap <buffer> " . key . " <NOP>"
-            catch //
-            endtry
+            endif
         endfor
 
         let l:default_normal_plug_map = {}
@@ -323,15 +328,6 @@ function! s:new_dirvish()
 
     endfunction
 
-    function! l:directory_viewer.setup_buffer_statusline() dict
-        if has("statusline")
-            let self.old_statusline=&l:statusline
-            setlocal statusline=%{FileBeagleStatusLineCurrentDirInfo()}%=%{FileBeagleStatusLineFilterAndHiddenInfo()}
-        else
-            let self.old_statusline=""
-        endif
-    endfunction
-
     function! l:directory_viewer.render_buffer() dict
         setlocal modifiable
 
@@ -353,10 +349,7 @@ function! s:new_dirvish()
                         \ "dirname" : path["dirname"],
                         \ "is_dir" : path["is_dir"]
                         \ }
-            let text = path["basename"]
-            if path["is_dir"]
-                let text .= s:sep
-            endif
+            let text = path["full_path"]
             let self.jump_map[line("$")] = l:line_map
             call append(line("$")-1, text)
         endfor
@@ -370,18 +363,18 @@ function! s:new_dirvish()
         call self.goto_pattern(self.focus_file)
     endfunction
 
-    function! l:directory_viewer.wipe_and_restore() dict
-        execute "silent! bwipe! " . self.buf_num
-        if has("statusline") && exists("self['old_statusline']")
-            silent! let &l:statusline=self.old_statusline
-        endif
-    endfunction
-
     function! l:directory_viewer.quit_buffer() dict
-        if self.prev_buf_num != self.buf_num
-            execute "b " . self.prev_buf_num
+        "tickle original 'alt' buffer
+        if self.orig_alt_buf_num != self.buf_num && bufexists(self.orig_alt_buf_num)
+            exe 'b ' . self.orig_alt_buf_num
         endif
-        call self.wipe_and_restore()
+
+        "restore original buffer
+        if self.prev_buf_num != self.buf_num && bufexists(self.prev_buf_num)
+            exe 'b ' . self.prev_buf_num
+        else
+            silent! bdelete
+        endif
     endfunction
 
     function! l:directory_viewer.new_viewer(split_cmd) dict
@@ -528,8 +521,8 @@ function! s:new_dirvish()
                 endif
             endif
         else
-            call self.wipe_and_restore()
-            redraw!
+            execute "silent! bwipe! " . self.buf_num
+            " redraw!
         endif
         let &lazyredraw = l:old_lazyredraw
     endfunction
@@ -554,15 +547,6 @@ function! s:new_dirvish()
             call remove(self.prev_focus_dirs, -1)
             call self.set_focus_dir(new_focus_dir, new_focus_file, 0)
         endif
-    endfunction
-
-    " function! dirvish#get_path_at_line()
-    function! s:foo()
-        if !has_key(self.jump_map, line("."))
-            call s:notifier.info("Not a valid path")
-            return 0
-        endif
-        return self.jump_map[line(".")].full_path
     endfunction
 
     function! l:directory_viewer.goto_pattern(pattern) dict
@@ -612,32 +596,19 @@ function! s:new_dirvish()
     return l:directory_viewer
 endfunction
 
-" Status Line Functions {{{1
-" ==============================================================================
-
-function! FileBeagleStatusLineCurrentDirInfo()
-    if !exists("b:dirvish")
-        return ""
-    endif
-    let l:status_line = ' "' . b:dirvish.focus_dir . '" '
-    return l:status_line
-endfunction
-
-function! FileBeagleStatusLineFilterAndHiddenInfo()
-    if !exists("b:dirvish")
-        return ""
-    endif
-    let l:status_line = ""
-    if b:dirvish.is_include_hidden || b:dirvish.is_include_ignored
-    else
-        let l:status_line .= "[hidden files]"
-    endif
-    if b:dirvish.is_filtered && !empty(b:dirvish.filter_exp)
-        let l:status_line .= "[filter:".b:dirvish.filter_exp . "]"
-    endif
-    return l:status_line
-endfunction
-" }}}1
+" function! FileBeagleStatusLineFilterAndHiddenInfo()
+"     if !exists("b:dirvish")
+"         return ""
+"     endif
+"     let l:status_line = ""
+"     if b:dirvish.is_include_hidden
+"         let l:status_line .= "[hidden files]"
+"     endif
+"     if b:dirvish.is_filtered && !empty(b:dirvish.filter_exp)
+"         let l:status_line .= "[filter:".b:dirvish.filter_exp . "]"
+"     endif
+"     return l:status_line
+" endfunction
 
 " Command Interface {{{1
 " =============================================================================

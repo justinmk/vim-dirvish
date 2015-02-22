@@ -1,10 +1,9 @@
 ""  Copyright 2014 Jeet Sukumaran.
 
-if (exists('g:loaded_filebeagle') && g:loaded_filebeagle) || &cp || version < 700
+if exists('g:loaded_filebeagle') || &cp || version < 700
     finish
 endif
 let g:loaded_filebeagle = 1
-" avoid line continuation issues (see ':help user_41.txt')
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -21,7 +20,7 @@ command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpen("", 
 nnoremap <silent> <Plug>FileBeagleOpenCurrentWorkingDir     :FileBeagle<CR>
 nnoremap <silent> <Plug>FileBeagleOpenCurrentBufferDir      :FileBeagleBufferDir<CR>
 
-" netrw hijacking {{{1
+" netrw hijacking
 " ==============================================================================
 " (from EasyTree by Dmitry "troydm" Geurkov <d.geurkov@gmail.com>)
 function! s:OpenDirHere(dir)
@@ -43,7 +42,5 @@ augroup FileBeagle
     autocmd BufEnter * call <SID>OpenDirHere(expand('<amatch>'))
 augroup end
 endif
-" }}}1
 
 let &cpo = s:save_cpo
-" vim:foldlevel=4:
