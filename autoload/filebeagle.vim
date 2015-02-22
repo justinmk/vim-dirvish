@@ -72,21 +72,6 @@ function! s:base_dirname(dirname)
     return split(l:dirname, s:sep_as_pattern)[-1] . s:sep
 endfunction
 
-function! s:is_path_exists(path)
-    return filereadable(a:path) || !empty(glob(a:path, 1))
-endfunction
-
-function! s:build_current_parent_dir_entry(current_dir)
-    let parent = s:parent_dir(a:current_dir)
-    let entry = {
-                \ "full_path" : parent,
-                \ "basename" : "..",
-                \ "dirname" : fnamemodify(parent, ":h"),
-                \ "is_dir" : 1
-                \ }
-    return entry
-endfunction
-
 function! s:discover_paths(current_dir, glob_pattern, is_include_hidden)
     if a:is_include_hidden
         let path_str = glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.s:sep.a:glob_pattern, 1)
@@ -97,7 +82,15 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden)
     call sort(paths)
     let dir_paths = []
     let file_paths = []
-    call add(dir_paths, s:build_current_parent_dir_entry(a:current_dir))
+
+    let parent_path = s:parent_dir(a:current_dir)
+    call add(dir_paths, {
+                \ "full_path" : parent_path,
+                \ "basename" : "..",
+                \ "dirname" : fnamemodify(parent_path, ":h"),
+                \ "is_dir" : 1
+                \ })
+
     for path_entry in paths
         let path_entry = substitute(path_entry, s:sep_as_pattern.'\+', s:sep, 'g')
         let full_path = fnamemodify(path_entry, ":p")
@@ -533,14 +526,13 @@ function! s:new_dirvish()
             let new_focus_file = s:base_dirname(self.focus_dir)
             call self.set_focus_dir(pdir, new_focus_file, 1)
         else
-            call s:notifier.info("No parent directory")
+            call s:notifier.info("no parent directory")
         endif
     endfunction
 
     function! l:directory_viewer.visit_prev_dir() dict
-        " if len(self.prev_focus_dirs) == 0
         if empty(self.prev_focus_dirs)
-            call s:notifier.info("No previous directory")
+            call s:notifier.info("no previous directory")
         else
             let new_focus_dir = self.prev_focus_dirs[-1][0]
             let new_focus_file = self.prev_focus_dirs[-1][1]
@@ -555,13 +547,13 @@ function! s:new_dirvish()
     endfunction
 
     function! l:directory_viewer.set_filter_exp() dict
-        let self.filter_exp = input("Filter expression: ", self.filter_exp)
+        let self.filter_exp = input("filter (regex): ", self.filter_exp)
         if empty(self.filter_exp)
             let self.is_filtered = 0
-            call s:notifier.info("Filter OFF")
+            call s:notifier.info("filter disabled")
         else
             let self.is_filtered = 1
-            call s:notifier.info("Filter ON")
+            call s:notifier.info("filter enabled")
         endif
         call self.render_buffer()
     endfunction
@@ -569,12 +561,12 @@ function! s:new_dirvish()
     function! l:directory_viewer.toggle_filter() dict
         if self.is_filtered
             let self.is_filtered = 0
-            call s:notifier.info("Filter OFF")
+            call s:notifier.info("filter disabled")
             call self.render_buffer()
         else
             if !empty(self.filter_exp)
                 let self.is_filtered = 1
-                call s:notifier.info("Filter ON")
+                call s:notifier.info("filter enabled")
                 call self.render_buffer()
             else
                 call self.set_filter_exp()
@@ -585,30 +577,16 @@ function! s:new_dirvish()
     function! l:directory_viewer.toggle_hidden() dict
         if self.is_include_hidden
             let self.is_include_hidden = 0
-            call s:notifier.info("Not showing hidden files")
+            call s:notifier.info("excluding hidden files")
         else
             let self.is_include_hidden = 1
-            call s:notifier.info("Showing hidden files")
+            call s:notifier.info("showing hidden files")
         endif
         call self.render_buffer()
     endfunction
 
     return l:directory_viewer
 endfunction
-
-" function! FileBeagleStatusLineFilterAndHiddenInfo()
-"     if !exists("b:dirvish")
-"         return ""
-"     endif
-"     let l:status_line = ""
-"     if b:dirvish.is_include_hidden
-"         let l:status_line .= "[hidden files]"
-"     endif
-"     if b:dirvish.is_filtered && !empty(b:dirvish.filter_exp)
-"         let l:status_line .= "[filter:".b:dirvish.filter_exp . "]"
-"     endif
-"     return l:status_line
-" endfunction
 
 " Command Interface {{{1
 " =============================================================================
