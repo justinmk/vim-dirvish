@@ -192,25 +192,18 @@ function! s:new_dirvish()
             setlocal nobuflisted
         endif
 
-        if g:filebeagle_show_line_numbers == 0
-            setlocal nonumber
-        elseif g:filebeagle_show_line_numbers == 1
-            setlocal number
-        endif
-        if g:filebeagle_show_line_relativenumbers == 0
-            setlocal nornu
-        elseif g:filebeagle_show_line_relativenumbers == 1
-            setlocal rnu
+        setlocal bufhidden=wipe buftype=nofile noswapfile nowrap nolist cursorline
+
+        if &l:spell
+            setlocal nospell
+            augroup dirvish_bufferopts
+                autocmd!
+                autocmd BufLeave <buffer> setlocal nospell | autocmd! dirvish_bufferopts *
+            augroup END
         endif
 
-        setlocal buftype=nofile
-        setlocal noswapfile
-        setlocal nowrap
-        setlocal nolist
-        setlocal noinsertmode
-        setlocal cursorline
-        setlocal nospell
-        set ft=filebeagle
+        setlocal undolevels=-1
+        set filetype=dirvish
     endfunction
 
     function! l:directory_viewer.setup_buffer_syntax() dict

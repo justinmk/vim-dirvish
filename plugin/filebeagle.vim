@@ -10,8 +10,6 @@ set cpo&vim
 
 let g:filebeagle_hijack_netrw = get(g:, 'filebeagle_hijack_netrw', 1)
 let g:filebeagle_show_hidden = get(g:, 'filebeagle_show_hidden', 0)
-let g:filebeagle_show_line_numbers = get(g:, 'filebeagle_show_line_numbers', -1)
-let g:filebeagle_show_line_relativenumbers = get(g:, 'filebeagle_show_line_relativenumbers', -1)
 let g:filebeagle_buffer_background_key_map_prefix = get(g:, 'filebeagle_buffer_background_key_map_prefix', 'p')
 let g:filebeagle_buffer_normal_key_maps = get(g:, 'filebeagle_buffer_normal_key_maps', {})
 let g:filebeagle_buffer_visual_key_maps = get(g:, 'filebeagle_buffer_visual_key_maps', {})

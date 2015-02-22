@@ -153,20 +153,9 @@ pt              Open the file or directory under the cursor in a new tab in
 V[count]pt      Open the file or directory at line V[count] in a new tab in
                 the background.
 
--------------------------------------------------------------------------------
-                                                 *filebeagle-set-vim-directory*
-Setting the Vim Directories~
-
-cd              Change Vim working directory to FileBeagle's current focal
-                directory.
-cl              Change Vim local directory to FileBeagle's current focal
-                directory.
-
 ===============================================================================
                                                            *filebeagle-options*
 OPTIONS AND SETTINGS~
-
-The file patterns to ignore can be controlled via |wildignore|.
 
 More options:
 
@@ -177,22 +166,7 @@ g:filebeagle_hijack_netrw~                          *g:filebeagle_hijack_netrw*
 
 g:filebeagle_show_hidden~                            *g:filebeagle_show_hidden*
     Default: 0
-    Show hidden and (wild-)ignored files by default (can be toggled when
-    viewing a directory using 'gh').
-
-g:filebeagle_show_line_numbers~                *g:filebeagle_show_line_numbers*
-    Default: -1
-    If 0, then line numbers (see |nu|) will be suppressed in the directory
-    buffer (i.e, 'set nonumber' will be invoked). If 1, then line numbers will
-    be explicitly activated (i.e, 'set number' will be invoked). If -1
-    (default), then no number options will be explicitly set or unset.
-
-g:filebeagle_show_line_relativenumbers~ *g:filebeagle_show_line_relativenumbers*
-    Default: -1
-    If 0, then relative line numbers (see |rnu|) will be suppressed in the
-    directory buffer (i.e, 'set rnu' will be invoked). If 1, then relative
-    line numbers will be explicitly activated (i.e, 'set nornu' will be
-    invoked). If -1 (default), then no relative number options will be
-    explicitly set or unset.
+    Show hidden files by default (can be toggled with `gh`
+    |filebeagle-buffer-key-maps|).
 
  vim:tw=78:ts=8:ft=help:norl:
