@@ -85,27 +85,25 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden)
 
     let parent_path = s:parent_dir(a:current_dir)
     call add(dir_paths, {
-                \ "full_path" : parent_path,
-                \ "basename" : "..",
+                \ "full_path" : a:current_dir . s:sep . '..' . s:sep,
                 \ "dirname" : fnamemodify(parent_path, ":h"),
-                \ "is_dir" : 1
                 \ })
 
     for path_entry in paths
         let path_entry = substitute(path_entry, s:sep_as_pattern.'\+', s:sep, 'g')
         let full_path = fnamemodify(path_entry, ":p")
-        let basename = fnamemodify(path_entry, ":t")
         let dirname = fnamemodify(path_entry, ":h")
-        let entry = { "full_path": full_path, "basename" : basename, "dirname" : dirname}
-        if isdirectory(path_entry)
-            let entry["is_dir"] = 1
-            call add(dir_paths, entry)
-        else
-            let entry["is_dir"] = 0
-            call add(file_paths, entry)
-        endif
+        call add(
+            \ isdirectory(path_entry) ? dir_paths : file_paths,
+            \ { "full_path": full_path, "dirname" : dirname })
     endfor
     return [dir_paths, file_paths]
+endfunction
+
+function! s:sanity_check() abort
+    if !isdirectory(bufname('%'))
+        echoerr 'dirvish: fatal error: buffer name is not a directory'
+    endif
 endfunction
 
 function! s:new_dirvish()
@@ -168,7 +166,6 @@ function! s:new_dirvish()
         call self.setup_buffer_opts()
         call self.setup_buffer_syntax()
         call self.setup_buffer_keymaps()
-        call self.setup_buffer_statusline()
 
         " filters
         let self.is_filtered = a:is_filtered
@@ -200,7 +197,7 @@ function! s:new_dirvish()
             let self.orig_conceallevel = &l:conceallevel
             setlocal concealcursor=nc conceallevel=3
 
-            syntax match DirvishPathHead '\v.+\/\ze[^\/]+\/?$' conceal
+            syntax match DirvishPathHead '\v.*\/\ze[^\/]+\/?$' conceal
             syntax match DirvishPathTail '\v[^\/]+\/$'
             highlight! link DirvishPathTail Directory
 
@@ -321,38 +318,33 @@ function! s:new_dirvish()
 
     endfunction
 
-    function! l:directory_viewer.render_buffer() dict
+    function! l:directory_viewer.render_buffer() abort dict
+        call s:sanity_check()
+        let w = winsaveview()
+
+
         setlocal modifiable
-
-        silent! normal! gg"_dG
-
-        "change the buffer name
-        exe "file ".fnameescape(self.focus_dir)
+        %delete
 
         let self.jump_map = {}
         call self.setup_buffer_syntax()
         let paths = s:discover_paths(self.focus_dir, "*", self.is_include_hidden)
         for path in paths[0] + paths[1]
-            if !path.is_dir && self.is_filtered && !empty(self.filter_exp) && (path["basename"] !~# self.filter_exp)
+            let tail = fnamemodify(path["full_path"], ':t')
+            if !isdirectory(path["full_path"]), && self.is_filtered && !empty(self.filter_exp) && (tail !~# self.filter_exp)
                 continue
             endif
-            let l:line_map = {
+            let self.jump_map[line("$")] = {
                         \ "full_path" : path["full_path"],
-                        \ "basename" : path["basename"],
                         \ "dirname" : path["dirname"],
-                        \ "is_dir" : path["is_dir"]
                         \ }
-            let text = path["full_path"]
-            let self.jump_map[line("$")] = l:line_map
-            call append(line("$")-1, text)
+            call append(line("$")-1, path["full_path"])
         endfor
 
-        " remove extra last line
-        silent! normal! GV"_X
-
-        setlocal nomodifiable
-        call cursor(1, 1)
-        let self.default_targets_for_directory[self.focus_dir] = self.focus_file
+        $delete " remove extra last line
+        setlocal nomodifiable nomodified
+        call winrestview(w)
+        let self.default_targets[self.focus_dir] = self.focus_file
         call self.goto_pattern(self.focus_file)
     endfunction
 
@@ -397,7 +389,7 @@ function! s:new_dirvish()
                 " call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
                 return 0
             endif
-            if self.jump_map[l:cur_line].is_dir
+            if isdirectory(self.jump_map[l:cur_line].full_path)
                 let l:num_dir_targets += 1
             endif
             call add(l:selected_entries, self.jump_map[l:cur_line])
@@ -417,11 +409,12 @@ function! s:new_dirvish()
                 return 0
             endif
 
-            let new_focus_file = l:entry.basename == ".."
-                        \ ? s:base_dirname(self.focus_dir)
-                        \ : (a:split_cmd ==# "edit"
-                        \   ? get(self.default_targets_for_directory, l:target, "")
-                        \   : l:target)
+            let isdotdot = l:entry.full_path =~# "\.\.[\\\/]$"
+            let new_focus_file = isdotdot
+                    \ ? s:base_dirname(self.focus_dir)
+                    \ : (a:split_cmd ==# "edit"
+                    \     ? get(self.default_targets, l:target, "")
+                    \     : l:target)
 
             if a:split_cmd == "edit"
                 call self.set_focus_dir(l:target, new_focus_file,  1)
@@ -433,12 +426,11 @@ function! s:new_dirvish()
                 endif
                 let d = s:new_dirvish()
                 call d.open_dir(
-                            \ -1,
                             \ l:target,
                             \ new_focus_file,
                             \ self.prev_buf_num,
                             \ self.prev_focus_dirs,
-                            \ self.default_targets_for_directory,
+                            \ self.default_targets,
                             \ self.is_filtered,
                             \ self.filter_exp,
                             \ self.is_include_hidden,
@@ -461,7 +453,6 @@ function! s:new_dirvish()
         endif
         let self.focus_dir = fnamemodify(a:new_dir, ":p")
         let self.focus_file = a:focus_file
-        call self.render_buffer()
     endfunction
 
     function! l:directory_viewer.visit_files(selected_entries, split_cmd, open_in_background)
@@ -475,7 +466,7 @@ function! s:new_dirvish()
         if !a:open_in_background
             execute "silent keepalt keepjumps buffer " . self.prev_buf_num
         endif
-        let l:opened_basenames = []
+        let l:opened_files = []
         for l:entry in a:selected_entries
             let l:path_to_open = fnameescape(l:entry.full_path)
             try
@@ -489,7 +480,7 @@ function! s:new_dirvish()
             catch /E325:/ " E325: swap file exists
                 call s:notifier.info("E325: swap file exists")
             endtry
-            call add(l:opened_basenames, '"' . fnameescape(l:entry.basename) . '"')
+            call add(l:opened_files, '"' . fnamemodify(l:entry.full_path, ':t') . '"')
         endfor
         if a:open_in_background
             execute "tabnext " . l:cur_tab_num
@@ -507,10 +498,10 @@ function! s:new_dirvish()
                 if new_prev_buf_num > 0
                     let self.prev_buf_num = new_prev_buf_num
                 endif
-                if len(l:opened_basenames) > 1
+                if len(l:opened_files) > 1
                     " Opening multiple in background of same window is a little
                     " cryptic so in this special case, we issue some feedback
-                    echo join(l:opened_basenames, ", ")
+                    echo join(l:opened_files, ", ")
                 endif
             endif
         else
@@ -591,23 +582,18 @@ endfunction
 " Command Interface {{{1
 " =============================================================================
 
-function! filebeagle#FileBeagleOpen(focus_dir, buf_num)
+function! filebeagle#FileBeagleOpen(focus_dir)
     if exists("b:dirvish")
         call s:notifier.info("already open")
         return
     endif
-    let buf = a:buf_num
 
     if empty(a:focus_dir)
-        let focus_dir = getcwd()
-        if !empty(expand("%", 1)) "open current _buffer_ directory
-            let focus_dir = expand('%:p:h', 1)
-        endif
+        "open current _buffer_ directory
+        let focus_dir = empty(expand("%", 1)) ? getcwd() : expand('%:p:h', 1)
     else
         let focus_dir = fnamemodify(a:focus_dir, ":p")
     endif
-
-    let d = s:new_dirvish()
 
     if !isdirectory(focus_dir)
         call s:notifier.error("invalid directory: '" . focus_dir . "'")

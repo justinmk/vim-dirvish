@@ -14,8 +14,8 @@ let g:filebeagle_buffer_normal_key_maps = get(g:, 'filebeagle_buffer_normal_key_
 let g:filebeagle_buffer_visual_key_maps = get(g:, 'filebeagle_buffer_visual_key_maps', {})
 
 
-command! -complete=dir -nargs=* FileBeagle  :call filebeagle#FileBeagleOpen(<q-args>, -1)
-command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpen("", -1)
+command! -complete=dir -nargs=* FileBeagle  :call filebeagle#FileBeagleOpen(<q-args>)
+command! -nargs=0 FileBeagleBufferDir       :call filebeagle#FileBeagleOpen("")
 
 nnoremap <silent> <Plug>FileBeagleOpenCurrentWorkingDir     :FileBeagle<CR>
 nnoremap <silent> <Plug>FileBeagleOpenCurrentBufferDir      :FileBeagleBufferDir<CR>
@@ -25,13 +25,8 @@ nnoremap <silent> <Plug>FileBeagleOpenCurrentBufferDir      :FileBeagleBufferDir
 " (from EasyTree by Dmitry "troydm" Geurkov <d.geurkov@gmail.com>)
 function! s:OpenDirHere(dir)
     if isdirectory(a:dir)
-        let l:focal_dir = a:dir
-        let l:focal_file = bufnr("%")
-        if has("win32")
-            let l:focal_dir = substitute(l:focal_dir, '/', '\\', 'g')
-            let l:focal_file = substitute(l:focal_file, '/', '\\', 'g')
-        endif
-        call filebeagle#FileBeagleOpen(l:focal_dir, l:focal_file)
+        let l:focal_dir = has("win32")? substitute(a:dir, '/', '\\', 'g') : a:dir
+        call filebeagle#FileBeagleOpen(l:focal_dir)
     endif
 endfunction
 
