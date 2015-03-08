@@ -71,12 +71,21 @@ function! s:base_dirname(dirname)
     return split(l:dirname, s:sep_as_pattern)[-1] . s:sep
 endfunction
 
+function! s:sort_paths(p1, p2)
+  if isdirectory(a:p1) && !isdirectory(a:p2)
+    return -1
+  elseif !isdirectory(a:p1) && isdirectory(a:p2)
+    return 1
+  endif
+  return a:p1 ==# a:p2 ? 0 : a:p1 ># a:p2 ? 1 : -1
+endfunction
+
 function! s:discover_paths(current_dir, glob_pattern, showhidden)
     let path_str = a:showhidden
           \ ? glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.s:sep.a:glob_pattern, 1)
           \ : glob(a:current_dir.s:sep.a:glob_pattern, 1)
     let paths = split(path_str, '\n')
-    call sort(paths)
+    call sort(paths, '<sid>sort_paths')
     call map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
     return paths
 endfunction
