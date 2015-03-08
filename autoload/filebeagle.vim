@@ -83,12 +83,6 @@ function! s:discover_paths(current_dir, glob_pattern, is_include_hidden)
     let dir_paths = []
     let file_paths = []
 
-    let parent_path = s:parent_dir(a:current_dir)
-    call add(dir_paths, {
-                \ "full_path" : a:current_dir . s:sep . '..' . s:sep,
-                \ "dirname" : fnamemodify(parent_path, ":h"),
-                \ })
-
     for path_entry in paths
         let path_entry = substitute(path_entry, s:sep_as_pattern.'\+', s:sep, 'g')
         let full_path = fnamemodify(path_entry, ":p")
@@ -107,9 +101,9 @@ function! s:sanity_check() abort
 endfunction
 
 function! s:new_dirvish()
-    let l:directory_viewer = { 'orig_alt_buf_num': -1, 'jump_map': {} }
+    let l:obj = { 'orig_alt_buf_num': -1, 'jump_map': {} }
 
-    function! l:directory_viewer.open_dir(...) abort dict
+    function! l:obj.open_dir(...) abort dict
         let d = self
 
         if a:0 > 0
@@ -180,7 +174,7 @@ function! s:new_dirvish()
         endif
     endfunction
 
-    function! l:directory_viewer.setup_buffer_opts() abort dict
+    function! l:obj.setup_buffer_opts() abort dict
         call s:sanity_check()
 
         setlocal nobuflisted
@@ -198,7 +192,7 @@ function! s:new_dirvish()
         set filetype=dirvish
     endfunction
 
-    function! l:directory_viewer.setup_buffer_syntax() dict
+    function! l:obj.setup_buffer_syntax() dict
         if has("syntax")
             syntax clear
             let self.orig_concealcursor = &l:concealcursor
@@ -220,7 +214,7 @@ function! s:new_dirvish()
         endif
     endfunction
 
-    function! l:directory_viewer.setup_buffer_keymaps() dict
+    function! l:obj.setup_buffer_keymaps() dict
 
         " Avoid 'cannot modify' error for  keys.
         for key in [".", "p", "P", "C", "x", "X", "r", "R", "i", "I", "a", "A", "D", "S", "U"]
@@ -311,7 +305,7 @@ function! s:new_dirvish()
 
     endfunction
 
-    function! l:directory_viewer.render_buffer() abort dict
+    function! l:obj.render_buffer() abort dict
         call s:sanity_check()
         let w = winsaveview()
 
@@ -340,7 +334,7 @@ function! s:new_dirvish()
         call self.goto_pattern(self.focus_file)
     endfunction
 
-    function! l:directory_viewer.quit_buffer() dict
+    function! l:obj.quit_buffer() dict
         "tickle original 'alt' buffer
         if self.orig_alt_buf_num != bufnr('%') && bufexists(self.orig_alt_buf_num)
             exe self.orig_alt_buf_num . 'buffer'
@@ -354,7 +348,7 @@ function! s:new_dirvish()
         endif
     endfunction
 
-    function! l:directory_viewer.visit_target(split_cmd, open_in_background) dict range
+    function! l:obj.visit_target(split_cmd, open_in_background) dict range
         let l:start_line = v:count ? v:count : a:firstline
         let l:end_line   = v:count ? v:count : a:lastline
 
@@ -421,7 +415,7 @@ function! s:new_dirvish()
         endif
     endfunction
 
-    function! l:directory_viewer.visit_files(selected_entries, split_cmd, open_in_background)
+    function! l:obj.visit_files(selected_entries, split_cmd, open_in_background)
         if len(a:selected_entries) < 1
             return
         endif
@@ -475,7 +469,7 @@ function! s:new_dirvish()
         let &lazyredraw = l:old_lazyredraw
     endfunction
 
-    function! l:directory_viewer.visit_parent_dir() dict
+    function! l:obj.visit_parent_dir() dict
         let pdir = s:parent_dir(self.focus_dir)
         echom 'dir:' self.focus_dir 'parent:' pdir
         if pdir ==# self.focus_dir
@@ -486,7 +480,7 @@ function! s:new_dirvish()
         call filebeagle#open(pdir)
     endfunction
 
-    function! l:directory_viewer.visit_prev_dir() dict
+    function! l:obj.visit_prev_dir() dict
         echoerr 'TODO: buggy/not implemented'
         return
 
@@ -499,12 +493,12 @@ function! s:new_dirvish()
         endif
     endfunction
 
-    function! l:directory_viewer.goto_pattern(pattern) dict
+    function! l:obj.goto_pattern(pattern) dict
         let full_pattern = '^\V\C' . escape(a:pattern, '/\') . '$'
         call search(full_pattern, "cw")
     endfunction
 
-    function! l:directory_viewer.set_filter_exp() dict
+    function! l:obj.set_filter_exp() dict
         let self.filter_exp = input("filter (regex): ", self.filter_exp)
         if empty(self.filter_exp)
             let self.is_filtered = 0
@@ -516,7 +510,7 @@ function! s:new_dirvish()
         call self.render_buffer()
     endfunction
 
-    function! l:directory_viewer.toggle_filter() dict
+    function! l:obj.toggle_filter() dict
         if self.is_filtered
             let self.is_filtered = 0
             call s:notifier.info("filter disabled")
@@ -532,7 +526,7 @@ function! s:new_dirvish()
         endif
     endfunction
 
-    function! l:directory_viewer.toggle_hidden() dict
+    function! l:obj.toggle_hidden() dict
         if self.is_include_hidden
             let self.is_include_hidden = 0
             call s:notifier.info("excluding hidden files")
@@ -543,7 +537,7 @@ function! s:new_dirvish()
         call self.render_buffer()
     endfunction
 
-    return l:directory_viewer
+    return l:obj
 endfunction
 
 function! filebeagle#open(dir)
