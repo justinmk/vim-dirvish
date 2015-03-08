@@ -1,14 +1,13 @@
-"  Copyright 2014 Jeet Sukumaran.
-"  Modified by Justin M. Keyes.
+"  Copyright 2014 Jeet Sukumaran. Modified by Justin M. Keyes.
 "
 " Things that are unnecessary when you set the buffer name:
-"
-" - let &titlestring = expand(self.focus_dir, 1)
+" - let &titlestring = expand(self.dir, 1)
 " - specialized 'cd', 'cl'
 "
 " Things that are unnecessary when you conceal the full file paths:
 " - specialized "yank" commands
 " - specialized "read" commands (instead: yy and :r ...)
+" - imitation CTRL-W_... mappings
 "
 " Fixed bug: 'buffer <num>' may open buffer with actual number name.
 
@@ -72,26 +71,14 @@ function! s:base_dirname(dirname)
     return split(l:dirname, s:sep_as_pattern)[-1] . s:sep
 endfunction
 
-function! s:discover_paths(current_dir, glob_pattern, is_include_hidden)
-    if a:is_include_hidden
-        let path_str = glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.s:sep.a:glob_pattern, 1)
-    else
-        let path_str = glob(a:current_dir.s:sep.a:glob_pattern, 1)
-    endif
+function! s:discover_paths(current_dir, glob_pattern, showhidden)
+    let path_str = a:showhidden
+          \ ? glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.s:sep.a:glob_pattern, 1)
+          \ : glob(a:current_dir.s:sep.a:glob_pattern, 1)
     let paths = split(path_str, '\n')
     call sort(paths)
-    let dir_paths = []
-    let file_paths = []
-
-    for path_entry in paths
-        let path_entry = substitute(path_entry, s:sep_as_pattern.'\+', s:sep, 'g')
-        let full_path = fnamemodify(path_entry, ":p")
-        let dirname = fnamemodify(path_entry, ":h")
-        call add(
-            \ isdirectory(path_entry) ? dir_paths : file_paths,
-            \ { "full_path": full_path, "dirname" : dirname })
-    endfor
-    return [dir_paths, file_paths]
+    call map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
+    return paths
 endfunction
 
 function! s:sanity_check() abort
@@ -101,45 +88,35 @@ function! s:sanity_check() abort
 endfunction
 
 function! s:new_dirvish()
-    let l:obj = { 'orig_alt_buf_num': -1, 'jump_map': {} }
+    let l:obj = { 'altbuf': -1, 'showhidden': 0, 'jump_map': {} }
 
     function! l:obj.open_dir(...) abort dict
         let d = self
 
         if a:0 > 0
-            if a:0 != 8
-                echoerr 'open_dir: requires exactly 8 extra args, but got '.a:0
-            endif
-
             " Full path to the directory being viewed.
-            let d.focus_dir = s:normalize_dir(a:1)
-            " Full path to the file or directory that is should be the initial
-            " target or focus
-            let d.focus_file = fnamemodify(a:2, ':p')
-            " The buffer from which dirvish was invoked. If prev_buf_num == buf_num,
-            " assume it dirvish was invoked via `vim /path/to/dir`.
-            let d.prev_buf_num = a:3
+            let d.dir = s:normalize_dir(a:1)
+            let d.prev_buf_num = a:2
             " list of tuples, [ (string, string) ]
             " The history stack, with the first element of the tuple being the
             " directory previously visited and the second element of the tuple being
             " the last selected entry in that directory
-            let d.prev_focus_dirs = deepcopy(a:4)
+            let d.prev_dirs = deepcopy(a:3)
             " {string: string} dict of {directories : default targets}
             "   Determines where the cursor will be placed when returning to
             "   a previously-visited view.
-            let d.default_targets = deepcopy(a:5)
+            let d.default_targets = deepcopy(a:4)
             " If truthy, `filter_exp` will be applied.
-            let d.is_filtered = a:6
+            let d.is_filtered = a:5
             " Regexp used to filter entries if `is_filtered` is truthy.
-            let d.filter_exp = a:7
-            let d.is_include_hidden = a:8
+            let d.filter_exp = a:6
         endif
 
-        let bnr = bufnr('^' . d.focus_dir . '$')
+        let bnr = bufnr('^' . d.dir . '$')
 
         try
           if -1 == bnr
-            execute 'silent noau keepalt keepjumps noswapfile edit ' . fnameescape(d.focus_dir)
+            execute 'silent noau keepalt keepjumps noswapfile edit ' . fnameescape(d.dir)
           else
             execute 'silent noau keepalt keepjumps noswapfile '.bnr.'buffer'
           endif
@@ -151,19 +128,20 @@ function! s:new_dirvish()
         let d.buf_num = bufnr('%')
 
         if exists('b:dirvish')
-            let b:dirvish.focus_dir = d.focus_dir
-            let b:dirvish.focus_file = d.focus_file
+            let b:dirvish.dir = d.dir
             let b:dirvish.prev_buf_num = d.prev_buf_num
-            let b:dirvish.prev_focus_dirs = d.prev_focus_dirs
+            let b:dirvish.prev_dirs = d.prev_dirs
             let b:dirvish.default_targets = d.default_targets
             let b:dirvish.is_filtered = d.is_filtered
             let b:dirvish.filter_exp = d.filter_exp
-            let b:dirvish.is_include_hidden = d.is_include_hidden
+            let b:dirvish.showhidden = d.showhidden
         else
             let b:dirvish = d
         endif
 
-        echom "prevbufnum:" d.prev_buf_num 'bufnum:' d.buf_num 'origalt:' d.orig_alt_buf_num
+        if exists('#User#DirvishEnter')
+          doautocmd User DirvishEnter
+        endif
 
         call b:dirvish.setup_buffer_opts()
         call b:dirvish.setup_buffer_syntax()
@@ -178,13 +156,16 @@ function! s:new_dirvish()
         call s:sanity_check()
 
         setlocal nobuflisted
-        setlocal bufhidden=wipe buftype=nofile noswapfile nowrap nolist cursorline
+        setlocal bufhidden=unload
+        setlocal buftype=nofile noswapfile nowrap nolist cursorline
 
         if &l:spell
             setlocal nospell
             augroup dirvish_bufferopts
                 autocmd!
-                autocmd BufHidden,BufWipeout,BufUnload,BufDelete <buffer> setlocal nospell | autocmd! dirvish_bufferopts *
+                "restore window-local settings
+                autocmd BufHidden,BufWipeout,BufUnload,BufDelete <buffer>
+                      \ setlocal spell | autocmd! dirvish_bufferopts *
             augroup END
         endif
 
@@ -195,9 +176,10 @@ function! s:new_dirvish()
     function! l:obj.setup_buffer_syntax() dict
         if has("syntax")
             syntax clear
-            let self.orig_concealcursor = &l:concealcursor
-            let self.orig_conceallevel = &l:conceallevel
-            setlocal concealcursor=nc conceallevel=3
+            let w:dirvish = get(w:, 'dirvish', {})
+            let w:dirvish.orig_concealcursor = &l:concealcursor
+            let w:dirvish.orig_conceallevel = &l:conceallevel
+            setlocal concealcursor=nvc conceallevel=3
 
             syntax match DirvishPathHead '\v.*\/\ze[^\/]+\/?$' conceal
             syntax match DirvishPathTail '\v[^\/]+\/$'
@@ -205,9 +187,10 @@ function! s:new_dirvish()
 
             augroup dirvish_syntaxteardown
                 autocmd!
-                autocmd BufHidden,BufWipeout,BufUnload,BufDelete <buffer> if exists('b:dirvish')
-                    \ |     let &l:concealcursor = b:dirvish.orig_concealcursor
-                    \ |     let &l:conceallevel = b:dirvish.orig_conceallevel
+                "restore window-local settings
+                autocmd BufHidden,BufWipeout,BufUnload,BufDelete <buffer> if exists('w:dirvish')
+                    \ |   let &l:concealcursor = w:dirvish.orig_concealcursor
+                    \ |   let &l:conceallevel = w:dirvish.orig_conceallevel
                     \ | endif
                     \ | autocmd! dirvish_syntaxteardown *
             augroup END
@@ -223,71 +206,64 @@ function! s:new_dirvish()
             endif
         endfor
 
+        let popout_key = get(g:, 'dirvish_popout_key', 'p')
         let l:default_normal_plug_map = {}
         let l:default_visual_plug_map = {}
 
-        """ Directory list buffer management
-        nnoremap <Plug>(FileBeagleBufferRefresh)                            :call b:dirvish.render_buffer()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferRefresh'] = 'R'
-        nnoremap <Plug>(FileBeagleBufferSetFilter)                          :call b:dirvish.set_filter_exp()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferSetFilter'] = 'f'
-        nnoremap <Plug>(FileBeagleBufferToggleFilter)                       :call b:dirvish.toggle_filter()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferToggleFilter'] = 'F'
-        nnoremap <Plug>(FileBeagleBufferToggleHiddenAndIgnored)             :call b:dirvish.toggle_hidden()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferToggleHiddenAndIgnored'] = 'gh'
-        nnoremap <Plug>(FileBeagleBufferQuit)                               :call b:dirvish.quit_buffer()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferQuit'] = 'q'
+        nnoremap <Plug>(dirvish_refresh)                            :call b:dirvish.render_buffer()<CR>
+        let l:default_normal_plug_map['dirvish_refresh'] = 'R'
+        nnoremap <Plug>(dirvish_setFilter)                          :call b:dirvish.set_filter_exp()<CR>
+        let l:default_normal_plug_map['dirvish_setFilter'] = 'f'
+        nnoremap <Plug>(dirvish_toggleFilter)                       :call b:dirvish.toggle_filter()<CR>
+        let l:default_normal_plug_map['dirvish_toggleFilter'] = 'F'
+        nnoremap <Plug>(dirvish_toggleHiddenAndIgnored)             :call b:dirvish.toggle_hidden()<CR>
+        let l:default_normal_plug_map['dirvish_toggleHiddenAndIgnored'] = 'gh'
+        nnoremap <Plug>(dirvish_quit)                               :call b:dirvish.quit_buffer()<CR>
+        let l:default_normal_plug_map['dirvish_quit'] = 'q'
 
-        """ Open selected file/directory
-        nnoremap <Plug>(FileBeagleBufferVisitTarget)                        :<C-U>call b:dirvish.visit_target("edit", 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferVisitTarget'] = 'o'
-        vnoremap <Plug>(FileBeagleBufferVisitTarget)                        :call b:dirvish.visit_target("edit", 0)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferVisitTarget'] = 'o'
-        nnoremap <Plug>(FileBeagleBufferBgVisitTarget)                      :<C-U>call b:dirvish.visit_target("edit", 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferBgVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 'o'
-        vnoremap <Plug>(FileBeagleBufferBgVisitTarget)                      :call b:dirvish.visit_target("edit", 1)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferBgVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 'o'
+        nnoremap <Plug>(dirvish_visitTarget)                        :<C-U>call b:dirvish.visit_target("edit", 0)<CR>
+        let l:default_normal_plug_map['dirvish_visitTarget'] = 'o'
+        vnoremap <Plug>(dirvish_visitTarget)                        :call b:dirvish.visit_target("edit", 0)<CR>
+        let l:default_visual_plug_map['dirvish_visitTarget'] = 'o'
+        nnoremap <Plug>(dirvish_bgVisitTarget)                      :<C-U>call b:dirvish.visit_target("edit", 1)<CR>
+        let l:default_normal_plug_map['dirvish_bgVisitTarget'] = popout_key . 'o'
+        vnoremap <Plug>(dirvish_bgVisitTarget)                      :call b:dirvish.visit_target("edit", 1)<CR>
+        let l:default_visual_plug_map['dirvish_bgVisitTarget'] = popout_key . 'o'
 
-        """ Special case: <CR>
-        nmap <buffer> <silent> <CR> <Plug>(FileBeagleBufferVisitTarget)
-        vmap <buffer> <silent> <CR> <Plug>(FileBeagleBufferVisitTarget)
-        execute "nmap <buffer> <silent> " . g:filebeagle_buffer_background_key_map_prefix . "<CR> <Plug>(FileBeagleBufferBgVisitTarget)"
-        execute "vmap <buffer> <silent> " . g:filebeagle_buffer_background_key_map_prefix . "<CR> <Plug>(FileBeagleBufferBgVisitTarget)"
+        nmap <buffer> <silent> <CR> <Plug>(dirvish_visitTarget)
+        vmap <buffer> <silent> <CR> <Plug>(dirvish_visitTarget)
+        execute "nmap <buffer> <silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
+        execute "vmap <buffer> <silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
 
-        nnoremap <Plug>(FileBeagleBufferSplitVerticalVisitTarget)           :<C-U>call b:dirvish.visit_target("vert sp", 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferSplitVerticalVisitTarget'] = 'v'
-        vnoremap <Plug>(FileBeagleBufferSplitVerticalVisitTarget)           :call b:dirvish.visit_target("vert sp", 0)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferSplitVerticalVisitTarget'] = 'v'
-        nnoremap <Plug>(FileBeagleBufferBgSplitVerticalVisitTarget)         :<C-U>call b:dirvish.visit_target("rightbelow vert sp", 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferBgSplitVerticalVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 'v'
-        vnoremap <Plug>(FileBeagleBufferBgSplitVerticalVisitTarget)         :call b:dirvish.visit_target("rightbelow vert sp", 1)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferBgSplitVerticalVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 'v'
+        nnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :<C-U>call b:dirvish.visit_target("vert sp", 0)<CR>
+        let l:default_normal_plug_map['dirvish_splitVerticalVisitTarget'] = 'v'
+        vnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :call b:dirvish.visit_target("vert sp", 0)<CR>
+        let l:default_visual_plug_map['dirvish_splitVerticalVisitTarget'] = 'v'
+        nnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :<C-U>call b:dirvish.visit_target("rightbelow vert sp", 1)<CR>
+        let l:default_normal_plug_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
+        vnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :call b:dirvish.visit_target("rightbelow vert sp", 1)<CR>
+        let l:default_visual_plug_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
 
-        nnoremap <Plug>(FileBeagleBufferSplitVisitTarget)                   :<C-U>call b:dirvish.visit_target("sp", 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferSplitVisitTarget'] = 's'
-        vnoremap <Plug>(FileBeagleBufferSplitVisitTarget)                   :call b:dirvish.visit_target("sp", 0)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferSplitVisitTarget'] = 's'
-        nnoremap <Plug>(FileBeagleBufferBgSplitVisitTarget)                 :<C-U>call b:dirvish.visit_target("rightbelow sp", 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferBgSplitVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 's'
-        vnoremap <Plug>(FileBeagleBufferBgSplitVisitTarget)                 :call b:dirvish.visit_target("rightbelow sp", 1)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferBgSplitVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 's'
+        nnoremap <Plug>(dirvish_splitVisitTarget)                   :<C-U>call b:dirvish.visit_target("sp", 0)<CR>
+        let l:default_normal_plug_map['dirvish_splitVisitTarget'] = 's'
+        vnoremap <Plug>(dirvish_splitVisitTarget)                   :call b:dirvish.visit_target("sp", 0)<CR>
+        let l:default_visual_plug_map['dirvish_splitVisitTarget'] = 's'
+        nnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :<C-U>call b:dirvish.visit_target("rightbelow sp", 1)<CR>
+        let l:default_normal_plug_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
+        vnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :call b:dirvish.visit_target("rightbelow sp", 1)<CR>
+        let l:default_visual_plug_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
 
-        nnoremap <Plug>(FileBeagleBufferTabVisitTarget)                     :<C-U>call b:dirvish.visit_target("tabedit", 0)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferTabVisitTarget'] = 't'
-        vnoremap <Plug>(FileBeagleBufferTabVisitTarget)                     :call b:dirvish.visit_target("tabedit", 0)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferTabVisitTarget'] = 't'
-        nnoremap <Plug>(FileBeagleBufferBgTabVisitTarget)                   :<C-U>call b:dirvish.visit_target("tabedit", 1)<CR>
-        let l:default_normal_plug_map['FileBeagleBufferBgTabVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 't'
-        vnoremap <Plug>(FileBeagleBufferBgTabVisitTarget)                   :call b:dirvish.visit_target("tabedit", 1)<CR>
-        let l:default_visual_plug_map['FileBeagleBufferBgTabVisitTarget'] = g:filebeagle_buffer_background_key_map_prefix . 't'
+        nnoremap <Plug>(dirvish_tabVisitTarget)                     :<C-U>call b:dirvish.visit_target("tabedit", 0)<CR>
+        let l:default_normal_plug_map['dirvish_tabVisitTarget'] = 't'
+        vnoremap <Plug>(dirvish_tabVisitTarget)                     :call b:dirvish.visit_target("tabedit", 0)<CR>
+        let l:default_visual_plug_map['dirvish_tabVisitTarget'] = 't'
+        nnoremap <Plug>(dirvish_bgTabVisitTarget)                   :<C-U>call b:dirvish.visit_target("tabedit", 1)<CR>
+        let l:default_normal_plug_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
+        vnoremap <Plug>(dirvish_bgTabVisitTarget)                   :call b:dirvish.visit_target("tabedit", 1)<CR>
+        let l:default_visual_plug_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
 
-        """ Focal directory changing
-        nnoremap <Plug>(FileBeagleBufferFocusOnParent)                      :call b:dirvish.visit_parent_dir()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferFocusOnParent'] = '-'
-        nnoremap <Plug>(FileBeagleBufferFocusOnPrevious)                    :call b:dirvish.visit_prev_dir()<CR>
-        let l:default_normal_plug_map['FileBeagleBufferFocusOnPrevious'] = 'b'
-        nmap <buffer> <silent> <BS> <Plug>(FileBeagleBufferFocusOnPrevious)
-        nmap <buffer> <silent> u    <BS>
+        nnoremap <Plug>(dirvish_focusOnParent)                      :call b:dirvish.visit_parent_dir()<CR>
+        let l:default_normal_plug_map['dirvish_focusOnParent'] = '-'
 
         for plug_name in keys(l:default_normal_plug_map)
             let plug_key = l:default_normal_plug_map[plug_name]
@@ -309,42 +285,49 @@ function! s:new_dirvish()
         call s:sanity_check()
         let w = winsaveview()
 
+        echom localtime() 'prev:'.self.prev_buf_num 'buf:'.self.buf_num 'alt:'.self.altbuf
 
         setlocal modifiable
         %delete
 
         call self.setup_buffer_syntax()
-        let paths = s:discover_paths(self.focus_dir, "*", self.is_include_hidden)
-        for path in paths[0] + paths[1]
-            let tail = fnamemodify(path["full_path"], ':t')
-            if !isdirectory(path["full_path"]) && self.is_filtered && !empty(self.filter_exp) && (tail !~# self.filter_exp)
+        let paths = s:discover_paths(self.dir, "*", self.showhidden)
+        for path in paths
+            let tail = fnamemodify(path, ':t')
+            if !isdirectory(path) && self.is_filtered && !empty(self.filter_exp) && (tail !~# self.filter_exp)
                 continue
             endif
-            let self.jump_map[line("$")] = {
-                        \ "full_path" : path["full_path"],
-                        \ "dirname" : path["dirname"],
-                        \ }
-            call append(line("$")-1, path["full_path"])
+            let self.jump_map[line("$")] = path
+            call append(line("$")-1, path)
         endfor
 
         $delete " remove extra last line
         setlocal nomodifiable nomodified
         call winrestview(w)
-        let self.default_targets[self.focus_dir] = self.focus_file
-        call self.goto_pattern(self.focus_file)
     endfunction
 
     function! l:obj.quit_buffer() dict
-        "tickle original 'alt' buffer
-        if self.orig_alt_buf_num != bufnr('%') && bufexists(self.orig_alt_buf_num)
-            exe self.orig_alt_buf_num . 'buffer'
+        let altbufnr = self.altbuf
+        "tickle original alt buffer
+        if bufexists(altbufnr) && '' ==# getbufvar(altbufnr, 'dirvish')
+            exe 'noau ' . altbufnr . 'buffer'
         endif
 
         "restore original buffer
         if self.prev_buf_num != bufnr('%') && bufexists(self.prev_buf_num)
             exe self.prev_buf_num . 'buffer'
-          elseif exists('b:dirvish')
-            silent! bdelete
+        else
+            "find a buffer that is _not_ a dirvish buffer.
+            let validbufs = filter(range(1, bufnr('$')),
+                        \ 'buflisted(v:val)
+                        \  && ""      ==# getbufvar(v:val, "dirvish")
+                        \  && "help"  !=# getbufvar(v:val, "&buftype")
+                        \  && v:val   !=  bufnr("%")
+                        \  && !isdirectory(bufname(v:val))
+                        \ ')
+            if len(validbufs) > 0
+              exe validbufs[0] . 'buffer'
+            endif
         endif
     endfunction
 
@@ -359,7 +342,7 @@ function! s:new_dirvish()
                 " call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
                 return 0
             endif
-            if isdirectory(self.jump_map[l:cur_line].full_path)
+            if isdirectory(self.jump_map[l:cur_line])
                 let l:num_dir_targets += 1
             endif
             call add(l:selected_entries, self.jump_map[l:cur_line])
@@ -372,38 +355,30 @@ function! s:new_dirvish()
 
         if l:num_dir_targets == 1
             let l:cur_tab_num = tabpagenr()
-            let l:entry = l:selected_entries[0]
-            let l:target = l:entry.full_path
+            let l:target = l:selected_entries[0]
             if !isdirectory(l:target)
                 call s:notifier.error("cannot open: '" . l:target . "'")
                 return 0
             endif
 
-            let isdotdot = l:entry.full_path =~# "\.\.[\\\/]$"
-            let new_focus_file = isdotdot
-                    \ ? s:base_dirname(self.focus_dir)
-                    \ : (a:split_cmd ==# "edit"
-                    \     ? get(self.default_targets, l:target, "")
-                    \     : l:target)
-
             if a:split_cmd == "edit"
-                call self.set_focus_dir(l:target, new_focus_file,  1)
+                let d = deepcopy(b:dirvish)
+                let d.dir = s:normalize_dir(l:target)
+                call d.open_dir()
             else
                 if !a:open_in_background || a:split_cmd ==# "tabedit"
                     execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
                 else
                     execute "silent keepalt keepjumps " . a:split_cmd
                 endif
-                let d = s:new_dirvish()
+                let d = deepcopy(b:dirvish)
                 call d.open_dir(
                             \ l:target,
-                            \ new_focus_file,
                             \ self.prev_buf_num,
-                            \ self.prev_focus_dirs,
+                            \ self.prev_dirs,
                             \ self.default_targets,
                             \ self.is_filtered,
-                            \ self.filter_exp,
-                            \ self.is_include_hidden,
+                            \ self.filter_exp
                             \ )
                 if a:open_in_background
                     execute "tabnext " . l:cur_tab_num
@@ -428,7 +403,7 @@ function! s:new_dirvish()
         endif
         let l:opened_files = []
         for l:entry in a:selected_entries
-            let l:path_to_open = fnameescape(l:entry.full_path)
+            let l:path_to_open = fnameescape(l:entry)
             try
                 execute l:split_cmd . " " . l:path_to_open
             catch /E37:/
@@ -441,7 +416,7 @@ function! s:new_dirvish()
             catch /E3/25:/
                 call s:notifier.info("E325: swap file exists")
             endtry
-            call add(l:opened_files, '"' . fnamemodify(l:entry.full_path, ':t') . '"')
+            call add(l:opened_files, '"' . fnamemodify(l:entry, ':t') . '"')
         endfor
         if a:open_in_background
             execute "tabnext " . l:cur_tab_num
@@ -452,10 +427,10 @@ function! s:new_dirvish()
             redraw!
             if a:split_cmd == "edit"
                 " It makes sense (to me, at least) to go to the last buffer
-                " selected & opened upon closing FileBeagle when in this
+                " selected & opened upon closing Dirvish when in this
                 " combination of modes (i.e., split = 'edit' and in
                 " background)
-                let new_prev_buf_num = bufnr(a:selected_entries[-1].full_path)
+                let new_prev_buf_num = bufnr(a:selected_entries[-1])
                 if new_prev_buf_num > 0
                     let self.prev_buf_num = new_prev_buf_num
                 endif
@@ -470,27 +445,13 @@ function! s:new_dirvish()
     endfunction
 
     function! l:obj.visit_parent_dir() dict
-        let pdir = s:parent_dir(self.focus_dir)
-        echom 'dir:' self.focus_dir 'parent:' pdir
-        if pdir ==# self.focus_dir
+        let pdir = s:parent_dir(self.dir)
+        if pdir ==# self.dir
             call s:notifier.info("no parent directory")
             return
         endif
 
-        call filebeagle#open(pdir)
-    endfunction
-
-    function! l:obj.visit_prev_dir() dict
-        echoerr 'TODO: buggy/not implemented'
-        return
-
-        if empty(self.prev_focus_dirs)
-            call s:notifier.info("no previous directory")
-        else
-            let new_focus_file = self.prev_focus_dirs[-1][1]
-            call remove(self.prev_focus_dirs, -1)
-            call self.set_focus_dir(new_focus_dir, new_focus_file, 0)
-        endif
+        call dirvish#open(pdir)
     endfunction
 
     function! l:obj.goto_pattern(pattern) dict
@@ -527,11 +488,11 @@ function! s:new_dirvish()
     endfunction
 
     function! l:obj.toggle_hidden() dict
-        if self.is_include_hidden
-            let self.is_include_hidden = 0
+        if self.showhidden
+            let self.showhidden = 0
             call s:notifier.info("excluding hidden files")
         else
-            let self.is_include_hidden = 1
+            let self.showhidden = 1
             call s:notifier.info("showing hidden files")
         endif
         call self.render_buffer()
@@ -540,36 +501,42 @@ function! s:new_dirvish()
     return l:obj
 endfunction
 
-function! filebeagle#open(dir)
-    " if exists("b:dirvish")
-    "   call s:notifier.info("already open")
-    "   return
-    " endif
+function! dirvish#open(dir)
+    let dir = expand(a:dir)
 
-    let dir = empty(a:dir)
+    if !isdirectory(dir)
+      "If, for example, '%' was passed, try chopping off the file part.
+      let dir = s:parent_dir(dir)
+    endif
+
+    let dir = s:normalize_dir(empty(dir)
             \ ? (empty(expand("%", 1)) ? getcwd() : expand('%:p:h', 1))
-            \ : fnamemodify(a:dir, ":p")
+            \ : fnamemodify(dir, ':p'))
 
     if !isdirectory(dir)
         call s:notifier.error("invalid directory: '" . dir . "'")
         return
     endif
 
+    if exists('b:dirvish') && dir ==# s:normalize_dir(b:dirvish.dir)
+      "current buffer is already viewing that directory.
+      return
+    endif
+
     let d = s:new_dirvish()
 
-    if !exists('b:dirvish')
-        let d.orig_alt_buf_num = bufnr('#') " remember alt buffer before clobbering.
-    endif
+    " remember alt buffer before clobbering.
+    let d.altbuf = exists('b:dirvish')
+          \ ? b:dirvish.altbuf
+          \ : getbufvar('#', 'dirvish', {'altbuf':bufnr('#')}).altbuf
 
     call d.open_dir(
                 \ dir,
-                \ bufname("%"),
-                \ bufnr("%"),
+                \ bufnr('%'),
                 \ [],
                 \ {},
                 \ 0,
-                \ "",
-                \ g:filebeagle_show_hidden
+                \ ""
                 \)
 endfunction
 

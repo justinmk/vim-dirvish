@@ -1,4 +1,4 @@
-# FileBeagle
+# Dirvish
 
 ![FileBeagle screen](http://jeetworks.org/wp-content/uploads/filebeagle2.png)
 
