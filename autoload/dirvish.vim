@@ -58,15 +58,10 @@ function! s:normalize_dir(dir)
 endfunction
 
 function! s:parent_dir(dir)
-  return fnamemodify(a:dir, ":p:h:h")
-endfunction
-
-function! s:base_dirname(dirname)
-  let l:dirname = fnamemodify(a:dirname, ":p")
-  if l:dirname == s:sep
-    return s:sep
+  if !isdirectory(a:dir)
+    echoerr 'not a directory:' a:dir
   endif
-  return split(l:dirname, s:sep_as_pattern)[-1] . s:sep
+  return fnamemodify(a:dir, ":p:h:h")
 endfunction
 
 function! s:sort_paths(p1, p2)
@@ -95,7 +90,7 @@ function! s:sanity_check() abort
 endfunction
 
 function! s:new_dirvish()
-  let l:obj = { 'altbuf': -1, 'showhidden': 0, 'jump_map': {} }
+  let l:obj = { 'altbuf': -1, 'prevbuf': -1, 'showhidden': 0 }
 
   function! l:obj.open_dir(...) abort dict
     let d = self
@@ -103,20 +98,20 @@ function! s:new_dirvish()
     if a:0 > 0
       " Full path to the directory being viewed.
       let d.dir = s:normalize_dir(a:1)
-      let d.prev_buf_num = a:2
+
       " list of tuples, [ (string, string) ]
       " The history stack, with the first element of the tuple being the
       " directory previously visited and the second element of the tuple being
       " the last selected entry in that directory
-      let d.prev_dirs = deepcopy(a:3)
+      let d.prev_dirs = deepcopy(a:2)
       " {string: string} dict of {directories : default targets}
       "   Determines where the cursor will be placed when returning to
       "   a previously-visited view.
-      let d.default_targets = deepcopy(a:4)
+      let d.default_targets = deepcopy(a:3)
       " If truthy, `filter_exp` will be applied.
-      let d.is_filtered = a:5
+      let d.is_filtered = a:4
       " Regexp used to filter entries if `is_filtered` is truthy.
-      let d.filter_exp = a:6
+      let d.filter_exp = a:5
     endif
 
     let bnr = bufnr('^' . d.dir . '$')
@@ -136,7 +131,7 @@ function! s:new_dirvish()
 
     if exists('b:dirvish')
       let b:dirvish.dir = d.dir
-      let b:dirvish.prev_buf_num = d.prev_buf_num
+      let b:dirvish.prevbuf = d.prevbuf
       let b:dirvish.prev_dirs = d.prev_dirs
       let b:dirvish.default_targets = d.default_targets
       let b:dirvish.is_filtered = d.is_filtered
@@ -292,7 +287,7 @@ function! s:new_dirvish()
     call s:sanity_check()
     let w = winsaveview()
 
-    echom localtime() 'prev:'.self.prev_buf_num 'buf:'.self.buf_num 'alt:'.self.altbuf
+    echom localtime() 'prev:'.self.prevbuf 'buf:'.self.buf_num 'alt:'.self.altbuf
 
     setlocal modifiable
     %delete
@@ -304,7 +299,6 @@ function! s:new_dirvish()
       if !isdirectory(path) && self.is_filtered && !empty(self.filter_exp) && (tail !~# self.filter_exp)
         continue
       endif
-      let self.jump_map[line("$")] = path
       call append(line("$")-1, path)
     endfor
 
@@ -313,21 +307,15 @@ function! s:new_dirvish()
     call winrestview(w)
   endfunction
 
-  function! l:obj.quit_buffer() dict
-    let altbufnr = self.altbuf
-    "tickle original alt buffer
-    if bufexists(altbufnr) && '' ==# getbufvar(altbufnr, 'dirvish')
-      exe 'noau ' . altbufnr . 'buffer'
-    endif
-
-    "restore original buffer
-    if self.prev_buf_num != bufnr('%') && bufexists(self.prev_buf_num)
-      exe self.prev_buf_num . 'buffer'
+  function! l:obj.visit_prevbuf() abort dict
+    if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
+          \ && type({}) != type(getbufvar(self.prevbuf, 'dirvish'))
+      exe self.prevbuf . 'buffer'
     else
       "find a buffer that is _not_ a dirvish buffer.
       let validbufs = filter(range(1, bufnr('$')),
             \ 'buflisted(v:val)
-            \  && ""      ==# getbufvar(v:val, "dirvish")
+            \  && type({}) ==# type(getbufvar(v:val, "dirvish"))
             \  && "help"  !=# getbufvar(v:val, "&buftype")
             \  && v:val   !=  bufnr("%")
             \  && !isdirectory(bufname(v:val))
@@ -338,111 +326,85 @@ function! s:new_dirvish()
     endif
   endfunction
 
-  function! l:obj.visit(split_cmd, open_in_background) dict range
-    let l:start_line = v:count ? v:count : a:firstline
-    let l:end_line   = v:count ? v:count : a:lastline
-
-    let l:num_dir_targets = 0
-    let l:selected_entries = []
-    for l:cur_line in range(l:start_line, l:end_line)
-      if !has_key(self.jump_map, l:cur_line)
-        " call s:notifier.info("Line " . l:cur_line . " is not a valid navigation entry")
-        return 0
-      endif
-      if isdirectory(self.jump_map[l:cur_line])
-        let l:num_dir_targets += 1
-      endif
-      call add(l:selected_entries, self.jump_map[l:cur_line])
-    endfor
-
-    if l:num_dir_targets == 1
-      let l:cur_tab_num = tabpagenr()
-      let l:target = l:selected_entries[0]
-      if !isdirectory(l:target)
-        call s:notifier.error("cannot open: '" . l:target . "'")
-        return 0
-      endif
-
-      if a:split_cmd == "edit"
-        let d = deepcopy(b:dirvish)
-        let d.dir = s:normalize_dir(l:target)
-        call d.open_dir()
-      else
-        if !a:open_in_background || a:split_cmd ==# "tabedit"
-          execute "silent keepalt keepjumps " . a:split_cmd . " " . bufname(self.prev_buf_num)
-        else
-          execute "silent keepalt keepjumps " . a:split_cmd
-        endif
-        let d = deepcopy(b:dirvish)
-        call d.open_dir(
-              \ l:target,
-              \ self.prev_buf_num,
-              \ self.prev_dirs,
-              \ self.default_targets,
-              \ self.is_filtered,
-              \ self.filter_exp
-              \ )
-        if a:open_in_background
-          execute "tabnext " . l:cur_tab_num
-          execute bufwinnr(self.buf_num) . "wincmd w"
-        endif
-      endif
-    else
-      call self.visit_files(l:selected_entries, a:split_cmd, a:open_in_background)
+  function! l:obj.visit_altbuf() abort dict
+    let altbufnr = self.altbuf
+    if bufexists(altbufnr) && type({}) != type(getbufvar(altbufnr, 'dirvish'))
+      exe 'noau ' . altbufnr . 'buffer'
     endif
   endfunction
 
-  function! l:obj.visit_files(selected_entries, split_cmd, open_in_background)
-    if len(a:selected_entries) < 1
-      return
-    endif
+  function! l:obj.quit_buffer() dict
+    call self.visit_altbuf() "tickle original alt buffer to restore @#
+    call self.visit_prevbuf()
+  endfunction
+
+  function! l:obj.visit(split_cmd, open_in_background) dict range
+    let startline = v:count ? v:count : a:firstline
+    let endline   = v:count ? v:count : a:lastline
+
     let l:cur_tab_num = tabpagenr()
     let old_lazyredraw = &lazyredraw
     set lazyredraw
     let l:split_cmd = a:split_cmd
-    if !a:open_in_background
-      execute 'silent keepalt keepjumps ' . self.prev_buf_num . 'buffer'
-    endif
-    let l:opened_files = []
-    for l:entry in a:selected_entries
-      let l:path_to_open = fnameescape(l:entry)
+
+    let opened = []
+    let paths = map(range(startline, endline), 'getline(v:val)')
+    for path in paths
+      if !isdirectory(path) && !filereadable(path)
+        call s:notifier.warn("invalid path: '" . path . "'")
+        continue
+      endif
+
+      if isdirectory(path) && startline > endline && l:split_cmd ==# 'edit'
+        " opening a bunch of directories in the same window is not useful.
+        continue
+      endif
+
       try
-        execute l:split_cmd . " " . l:path_to_open
+        if isdirectory(path)
+          exe l:split_cmd '| Dirvish' path
+        else
+          exe l:split_cmd fnameescape(path)
+        endif
       catch /E37:/
         call s:notifier.info("E37: No write since last change")
         return
       catch /E36:/
         " E36: no room for any new splits; open in-situ.
-        let l:split_cmd = "edit"
-        execute "edit " . l:path_to_open
+        let l:split_cmd = 'edit'
+        if isdirectory(path)
+          exe 'Dirvish' path
+        else
+          exe l:split_cmd fnameescape(path)
+        endif
       catch /E325:/
         call s:notifier.info("E325: swap file exists")
       endtry
-      call add(l:opened_files, '"' . fnamemodify(l:entry, ':t') . '"')
+      call add(opened, '"' . fnamemodify(path, ':t') . '"')
     endfor
+
     if a:open_in_background
-      execute "tabnext " . l:cur_tab_num
-      execute bufwinnr(self.buf_num) . "wincmd w"
-      if a:split_cmd == "edit"
+      "return to dirvish buffer
+      exe 'tabnext' l:cur_tab_num '|' bufwinnr(self.buf_num) . 'wincmd w'
+      if a:split_cmd ==# 'edit'
         execute 'silent keepalt keepjumps ' . self.buf_num . 'buffer'
       endif
-      redraw!
-      if a:split_cmd == "edit"
-        " It makes sense (to me, at least) to go to the last buffer
-        " selected & opened upon closing Dirvish when in this
-        " combination of modes (i.e., split = 'edit' and in
-        " background)
-        let new_prev_buf_num = bufnr(a:selected_entries[-1])
-        if new_prev_buf_num > 0
-          let self.prev_buf_num = new_prev_buf_num
-        endif
-        if len(l:opened_files) > 1
-          " Opening multiple in background of same window is a little
+      " redraw!
+
+      if a:split_cmd ==# 'edit'
+        if len(opened) > 1
+          " Opening multiple files in background of same window is a little
           " cryptic so in this special case, we issue some feedback
-          echo join(l:opened_files, ", ")
+          echo join(opened, ', ')
         endif
       endif
+    elseif !exists('b:dirvish')
+      "tickle original buffer so that it is now the altbuf.
+      call self.visit_prevbuf()
+      "return to the opened file.
+      b#
     endif
+
     let &lazyredraw = l:old_lazyredraw
   endfunction
 
@@ -503,11 +465,11 @@ function! s:new_dirvish()
 endfunction
 
 function! dirvish#open(dir)
-  let dir = expand(a:dir)
+  let dir = fnamemodify(expand(a:dir), ':p')
 
   if !isdirectory(dir)
     "If, for example, '%' was passed, try chopping off the file part.
-    let dir = s:parent_dir(dir)
+    let dir = fnamemodify(expand(a:dir), ':p:h')
   endif
 
   let dir = s:normalize_dir(empty(dir)
@@ -531,9 +493,11 @@ function! dirvish#open(dir)
         \ ? b:dirvish.altbuf
         \ : getbufvar('#', 'dirvish', {'altbuf':bufnr('#')}).altbuf
 
+  " transfer previous ('original') buffer
+  let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : bufnr('%')
+
   call d.open_dir(
         \ dir,
-        \ bufnr('%'),
         \ [],
         \ {},
         \ 0,

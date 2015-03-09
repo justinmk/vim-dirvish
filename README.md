@@ -6,6 +6,12 @@
 
 ---
 
+Dirvish is a heavily modified (60% smaller) fork of
+[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle). Thanks to
+@jeetsukumaran.
+
+---
+
 Dirvish is to [dired](http://en.wikipedia.org/wiki/Dired) as ed is to vi. It
 does very little: only a few things that aren't already provided by Vim or the
 Vim ecosystem.
@@ -30,9 +36,10 @@ composable concepts instead of having an all-in-one solution for each
 particular task. @tope's plugins demonstrate this theme, and I would like to
 see more plugins follow that pattern.
 
-Dirvish is a heavily modified (57% smaller) fork of
-[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle). Thanks to
-@jeetsukumaran.
+Features:
+
+- altbuf is preserved with a vengeance
+- prevbuf is preserved with a vengeance
 
 ---
 
