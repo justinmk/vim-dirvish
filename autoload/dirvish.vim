@@ -343,11 +343,6 @@ function! s:new_dirvish()
       call add(l:selected_entries, self.jump_map[l:cur_line])
     endfor
 
-    if l:num_dir_targets > 1 || (l:num_dir_targets == 1 && len(l:selected_entries) > 1)
-      call s:notifier.info("Cannot open multiple selections that include directories")
-      return 0
-    endif
-
     if l:num_dir_targets == 1
       let l:cur_tab_num = tabpagenr()
       let l:target = l:selected_entries[0]
