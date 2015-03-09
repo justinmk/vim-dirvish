@@ -11,40 +11,26 @@
 "
 " Fixed bug: 'buffer <num>' may open buffer with actual number name.
 
+let s:sep = has("win32") ? '\' : '/'
+let s:sep_as_pattern = has("win32") ? '\\' : '/'
 
-
-if has("win32")
-    let s:sep = '\'
-    let s:sep_as_pattern = '\\'
-else
-    let s:sep = '/'
-    let s:sep_as_pattern = '/'
-endif
-
-function! s:new_notifier(name)
+function! s:new_notifier()
     let m = {}
-    let m["name"] = a:name
-    let m["title"] = empty(a:name) ? "dirvish" : "dirvish (" . m["name"] . ")"
 
     function! m.format(leader, msg) dict
-        return self.title . ": " . a:leader.a:msg
+        return "dirvish: " . a:leader.a:msg
     endfunction
     function! m.error(msg) dict
         redraw
-        echohl ErrorMsg
-        echomsg self.format("", a:msg)
-        echohl None
+        echohl ErrorMsg | echomsg self.format("", a:msg) | echohl None
     endfunction
     function! m.warn(msg) dict
         redraw
-        echohl WarningMsg
-        echomsg self.format("", a:msg)
-        echohl None
+        echohl WarningMsg | echomsg self.format("", a:msg) | echohl None
     endfunction
     function! m.info(msg) dict
         redraw
-        echohl None
-        echo self.format("", a:msg)
+        echohl None | echo self.format("", a:msg)
     endfunction
 
     return m
@@ -86,8 +72,7 @@ function! s:discover_paths(current_dir, glob_pattern, showhidden)
           \ : glob(a:current_dir.s:sep.a:glob_pattern, 1)
     let paths = split(path_str, '\n')
     call sort(paths, '<sid>sort_paths')
-    call map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
-    return paths
+    return map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
 endfunction
 
 function! s:sanity_check() abort
@@ -550,6 +535,6 @@ function! dirvish#open(dir)
 endfunction
 
 unlet! s:notifier
-let s:notifier = s:new_notifier("")
+let s:notifier = s:new_notifier()
 
 " vim:foldlevel=4:
