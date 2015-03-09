@@ -228,13 +228,13 @@ function! s:new_dirvish()
     nnoremap <Plug>(dirvish_quit)                               :call b:dirvish.quit_buffer()<CR>
     let l:default_normal_plug_map['dirvish_quit'] = 'q'
 
-    nnoremap <Plug>(dirvish_visitTarget)                        :<C-U>call b:dirvish.visit_target("edit", 0)<CR>
+    nnoremap <Plug>(dirvish_visitTarget)                        :<C-U>call b:dirvish.visit("edit", 0)<CR>
     let l:default_normal_plug_map['dirvish_visitTarget'] = 'o'
-    vnoremap <Plug>(dirvish_visitTarget)                        :call b:dirvish.visit_target("edit", 0)<CR>
+    vnoremap <Plug>(dirvish_visitTarget)                        :call b:dirvish.visit("edit", 0)<CR>
     let l:default_visual_plug_map['dirvish_visitTarget'] = 'o'
-    nnoremap <Plug>(dirvish_bgVisitTarget)                      :<C-U>call b:dirvish.visit_target("edit", 1)<CR>
+    nnoremap <Plug>(dirvish_bgVisitTarget)                      :<C-U>call b:dirvish.visit("edit", 1)<CR>
     let l:default_normal_plug_map['dirvish_bgVisitTarget'] = popout_key . 'o'
-    vnoremap <Plug>(dirvish_bgVisitTarget)                      :call b:dirvish.visit_target("edit", 1)<CR>
+    vnoremap <Plug>(dirvish_bgVisitTarget)                      :call b:dirvish.visit("edit", 1)<CR>
     let l:default_visual_plug_map['dirvish_bgVisitTarget'] = popout_key . 'o'
 
     nmap <buffer> <silent> <CR> <Plug>(dirvish_visitTarget)
@@ -242,31 +242,31 @@ function! s:new_dirvish()
     execute "nmap <buffer> <silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
     execute "vmap <buffer> <silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
 
-    nnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :<C-U>call b:dirvish.visit_target("vert sp", 0)<CR>
+    nnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :<C-U>call b:dirvish.visit("vert sp", 0)<CR>
     let l:default_normal_plug_map['dirvish_splitVerticalVisitTarget'] = 'v'
-    vnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :call b:dirvish.visit_target("vert sp", 0)<CR>
+    vnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :call b:dirvish.visit("vert sp", 0)<CR>
     let l:default_visual_plug_map['dirvish_splitVerticalVisitTarget'] = 'v'
-    nnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :<C-U>call b:dirvish.visit_target("rightbelow vert sp", 1)<CR>
+    nnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :<C-U>call b:dirvish.visit("rightbelow vert sp", 1)<CR>
     let l:default_normal_plug_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
-    vnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :call b:dirvish.visit_target("rightbelow vert sp", 1)<CR>
+    vnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :call b:dirvish.visit("rightbelow vert sp", 1)<CR>
     let l:default_visual_plug_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
 
-    nnoremap <Plug>(dirvish_splitVisitTarget)                   :<C-U>call b:dirvish.visit_target("sp", 0)<CR>
+    nnoremap <Plug>(dirvish_splitVisitTarget)                   :<C-U>call b:dirvish.visit("sp", 0)<CR>
     let l:default_normal_plug_map['dirvish_splitVisitTarget'] = 's'
-    vnoremap <Plug>(dirvish_splitVisitTarget)                   :call b:dirvish.visit_target("sp", 0)<CR>
+    vnoremap <Plug>(dirvish_splitVisitTarget)                   :call b:dirvish.visit("sp", 0)<CR>
     let l:default_visual_plug_map['dirvish_splitVisitTarget'] = 's'
-    nnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :<C-U>call b:dirvish.visit_target("rightbelow sp", 1)<CR>
+    nnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :<C-U>call b:dirvish.visit("rightbelow sp", 1)<CR>
     let l:default_normal_plug_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
-    vnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :call b:dirvish.visit_target("rightbelow sp", 1)<CR>
+    vnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :call b:dirvish.visit("rightbelow sp", 1)<CR>
     let l:default_visual_plug_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
 
-    nnoremap <Plug>(dirvish_tabVisitTarget)                     :<C-U>call b:dirvish.visit_target("tabedit", 0)<CR>
+    nnoremap <Plug>(dirvish_tabVisitTarget)                     :<C-U>call b:dirvish.visit("tabedit", 0)<CR>
     let l:default_normal_plug_map['dirvish_tabVisitTarget'] = 't'
-    vnoremap <Plug>(dirvish_tabVisitTarget)                     :call b:dirvish.visit_target("tabedit", 0)<CR>
+    vnoremap <Plug>(dirvish_tabVisitTarget)                     :call b:dirvish.visit("tabedit", 0)<CR>
     let l:default_visual_plug_map['dirvish_tabVisitTarget'] = 't'
-    nnoremap <Plug>(dirvish_bgTabVisitTarget)                   :<C-U>call b:dirvish.visit_target("tabedit", 1)<CR>
+    nnoremap <Plug>(dirvish_bgTabVisitTarget)                   :<C-U>call b:dirvish.visit("tabedit", 1)<CR>
     let l:default_normal_plug_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
-    vnoremap <Plug>(dirvish_bgTabVisitTarget)                   :call b:dirvish.visit_target("tabedit", 1)<CR>
+    vnoremap <Plug>(dirvish_bgTabVisitTarget)                   :call b:dirvish.visit("tabedit", 1)<CR>
     let l:default_visual_plug_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
 
     nnoremap <Plug>(dirvish_focusOnParent)                      :call b:dirvish.visit_parent_dir()<CR>
@@ -338,7 +338,7 @@ function! s:new_dirvish()
     endif
   endfunction
 
-  function! l:obj.visit_target(split_cmd, open_in_background) dict range
+  function! l:obj.visit(split_cmd, open_in_background) dict range
     let l:start_line = v:count ? v:count : a:firstline
     let l:end_line   = v:count ? v:count : a:lastline
 
