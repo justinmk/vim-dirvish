@@ -69,7 +69,7 @@ endfunction
 function! s:discover_paths(current_dir, glob_pattern, showhidden)
   let curdir = s:normalize_dir(a:current_dir)
   let path_str = a:showhidden
-        \ ? glob(curdir.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.a:glob_pattern, 1)
+        \ ? glob(curdir.'.[^.]'.a:glob_pattern, 1)."\n".glob(curdir.a:glob_pattern, 1)
         \ : glob(curdir.a:glob_pattern, 1)
   let paths = split(path_str, '\n')
   call sort(paths, '<sid>sort_paths')
@@ -408,7 +408,7 @@ function! s:new_dirvish()
         " E36: no room for any new splits; open in-situ.
         let l:split_cmd = "edit"
         execute "edit " . l:path_to_open
-      catch /E3/25:/
+      catch /E325:/
         call s:notifier.info("E325: swap file exists")
       endtry
       call add(l:opened_files, '"' . fnamemodify(l:entry, ':t') . '"')
@@ -484,12 +484,11 @@ function! s:new_dirvish()
 
   function! l:obj.toggle_hidden() dict
     if self.showhidden
-      let self.showhidden = 0
       call s:notifier.info("excluding hidden files")
     else
-      let self.showhidden = 1
       call s:notifier.info("showing hidden files")
     endif
+    let self.showhidden = !self.showhidden
     call self.render_buffer()
   endfunction
 
