@@ -67,9 +67,10 @@ function! s:sort_paths(p1, p2)
 endfunction
 
 function! s:discover_paths(current_dir, glob_pattern, showhidden)
+    let curdir = s:normalize_dir(a:current_dir)
     let path_str = a:showhidden
-          \ ? glob(a:current_dir.s:sep.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.s:sep.a:glob_pattern, 1)
-          \ : glob(a:current_dir.s:sep.a:glob_pattern, 1)
+          \ ? glob(curdir.'.[^.]'.a:glob_pattern, 1)."\n".glob(a:current_dir.a:glob_pattern, 1)
+          \ : glob(curdir.a:glob_pattern, 1)
     let paths = split(path_str, '\n')
     call sort(paths, '<sid>sort_paths')
     return map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
