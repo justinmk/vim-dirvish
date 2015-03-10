@@ -223,8 +223,8 @@ function! s:new_dirvish()
     let l:default_normal_plug_map['dirvish_setFilter'] = 'f'
     nnoremap <Plug>(dirvish_toggleFilter)                       :call b:dirvish.toggle_filter()<CR>
     let l:default_normal_plug_map['dirvish_toggleFilter'] = 'F'
-    nnoremap <Plug>(dirvish_toggleHiddenAndIgnored)             :call b:dirvish.toggle_hidden()<CR>
-    let l:default_normal_plug_map['dirvish_toggleHiddenAndIgnored'] = 'gh'
+    nnoremap <Plug>(dirvish_toggleHidden)                       :call b:dirvish.toggle_hidden()<CR>
+    let l:default_normal_plug_map['dirvish_toggleHidden'] = 'gh'
     nnoremap <Plug>(dirvish_quit)                               :call b:dirvish.quit_buffer()<CR>
     let l:default_normal_plug_map['dirvish_quit'] = 'q'
 
@@ -271,6 +271,11 @@ function! s:new_dirvish()
 
     nnoremap <Plug>(dirvish_focusOnParent)                      :call b:dirvish.visit_parent_dir()<CR>
     let l:default_normal_plug_map['dirvish_focusOnParent'] = '-'
+
+    nmap <buffer> <silent> u <Plug>(dirvish_focusOnParent)
+    vmap <buffer> <silent> u <Plug>(dirvish_focusOnParent)
+    execute "nmap <buffer> <silent> " . popout_key . "u <Plug>(dirvish_bgVisitTarget)"
+    execute "vmap <buffer> <silent> " . popout_key . "u <Plug>(dirvish_bgVisitTarget)"
 
     for plug_name in keys(l:default_normal_plug_map)
       let plug_key = l:default_normal_plug_map[plug_name]
@@ -348,10 +353,10 @@ function! s:new_dirvish()
     let startline = v:count ? v:count : a:firstline
     let endline   = v:count ? v:count : a:lastline
 
-    let l:cur_tab_num = tabpagenr()
+    let curtab = tabpagenr()
     let old_lazyredraw = &lazyredraw
     set lazyredraw
-    let l:split_cmd = a:split_cmd
+    let splitcmd = a:split_cmd
 
     let opened = []
     let paths = getline(startline, endline)
@@ -359,27 +364,27 @@ function! s:new_dirvish()
       if !isdirectory(path) && !filereadable(path)
         call s:notifier.warn("invalid path: '" . path . "'")
         continue
-      elseif isdirectory(path) && startline > endline && l:split_cmd ==# 'edit'
+      elseif isdirectory(path) && startline > endline && splitcmd ==# 'edit'
         " opening a bunch of directories in the _same_ window is not useful.
         continue
       endif
 
       try
         if isdirectory(path)
-          exe l:split_cmd '| Dirvish' path
+          exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' path
         else
-          exe l:split_cmd fnameescape(path)
+          exe splitcmd fnameescape(path)
         endif
       catch /E37:/
         call s:notifier.info("E37: No write since last change")
         return
       catch /E36:/
         " E36: no room for any new splits; open in-situ.
-        let l:split_cmd = 'edit'
+        let splitcmd = 'edit'
         if isdirectory(path)
           exe 'Dirvish' path
         else
-          exe l:split_cmd fnameescape(path)
+          exe splitcmd fnameescape(path)
         endif
       catch /E325:/
         call s:notifier.info("E325: swap file exists")
@@ -389,7 +394,7 @@ function! s:new_dirvish()
 
     if a:open_in_background
       "return to dirvish buffer
-      exe 'tabnext' l:cur_tab_num '|' bufwinnr(self.buf_num) . 'wincmd w'
+      exe 'tabnext' curtab '|' bufwinnr(self.buf_num) . 'wincmd w'
       if a:split_cmd ==# 'edit'
         execute 'silent keepalt keepjumps ' . self.buf_num . 'buffer'
       endif
