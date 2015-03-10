@@ -398,7 +398,7 @@ function! s:new_dirvish()
           echo join(opened, ', ')
         endif
       endif
-    elseif !exists('b:dirvish')
+    elseif !exists('b:dirvish') && a:split_cmd !=# 'edit'
       "tickle original buffer so that it is now the altbuf.
       call self.visit_prevbuf()
       "return to the opened file.
