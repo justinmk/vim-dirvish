@@ -11,7 +11,7 @@ command! -nargs=? Dirvish call dirvish#open(<q-args>)
 
 augroup dirvish_bufevents
   au!
-  autocmd BufEnter * if exists('b:dirvish') && isdirectory(expand('<amatch>'))
+  autocmd BufEnter * if exists('b:dirvish') && isdirectory(expand('<amatch>')) && empty(getline(1)) && 1 == line('$')
         \ | call b:dirvish.render_buffer()
         \ | endif
 augroup END
