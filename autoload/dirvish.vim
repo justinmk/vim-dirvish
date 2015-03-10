@@ -49,6 +49,9 @@ function! s:new_notifier()
 endfunction
 
 function! s:normalize_dir(dir)
+  if !isdirectory(a:dir)
+    echoerr 'not a directory:' a:dir
+  endif
   let dir = fnamemodify(a:dir, ':p') "always full path
   let dir = substitute(a:dir, s:sep.'\+', s:sep, 'g') "replace consecutive slashes
   if dir[-1:] !~# '[\/]' "always end with separator
@@ -111,14 +114,10 @@ function! s:new_dirvish()
       " directory previously visited and the second element of the tuple being
       " the last selected entry in that directory
       let d.prev_dirs = deepcopy(a:2)
-      " {string: string} dict of {directories : default targets}
-      "   Determines where the cursor will be placed when returning to
-      "   a previously-visited view.
-      let d.default_targets = deepcopy(a:3)
       " If truthy, `filter_exp` will be applied.
-      let d.is_filtered = a:4
+      let d.is_filtered = a:3
       " Regexp used to filter entries if `is_filtered` is truthy.
-      let d.filter_exp = a:5
+      let d.filter_exp = a:4
     endif
 
     let bnr = bufnr('^' . d.dir . '$')
@@ -140,7 +139,6 @@ function! s:new_dirvish()
       let b:dirvish.dir = d.dir
       let b:dirvish.prevbuf = d.prevbuf
       let b:dirvish.prev_dirs = d.prev_dirs
-      let b:dirvish.default_targets = d.default_targets
       let b:dirvish.is_filtered = d.is_filtered
       let b:dirvish.filter_exp = d.filter_exp
       let b:dirvish.showhidden = d.showhidden
@@ -361,10 +359,8 @@ function! s:new_dirvish()
       if !isdirectory(path) && !filereadable(path)
         call s:notifier.warn("invalid path: '" . path . "'")
         continue
-      endif
-
-      if isdirectory(path) && startline > endline && l:split_cmd ==# 'edit'
-        " opening a bunch of directories in the same window is not useful.
+      elseif isdirectory(path) && startline > endline && l:split_cmd ==# 'edit'
+        " opening a bunch of directories in the _same_ window is not useful.
         continue
       endif
 
@@ -473,16 +469,13 @@ function! s:new_dirvish()
 endfunction
 
 function! dirvish#open(dir)
-  let dir = fnamemodify(expand(a:dir), ':p')
+  let dir = fnamemodify(expand(a:dir, 1), ':p') "Resolves to getcwd() if a:dir is empty.
 
-  if !isdirectory(dir)
-    "If, for example, '%' was passed, try chopping off the file part.
-    let dir = fnamemodify(expand(a:dir), ':p:h')
+  if !isdirectory(dir) "If '%' was passed (for example), chop off the filename.
+    let dir = fnamemodify(dir, ':p:h')
   endif
 
-  let dir = s:normalize_dir(empty(dir)
-        \ ? (empty(expand("%", 1)) ? getcwd() : expand('%:p:h', 1))
-        \ : fnamemodify(dir, ':p'))
+  let dir = s:normalize_dir(dir)
 
   if !isdirectory(dir)
     call s:notifier.error("invalid directory: '" . dir . "'")
@@ -507,7 +500,6 @@ function! dirvish#open(dir)
   call d.open_dir(
         \ dir,
         \ [],
-        \ {},
         \ 0,
         \ ""
         \)
