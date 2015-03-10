@@ -355,6 +355,8 @@ function! s:new_dirvish()
             \ ')
       if len(validbufs) > 0
         exe validbufs[0] . 'buffer'
+      else
+        silent bdelete
       endif
     endif
   endfunction
