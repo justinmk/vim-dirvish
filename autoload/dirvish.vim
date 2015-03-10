@@ -24,7 +24,6 @@
 " Fixed bug: 'buffer <num>' may open buffer with actual number name.
 
 let s:sep = has("win32") ? '\' : '/'
-let s:sep_as_pattern = has("win32") ? '\\' : '/'
 
 function! s:new_notifier()
   let m = {}
@@ -83,14 +82,13 @@ function! s:discover_paths(current_dir, glob_pattern, showhidden)
         \ : glob(curdir.a:glob_pattern, 1)
   let paths = split(path_str, '\n')
   call sort(paths, '<sid>sort_paths')
-  let paths = map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
 
   if get(g:, 'dirvish_relative_paths', 0)
         \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
     return map(paths, "fnamemodify(v:val, ':.')")
+  else
+    return map(paths, "fnamemodify(v:val, ':p')")
   endif
-
-  return paths
 endfunction
 
 function! s:sanity_check() abort
@@ -201,8 +199,9 @@ function! s:new_dirvish()
       let w:dirvish.orig_conceallevel = &l:conceallevel
       setlocal concealcursor=nvc conceallevel=3
 
-      syntax match DirvishPathHead '\v.*\/\ze[^\/]+\/?$' conceal
-      syntax match DirvishPathTail '\v[^\/]+\/$'
+      let sep = escape(s:sep, '/\')
+      exe 'syntax match DirvishPathHead ''\v.*'.sep.'\ze[^'.sep.']+'.sep.'?$'' conceal'
+      exe 'syntax match DirvishPathTail ''\v[^'.sep.']+'.sep.'$'''
       highlight! link DirvishPathTail Directory
 
       augroup dirvish_syntaxteardown
