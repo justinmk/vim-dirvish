@@ -121,7 +121,6 @@ function! s:new_dirvish()
     endif
 
     let bnr = bufnr('^' . d.dir . '$')
-
     try
       if -1 == bnr
         execute 'silent noau keepalt keepjumps noswapfile edit ' . fnameescape(d.dir)
@@ -140,11 +139,7 @@ function! s:new_dirvish()
     "      buffer and try again with the fully-expanded path.
     if bufname('%') !=# d.dir && empty(getline(1)) && 1 == line('$')
       bwipeout!
-      if -1 == bnr
-        execute 'silent noau keepalt keepjumps noswapfile edit ' . fnameescape(d.dir)
-      else
-        execute 'silent noau keepalt keepjumps noswapfile '.bnr.'buffer'
-      endif
+      execute 'silent noau keepalt keepjumps noswapfile edit ' . fnameescape(d.dir)
     endif
 
     if bufname('%') !=# d.dir  "sanity check. If this fails, we have a bug.
