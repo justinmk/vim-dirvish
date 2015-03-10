@@ -67,9 +67,11 @@ function! s:parent_dir(dir)
 endfunction
 
 function! s:sort_paths(p1, p2)
-  if isdirectory(a:p1) && !isdirectory(a:p2)
+  let isdir1 = (a:p1[-1:] ==# s:sep) "3x faster than isdirectory().
+  let isdir2 = (a:p2[-1:] ==# s:sep)
+  if isdir1 && !isdir2
     return -1
-  elseif !isdirectory(a:p1) && isdirectory(a:p2)
+  elseif !isdir1 && isdir2
     return 1
   endif
   return a:p1 ==# a:p2 ? 0 : a:p1 ># a:p2 ? 1 : -1
@@ -77,10 +79,9 @@ endfunction
 
 function! s:discover_paths(current_dir, glob_pattern, showhidden)
   let curdir = s:normalize_dir(a:current_dir)
-  let path_str = a:showhidden
-        \ ? glob(curdir.'.[^.]'.a:glob_pattern, 1)."\n".glob(curdir.a:glob_pattern, 1)
-        \ : glob(curdir.a:glob_pattern, 1)
-  let paths = split(path_str, '\n')
+  let paths = glob(curdir.a:glob_pattern, 1, 1)
+  let paths = paths + (a:showhidden ? glob(curdir.'.[^.]'.a:glob_pattern, 1, 1) : [])
+
   call sort(paths, '<sid>sort_paths')
 
   if get(g:, 'dirvish_relative_paths', 0)
