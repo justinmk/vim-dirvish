@@ -334,37 +334,44 @@ function! s:new_dirvish()
     call winrestview(w)
   endfunction
 
+  " returns 1 on success, 0 on failure
   function! l:obj.visit_prevbuf() abort dict
     if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
           \ && type({}) != type(getbufvar(self.prevbuf, 'dirvish'))
       exe self.prevbuf . 'buffer'
-    else
-      "find a buffer that is _not_ a dirvish buffer.
-      let validbufs = filter(range(1, bufnr('$')),
-            \ 'buflisted(v:val)
-            \  && type({}) ==# type(getbufvar(v:val, "dirvish"))
-            \  && "help"  !=# getbufvar(v:val, "&buftype")
-            \  && v:val   !=  bufnr("%")
-            \  && !isdirectory(bufname(v:val))
-            \ ')
-      if len(validbufs) > 0
-        exe validbufs[0] . 'buffer'
-      else
-        silent bdelete
-      endif
+      return 1
     endif
+
+    "find a buffer that is _not_ a dirvish buffer.
+    let validbufs = filter(range(1, bufnr('$')),
+          \ 'buflisted(v:val)
+          \  && type({}) ==# type(getbufvar(v:val, "dirvish"))
+          \  && "help"  !=# getbufvar(v:val, "&buftype")
+          \  && v:val   !=  bufnr("%")
+          \  && !isdirectory(bufname(v:val))
+          \ ')
+    if len(validbufs) > 0
+      exe validbufs[0] . 'buffer'
+      return 1
+    endif
+    return 0
   endfunction
 
   function! l:obj.visit_altbuf() abort dict
-    let altbufnr = self.altbuf
-    if bufexists(altbufnr) && type({}) != type(getbufvar(altbufnr, 'dirvish'))
-      exe 'noau ' . altbufnr . 'buffer'
+    if bufexists(self.altbuf) && type({}) != type(getbufvar(self.altbuf, 'dirvish'))
+      exe self.altbuf . 'buffer'
     endif
   endfunction
 
   function! l:obj.quit_buffer() dict
     call self.visit_altbuf() "tickle original alt buffer to restore @#
-    call self.visit_prevbuf()
+    if !self.visit_prevbuf()
+      if winnr('$') > 1
+        wincmd c
+      else
+        bdelete
+      endif
+    endif
   endfunction
 
   function! l:obj.visit(split_cmd, open_in_background) dict range
@@ -376,7 +383,6 @@ function! s:new_dirvish()
     set lazyredraw
     let splitcmd = a:split_cmd
 
-    let opened = []
     let paths = getline(startline, endline)
     for path in paths
       if !isdirectory(path) && !filereadable(path)
@@ -407,7 +413,6 @@ function! s:new_dirvish()
       catch /E325:/
         call s:notifier.info("E325: swap file exists")
       endtry
-      call add(opened, '"' . fnamemodify(path, ':t') . '"')
     endfor
 
     if a:open_in_background
@@ -417,19 +422,12 @@ function! s:new_dirvish()
         execute 'silent keepalt keepjumps ' . self.buf_num . 'buffer'
       endif
       " redraw!
-
-      if a:split_cmd ==# 'edit'
-        if len(opened) > 1
-          " Opening multiple files in background of same window is a little
-          " cryptic so in this special case, we issue some feedback
-          echo join(opened, ', ')
-        endif
-      endif
     elseif !exists('b:dirvish')
       "tickle original buffer so that it is now the altbuf.
-      call self.visit_prevbuf()
-      "return to the opened file.
-      b#
+      if self.visit_prevbuf()
+        "return to the opened file.
+        b#
+      endif
     endif
 
     let &lazyredraw = l:old_lazyredraw
