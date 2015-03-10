@@ -61,7 +61,7 @@ function! s:parent_dir(dir)
   if !isdirectory(a:dir)
     echoerr 'not a directory:' a:dir
   endif
-  return fnamemodify(a:dir, ":p:h:h")
+  return s:normalize_dir(fnamemodify(a:dir, ":p:h:h"))
 endfunction
 
 function! s:sort_paths(p1, p2)
@@ -80,7 +80,14 @@ function! s:discover_paths(current_dir, glob_pattern, showhidden)
         \ : glob(curdir.a:glob_pattern, 1)
   let paths = split(path_str, '\n')
   call sort(paths, '<sid>sort_paths')
-  return map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
+  let paths = map(paths, "fnamemodify(substitute(v:val, s:sep_as_pattern.'\+', s:sep, 'g'), ':p')")
+
+  if get(g:, 'dirvish_relative_paths', 0)
+        \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
+    return map(paths, "fnamemodify(v:val, ':.')")
+  endif
+
+  return paths
 endfunction
 
 function! s:sanity_check() abort
@@ -287,20 +294,20 @@ function! s:new_dirvish()
     call s:sanity_check()
     let w = winsaveview()
 
-    echom localtime() 'prev:'.self.prevbuf 'buf:'.self.buf_num 'alt:'.self.altbuf
+    " DEBUG
+    " echom localtime() 'prev:'.self.prevbuf 'buf:'.self.buf_num 'alt:'.self.altbuf
 
     setlocal modifiable
     %delete
 
     call self.setup_buffer_syntax()
-    let paths = s:discover_paths(self.dir, "*", self.showhidden)
-    let cwdlen = get(g:, 'dirvish_relative_paths', 0) ? len(getcwd()) + 1 : 0
+    let paths = s:discover_paths(self.dir, '*', self.showhidden)
     for path in paths
       let tail = fnamemodify(path, ':t')
       if !isdirectory(path) && self.is_filtered && !empty(self.filter_exp) && (tail !~# self.filter_exp)
         continue
       endif
-      call append(line("$")-1, path[cwdlen :])
+      call append(line('$')-1, path)
     endfor
 
     $delete " remove extra last line
@@ -349,7 +356,7 @@ function! s:new_dirvish()
     let l:split_cmd = a:split_cmd
 
     let opened = []
-    let paths = map(range(startline, endline), 'getline(v:val)')
+    let paths = getline(startline, endline)
     for path in paths
       if !isdirectory(path) && !filereadable(path)
         call s:notifier.warn("invalid path: '" . path . "'")

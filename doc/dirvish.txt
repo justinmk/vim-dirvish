@@ -6,7 +6,7 @@ COMMANDS                                                     *dirvish-commands*
 
 :Dirvish [{path}]                                                    *:Dirvish*
     Opens the directory at {path} or the |current-directory| if {path} is not
-    given. If {path} is a file, the parent directory is tried instead.
+    given. If {path} is a file, the parent directory is opened.
     To open the current _buffer_ directory: >
         :Dirvish %
 <
@@ -137,6 +137,12 @@ g:dirvish_hijack_netrw                                 *g:dirvish_hijack_netrw*
 
         0: ":edit /path/to/dir/" and "vim /path/to/dir/" will be handled by
            |netrw| instead of Dirvish.
+
+g:dirvish_relative_paths                             *g:dirvish_relative_paths*
+    Default: 0
+
+        1: paths in dirvish will be relative to |getcwd()| when possible.
+
 
 augroup my_dirvish_events
     au!
