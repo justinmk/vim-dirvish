@@ -82,13 +82,11 @@ function! s:discover_paths(current_dir, glob_pattern, showhidden)
   let paths = glob(curdir.a:glob_pattern, 1, 1)
   let paths = paths + (a:showhidden ? glob(curdir.'.[^.]'.a:glob_pattern, 1, 1) : [])
 
-  call sort(paths, '<sid>sort_paths')
-
   if get(g:, 'dirvish_relative_paths', 0)
         \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
-    return map(paths, "fnamemodify(v:val, ':.')")
+    return sort(map(paths, "fnamemodify(v:val, ':.')"), '<sid>sort_paths')
   else
-    return map(paths, "fnamemodify(v:val, ':p')")
+    return sort(map(paths, "fnamemodify(v:val, ':p')"), '<sid>sort_paths')
   endif
 endfunction
 
