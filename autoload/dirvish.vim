@@ -316,17 +316,18 @@ function! s:new_dirvish()
     " echom localtime() 'prev:'.self.prevbuf 'buf:'.self.buf_num 'alt:'.self.altbuf
 
     setlocal modifiable
-    %delete
+    silent %delete
 
     call self.setup_buffer_syntax()
     let paths = s:discover_paths(self.dir, '*', self.showhidden)
-    for path in paths
-      let tail = fnamemodify(path, ':t')
-      if !isdirectory(path) && self.is_filtered && !empty(self.filter_exp) && (tail !~# self.filter_exp)
-        continue
-      endif
-      call append(line('$')-1, path)
-    endfor
+    silent call append(0, paths)
+
+    if self.is_filtered && !empty(self.filter_exp)
+      let sep = escape(s:sep, '\') "only \ should be escaped in []
+      "delete non-matches
+      "TODO: do not match before first path separator.
+      exe 'silent g!/\v'.self.filter_exp.'/d'
+    endif
 
     $delete " remove extra last line
     setlocal nomodifiable nomodified
@@ -450,7 +451,7 @@ function! s:new_dirvish()
   endfunction
 
   function! l:obj.set_filter_exp() dict
-    let self.filter_exp = input("filter (regex): ", self.filter_exp)
+    let self.filter_exp = input("filter: /\v", self.filter_exp)
     if empty(self.filter_exp)
       let self.is_filtered = 0
       call s:notifier.info("filter disabled")
