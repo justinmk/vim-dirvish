@@ -295,6 +295,7 @@ function! s:new_dirvish()
 
     for k in keys(visual_map)
       let v = visual_map[k]
+      let mapname = "<Plug>(".k.")"
       if !empty(v) && !hasmapto(mapname, 'v')
         execute "vmap <buffer> <silent> ".v." ".mapname
       endif
