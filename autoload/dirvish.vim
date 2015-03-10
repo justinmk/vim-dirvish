@@ -294,12 +294,13 @@ function! s:new_dirvish()
 
     call self.setup_buffer_syntax()
     let paths = s:discover_paths(self.dir, "*", self.showhidden)
+    let cwdlen = get(g:, 'dirvish_relative_paths', 0) ? len(getcwd()) + 1 : 0
     for path in paths
       let tail = fnamemodify(path, ':t')
       if !isdirectory(path) && self.is_filtered && !empty(self.filter_exp) && (tail !~# self.filter_exp)
         continue
       endif
-      call append(line("$")-1, path)
+      call append(line("$")-1, path[cwdlen :])
     endfor
 
     $delete " remove extra last line
