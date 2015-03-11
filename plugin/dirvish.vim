@@ -20,7 +20,7 @@ if get(g:, 'dirvish_hijack_netrw', 1)
   augroup dirvish_netrw
     au!
     " nuke netrw brain damage
-    autocmd VimEnter * au! FileExplorer *
+    autocmd VimEnter * silent! au! FileExplorer *
     " netrw hijack (from EasyTree by Dmitry Geurkov <d.geurkov@gmail.com>)
     autocmd BufEnter * if !exists('b:dirvish') && isdirectory(expand('<amatch>'))
       \ | call dirvish#open(expand('<amatch>'))
