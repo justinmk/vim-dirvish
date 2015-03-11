@@ -179,10 +179,11 @@ function! s:new_dirvish()
     if &l:spell
       setlocal nospell
       augroup dirvish_bufferopts
-        autocmd!
-        "restore window-local settings
-        autocmd BufHidden,BufWipeout,BufUnload,BufDelete <buffer>
-              \ setlocal spell | autocmd! dirvish_bufferopts *
+        "Delete buffer-local events for this augroup.
+        autocmd! * <buffer>
+        "Restore window-local settings.
+        autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer>
+              \ setlocal spell
       augroup END
     endif
 
@@ -204,13 +205,13 @@ function! s:new_dirvish()
       highlight! link DirvishPathTail Directory
 
       augroup dirvish_syntaxteardown
-        autocmd!
-        "restore window-local settings
-        autocmd BufHidden,BufWipeout,BufUnload,BufDelete <buffer> if exists('w:dirvish')
+        "Delete buffer-local events for this augroup.
+        autocmd! * <buffer>
+        "Restore window-local settings.
+        autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer> if exists('w:dirvish')
               \ |   let &l:concealcursor = w:dirvish.orig_concealcursor
               \ |   let &l:conceallevel = w:dirvish.orig_conceallevel
               \ | endif
-            \ | autocmd! dirvish_syntaxteardown *
       augroup END
     endif
   endfunction
