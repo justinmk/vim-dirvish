@@ -324,8 +324,11 @@ function! s:new_dirvish()
   function! l:obj.visit_prevbuf() abort dict
     if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
           \ && type({}) != type(getbufvar(self.prevbuf, 'dirvish'))
-      exe self.prevbuf . 'buffer'
-      return 1
+      try
+        exe self.prevbuf . 'buffer'
+        return 1
+      catch /E325:/
+      endtry
     endif
 
     "find a buffer that is _not_ a dirvish buffer.
@@ -407,10 +410,8 @@ function! s:new_dirvish()
       if a:split_cmd ==# 'edit'
         execute 'silent keepalt keepjumps ' . self.buf_num . 'buffer'
       endif
-      " redraw!
     elseif !exists('b:dirvish')
-      "tickle original buffer so that it is now the altbuf.
-      if self.visit_prevbuf()
+      if self.visit_prevbuf() "tickle original buffer to make it the altbuf.
         "return to the opened file.
         b#
       endif
