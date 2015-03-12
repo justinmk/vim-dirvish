@@ -90,12 +90,6 @@ function! s:discover_paths(current_dir, glob_pattern, showhidden)
   endif
 endfunction
 
-function! s:sanity_check() abort
-  if !isdirectory(bufname('%'))
-    echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
-  endif
-endfunction
-
 function! s:new_dirvish()
   let l:obj = { 'altbuf': -1, 'prevbuf': -1, 'showhidden': 0 }
 
@@ -155,10 +149,8 @@ function! s:new_dirvish()
   endfunction
 
   function! l:obj.setup_buffer_opts() abort dict
-    call s:sanity_check()
-
-    setlocal nobuflisted
-    setlocal bufhidden=unload
+    setlocal filetype=dirvish
+    setlocal bufhidden=unload undolevels=-1 nobuflisted
     setlocal buftype=nofile noswapfile nowrap nolist cursorline
 
     if &l:spell
@@ -171,9 +163,6 @@ function! s:new_dirvish()
               \ setlocal spell
       augroup END
     endif
-
-    setlocal undolevels=-1
-    set filetype=dirvish
   endfunction
 
   function! l:obj.setup_buffer_syntax() dict
@@ -272,7 +261,10 @@ function! s:new_dirvish()
   endfunction
 
   function! l:obj.render_buffer() abort dict
-    call s:sanity_check()
+    if !isdirectory(bufname('%'))
+      echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
+    endif
+
     let w = winsaveview()
 
     " DEBUG
@@ -301,11 +293,8 @@ function! s:new_dirvish()
   function! l:obj.visit_prevbuf() abort dict
     if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
           \ && type({}) != type(getbufvar(self.prevbuf, 'dirvish'))
-      try
-        exe self.prevbuf . 'buffer'
-        return 1
-      catch /E325:/
-      endtry
+      exe 'noswapfile '.self.prevbuf.'buffer'
+      return 1
     endif
 
     "find a buffer that is _not_ a dirvish buffer.
@@ -325,13 +314,13 @@ function! s:new_dirvish()
 
   function! l:obj.visit_altbuf() abort dict
     if bufexists(self.altbuf) && type({}) != type(getbufvar(self.altbuf, 'dirvish'))
-      exe self.altbuf . 'buffer'
+      exe 'noswapfile '.self.altbuf.'buffer'
     endif
   endfunction
 
   function! l:obj.quit_buffer() dict
     call self.visit_altbuf() "tickle original alt buffer to restore @#
-    if !self.visit_prevbuf()
+    if !self.visit_prevbuf() && exists('b:dirvish') "altbuf _and_ prevbuf failed
       if winnr('$') > 1
         wincmd c
       else
