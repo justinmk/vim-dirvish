@@ -123,8 +123,8 @@ function! s:new_dirvish()
     "HACK: If the directory was visited via an alias like '.', '..',
     "      'foo/../..', then Vim refuses to create a buffer with the expanded
     "      name even though we told it to in our :edit command above--instead,
-    "      Vim resolves to the aliased name. To prevent this, :bwipe the alias
-    "      buffer and try again with the fully-expanded path.
+    "      Vim resolves to the aliased name. To prevent this, rename to the
+    "      fully-expanded path via :file.
     if bufname('%') !=# d.dir && empty(getline(1)) && 1 == line('$')
       execute 'silent noau keepjumps noswapfile file ' . fnameescape(d.dir)
     endif
@@ -405,11 +405,6 @@ function! s:new_dirvish()
     endif
 
     call dirvish#open(pdir)
-  endfunction
-
-  function! l:obj.goto_pattern(pattern) dict
-    let full_pattern = '^\V\C' . escape(a:pattern, '/\') . '$'
-    call search(full_pattern, "cw")
   endfunction
 
   function! l:obj.set_filter_exp() dict
