@@ -103,26 +103,17 @@ function! s:new_dirvish()
     let d = self
 
     if a:0 > 0
-      " Full path to the directory being viewed.
-      let d.dir = s:normalize_dir(a:1)
-
-      " list of tuples, [ (string, string) ]
-      " The history stack, with the first element of the tuple being the
-      " directory previously visited and the second element of the tuple being
-      " the last selected entry in that directory
-      let d.prev_dirs = deepcopy(a:2)
-      " If truthy, `filter_exp` will be applied.
-      let d.is_filtered = a:3
-      " Regexp used to filter entries if `is_filtered` is truthy.
-      let d.filter_exp = a:4
+      let d.dir = s:normalize_dir(a:1)  " full path to the directory
+      let d.is_filtered = a:2           " if truthy, apply `filter_exp`
+      let d.filter_exp = a:3            " :g// filter
     endif
 
     let bnr = bufnr('^' . d.dir . '$')
     try
       if -1 == bnr
-        execute 'silent noau keepalt keepjumps noswapfile edit ' . fnameescape(d.dir)
+        execute 'silent noau keepjumps noswapfile edit ' . fnameescape(d.dir)
       else
-        execute 'silent noau keepalt keepjumps noswapfile '.bnr.'buffer'
+        execute 'silent noau keepjumps noswapfile '.bnr.'buffer'
       endif
     catch /E37:/
       call s:notifier.error("E37: No write since last change")
@@ -135,7 +126,7 @@ function! s:new_dirvish()
     "      Vim resolves to the aliased name. To prevent this, :bwipe the alias
     "      buffer and try again with the fully-expanded path.
     if bufname('%') !=# d.dir && empty(getline(1)) && 1 == line('$')
-      execute 'silent noau keepalt keepjumps noswapfile file ' . fnameescape(d.dir)
+      execute 'silent noau keepjumps noswapfile file ' . fnameescape(d.dir)
     endif
 
     if bufname('%') !=# d.dir  "sanity check. If this fails, we have a bug.
@@ -145,12 +136,7 @@ function! s:new_dirvish()
     let d.buf_num = bufnr('%')
 
     if exists('b:dirvish')
-      let b:dirvish.dir = d.dir
-      let b:dirvish.prevbuf = d.prevbuf
-      let b:dirvish.prev_dirs = d.prev_dirs
-      let b:dirvish.is_filtered = d.is_filtered
-      let b:dirvish.filter_exp = d.filter_exp
-      let b:dirvish.showhidden = d.showhidden
+      call extend(b:dirvish, d, 'force')
     else
       let b:dirvish = d
     endif
@@ -518,12 +504,7 @@ function! dirvish#open(dir)
   " transfer previous ('original') buffer
   let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : bufnr('%')
 
-  call d.open_dir(
-        \ dir,
-        \ [],
-        \ 0,
-        \ ""
-        \)
+  call d.open_dir(dir, 0, "")
 endfunction
 
 unlet! s:notifier
