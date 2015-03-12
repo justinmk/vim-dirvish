@@ -135,8 +135,7 @@ function! s:new_dirvish()
     "      Vim resolves to the aliased name. To prevent this, :bwipe the alias
     "      buffer and try again with the fully-expanded path.
     if bufname('%') !=# d.dir && empty(getline(1)) && 1 == line('$')
-      bwipeout!
-      execute 'silent noau keepalt keepjumps noswapfile edit ' . fnameescape(d.dir)
+      execute 'silent noau keepalt keepjumps noswapfile file ' . fnameescape(d.dir)
     endif
 
     if bufname('%') !=# d.dir  "sanity check. If this fails, we have a bug.
