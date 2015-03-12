@@ -23,6 +23,7 @@ if get(g:, 'dirvish_hijack_netrw', 1)
     autocmd VimEnter * silent! au! FileExplorer *
     " netrw hijack (from EasyTree by Dmitry Geurkov <d.geurkov@gmail.com>)
     autocmd BufEnter * if !exists('b:dirvish') && isdirectory(expand('<amatch>'))
+      \ | redraw | echo ''
       \ | call dirvish#open(expand('<amatch>'))
       \ | endif
   augroup END
