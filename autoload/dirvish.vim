@@ -1,16 +1,16 @@
-""  Copyright 2014 Jeet Sukumaran.
-""  Modified by Justin M. Keyes.
-""
-""  This program is free software; you can redistribute it and/or modify
-""  it under the terms of the GNU General Public License as published by
-""  the Free Software Foundation; either version 3 of the License, or
-""  (at your option) any later version.
-""
-""  This program is distributed in the hope that it will be useful,
-""  but WITHOUT ANY WARRANTY; without even the implied warranty of
-""  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-""  GNU General Public License <http://www.gnu.org/licenses/>
-""  for more details.
+" Copyright 2014 Jeet Sukumaran.
+" Modified by Justin M. Keyes.
+"
+" This program is free software; you can redistribute it and/or modify
+" it under the terms of the GNU General Public License as published by
+" the Free Software Foundation; either version 3 of the License, or
+" (at your option) any later version.
+"
+" This program is distributed in the hope that it will be useful,
+" but WITHOUT ANY WARRANTY; without even the implied warranty of
+" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+" GNU General Public License <http://www.gnu.org/licenses/>
+" for more details.
 "
 " Things that are unnecessary when you set the buffer name:
 " - let &titlestring = expand(self.dir, 1)
@@ -202,7 +202,6 @@ function! s:new_dirvish()
   endfunction
 
   function! l:obj.setup_buffer_keymaps() dict
-
     " Avoid 'cannot modify' error for  keys.
     for key in [".", "p", "P", "C", "x", "X", "r", "R", "i", "I", "a", "A", "D", "S", "U"]
       if !hasmapto(key, 'n')
@@ -214,54 +213,32 @@ function! s:new_dirvish()
     let normal_map = {}
     let visual_map = {}
 
-    nnoremap <Plug>(dirvish_refresh)                            :call b:dirvish.render_buffer()<CR>
     let normal_map['dirvish_refresh'] = 'R'
-    nnoremap <Plug>(dirvish_setFilter)                          :call b:dirvish.set_filter_exp()<CR>
     let normal_map['dirvish_setFilter'] = 'f'
-    nnoremap <Plug>(dirvish_toggleFilter)                       :call b:dirvish.toggle_filter()<CR>
     let normal_map['dirvish_toggleFilter'] = 'F'
-    nnoremap <Plug>(dirvish_toggleHidden)                       :call b:dirvish.toggle_hidden()<CR>
     let normal_map['dirvish_toggleHidden'] = 'gh'
-    nnoremap <Plug>(dirvish_quit)                               :call b:dirvish.quit_buffer()<CR>
     let normal_map['dirvish_quit'] = 'q'
 
-    nnoremap <Plug>(dirvish_visitTarget)                        :<C-U>call b:dirvish.visit("edit", 0)<CR>
     let normal_map['dirvish_visitTarget'] = 'o'
-    vnoremap <Plug>(dirvish_visitTarget)                        :call b:dirvish.visit("edit", 0)<CR>
     let visual_map['dirvish_visitTarget'] = 'o'
-    nnoremap <Plug>(dirvish_bgVisitTarget)                      :<C-U>call b:dirvish.visit("edit", 1)<CR>
     let normal_map['dirvish_bgVisitTarget'] = popout_key . 'o'
-    vnoremap <Plug>(dirvish_bgVisitTarget)                      :call b:dirvish.visit("edit", 1)<CR>
     let visual_map['dirvish_bgVisitTarget'] = popout_key . 'o'
 
-    nnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :<C-U>call b:dirvish.visit("vert sp", 0)<CR>
     let normal_map['dirvish_splitVerticalVisitTarget'] = 'v'
-    vnoremap <Plug>(dirvish_splitVerticalVisitTarget)           :call b:dirvish.visit("vert sp", 0)<CR>
     let visual_map['dirvish_splitVerticalVisitTarget'] = 'v'
-    nnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :<C-U>call b:dirvish.visit("rightbelow vert sp", 1)<CR>
     let normal_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
-    vnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget)         :call b:dirvish.visit("rightbelow vert sp", 1)<CR>
     let visual_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
 
-    nnoremap <Plug>(dirvish_splitVisitTarget)                   :<C-U>call b:dirvish.visit("sp", 0)<CR>
     let normal_map['dirvish_splitVisitTarget'] = 's'
-    vnoremap <Plug>(dirvish_splitVisitTarget)                   :call b:dirvish.visit("sp", 0)<CR>
     let visual_map['dirvish_splitVisitTarget'] = 's'
-    nnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :<C-U>call b:dirvish.visit("rightbelow sp", 1)<CR>
     let normal_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
-    vnoremap <Plug>(dirvish_bgSplitVisitTarget)                 :call b:dirvish.visit("rightbelow sp", 1)<CR>
     let visual_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
 
-    nnoremap <Plug>(dirvish_tabVisitTarget)                     :<C-U>call b:dirvish.visit("tabedit", 0)<CR>
     let normal_map['dirvish_tabVisitTarget'] = 't'
-    vnoremap <Plug>(dirvish_tabVisitTarget)                     :call b:dirvish.visit("tabedit", 0)<CR>
     let visual_map['dirvish_tabVisitTarget'] = 't'
-    nnoremap <Plug>(dirvish_bgTabVisitTarget)                   :<C-U>call b:dirvish.visit("tabedit", 1)<CR>
     let normal_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
-    vnoremap <Plug>(dirvish_bgTabVisitTarget)                   :call b:dirvish.visit("tabedit", 1)<CR>
     let visual_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
 
-    nnoremap <Plug>(dirvish_focusOnParent)                      :call b:dirvish.visit_parent_dir()<CR>
     let normal_map['dirvish_focusOnParent'] = '-'
 
     for k in keys(normal_map)
@@ -280,8 +257,8 @@ function! s:new_dirvish()
       endif
     endfor
 
-    "HACK: do these extra mappings after the for-loops to avoid false
-    "      positives for hasmapto()
+    " HACK: do these extra mappings after the for-loops to avoid false
+    "       positives for hasmapto()
 
     nmap <buffer> <silent> <CR> <Plug>(dirvish_visitTarget)
     vmap <buffer> <silent> <CR> <Plug>(dirvish_visitTarget)

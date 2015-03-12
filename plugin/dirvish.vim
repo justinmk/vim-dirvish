@@ -28,4 +28,27 @@ if get(g:, 'dirvish_hijack_netrw', 1)
   augroup END
 endif
 
+nnoremap <Plug>(dirvish_refresh)                    :call b:dirvish.render_buffer()<CR>
+nnoremap <Plug>(dirvish_setFilter)                  :call b:dirvish.set_filter_exp()<CR>
+nnoremap <Plug>(dirvish_toggleFilter)               :call b:dirvish.toggle_filter()<CR>
+nnoremap <Plug>(dirvish_toggleHidden)               :call b:dirvish.toggle_hidden()<CR>
+nnoremap <Plug>(dirvish_quit)                       :call b:dirvish.quit_buffer()<CR>
+nnoremap <Plug>(dirvish_visitTarget)                :<C-U>call b:dirvish.visit("edit", 0)<CR>
+vnoremap <Plug>(dirvish_visitTarget)                :call b:dirvish.visit("edit", 0)<CR>
+nnoremap <Plug>(dirvish_bgVisitTarget)              :<C-U>call b:dirvish.visit("edit", 1)<CR>
+vnoremap <Plug>(dirvish_bgVisitTarget)              :call b:dirvish.visit("edit", 1)<CR>
+nnoremap <Plug>(dirvish_splitVerticalVisitTarget)   :<C-U>call b:dirvish.visit("vert sp", 0)<CR>
+vnoremap <Plug>(dirvish_splitVerticalVisitTarget)   :call b:dirvish.visit("vert sp", 0)<CR>
+nnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget) :<C-U>call b:dirvish.visit("rightbelow vert sp", 1)<CR>
+vnoremap <Plug>(dirvish_bgSplitVerticalVisitTarget) :call b:dirvish.visit("rightbelow vert sp", 1)<CR>
+nnoremap <Plug>(dirvish_splitVisitTarget)           :<C-U>call b:dirvish.visit("sp", 0)<CR>
+vnoremap <Plug>(dirvish_splitVisitTarget)           :call b:dirvish.visit("sp", 0)<CR>
+nnoremap <Plug>(dirvish_bgSplitVisitTarget)         :<C-U>call b:dirvish.visit("rightbelow sp", 1)<CR>
+vnoremap <Plug>(dirvish_bgSplitVisitTarget)         :call b:dirvish.visit("rightbelow sp", 1)<CR>
+nnoremap <Plug>(dirvish_tabVisitTarget)             :<C-U>call b:dirvish.visit("tabedit", 0)<CR>
+vnoremap <Plug>(dirvish_tabVisitTarget)             :call b:dirvish.visit("tabedit", 0)<CR>
+nnoremap <Plug>(dirvish_bgTabVisitTarget)           :<C-U>call b:dirvish.visit("tabedit", 1)<CR>
+vnoremap <Plug>(dirvish_bgTabVisitTarget)           :call b:dirvish.visit("tabedit", 1)<CR>
+nnoremap <Plug>(dirvish_focusOnParent)              :call b:dirvish.visit_parent_dir()<CR>
+
 let &cpo = s:save_cpo
