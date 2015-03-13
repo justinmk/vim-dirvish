@@ -234,7 +234,7 @@ function! s:new_dirvish()
       let v = normal_map[k]
       let mapname = "<Plug>(".k.")"
       if !empty(v) && !hasmapto(mapname, 'n')
-        execute "nmap <buffer> <silent> ".v." ".mapname
+        execute "nmap <nowait><buffer><silent> ".v." ".mapname
       endif
     endfor
 
@@ -242,22 +242,18 @@ function! s:new_dirvish()
       let v = visual_map[k]
       let mapname = "<Plug>(".k.")"
       if !empty(v) && !hasmapto(mapname, 'v')
-        execute "vmap <buffer> <silent> ".v." ".mapname
+        execute "vmap <nowait><buffer><silent> ".v." ".mapname
       endif
     endfor
 
     " HACK: do these extra mappings after the for-loops to avoid false
     "       positives for hasmapto()
 
-    nmap <buffer> <silent> <CR> <Plug>(dirvish_visitTarget)
-    vmap <buffer> <silent> <CR> <Plug>(dirvish_visitTarget)
-    execute "nmap <buffer> <silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
-    execute "vmap <buffer> <silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
+    nmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
+    vmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
+    execute "nmap <nowait><buffer><silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
 
-    nmap <buffer> <silent> u <Plug>(dirvish_focusOnParent)
-    vmap <buffer> <silent> u <Plug>(dirvish_focusOnParent)
-    execute "nmap <buffer> <silent> " . popout_key . "u <Plug>(dirvish_bgVisitTarget)"
-    execute "vmap <buffer> <silent> " . popout_key . "u <Plug>(dirvish_bgVisitTarget)"
+    nmap <nowait><buffer><silent> u <Plug>(dirvish_focusOnParent)
   endfunction
 
   function! l:obj.render_buffer() abort dict
