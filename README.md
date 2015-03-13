@@ -36,10 +36,48 @@ composable concepts instead of having an all-in-one solution for each
 particular task. @tope's plugins demonstrate this theme, and I would like to
 see more plugins follow that pattern.
 
-Features:
+### Features
 
-- altbuf is preserved with a vengeance
-- prevbuf is preserved with a vengeance
+- isn't netrw
+- original and "alternate" buffers are preserved with a vengeance
+- 
+
+### FAQ
+
+> But how could I possibly create a new directory without netrw?
+
+Platform-agnostic way with [eunuch](https://github.com/tpope/vim-eunuch):
+
+    :Mkdir %/foo
+
+or use plain ol' `:!`:
+
+    :!mkdir %/foo
+
+> Yeah but how do I delete files?
+
+    :call delete(getline('.'))
+
+> I meant a *range* of files, silly--
+
+Select the files to delete, then:
+
+    :'<,'>call delete(getline('.'))
+
+or use any other [range](http://neovim.org/doc/user/cmdline.html#cmdline-ranges)
+specifier.
+
+> netrw allows me to SORT!!!!!!!!!!!
+
+    set ma | sort i
+
+or...
+
+    %y | new | put | %sort i
+
+> netrw works with remote filesystems.
+
+Good luck with that ;)
 
 ---
 
