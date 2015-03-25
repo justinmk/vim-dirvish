@@ -124,7 +124,7 @@ function! s:new_dirvish()
     endif
 
     if bufname('%') !=# d.dir  "sanity check. If this fails, we have a bug.
-      echoerr 'expected buffer name: "'.d.dir.'"'
+      echoerr 'expected buffer name: "'.d.dir.'" (actual: "'.bufname('%').'")'
     endif
 
     let d.buf_num = bufnr('%')
@@ -261,13 +261,16 @@ function! s:new_dirvish()
       echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
     endif
 
+    let old_lazyredraw = &lazyredraw
+    set lazyredraw
     let w = winsaveview()
 
     " DEBUG
     " echom localtime() 'prev:'.self.prevbuf 'buf:'.self.buf_num 'alt:'.self.altbuf
 
     setlocal modifiable
-    silent %delete
+
+    silent keepmarks keepjumps %delete
 
     call self.setup_buffer_syntax()
     let paths = s:discover_paths(self.dir, '*', self.showhidden)
@@ -280,9 +283,11 @@ function! s:new_dirvish()
       exe 'silent g!/\v'.self.filter_exp.'/d'
     endif
 
-    $delete " remove extra last line
+    keepmarks keepjumps $delete " remove extra last line
+
     setlocal nomodifiable nomodified
     call winrestview(w)
+    let &lazyredraw = old_lazyredraw
   endfunction
 
   " returns 1 on success, 0 on failure
@@ -379,7 +384,7 @@ function! s:new_dirvish()
       endif
     endif
 
-    let &lazyredraw = l:old_lazyredraw
+    let &lazyredraw = old_lazyredraw
   endfunction
 
   function! l:obj.visit_parent_dir() dict
