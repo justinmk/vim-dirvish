@@ -7,7 +7,7 @@ let g:loaded_dirvish = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-command! -nargs=? Dirvish call dirvish#open(<q-args>)
+command! -nargs=? -complete=dir Dirvish call dirvish#open(<q-args>)
 
 augroup dirvish_bufevents
   au!
