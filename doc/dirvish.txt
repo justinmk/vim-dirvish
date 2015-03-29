@@ -8,7 +8,7 @@ COMMANDS                                                     *dirvish-commands*
     Opens the directory at {path} or the |current-directory| if {path} is not
     given. If {path} is a file, the parent directory is opened.
     To open the current _buffer_ directory: >
-        :Dirvish %
+        :Dirvish %:p:h
 <
 ===============================================================================
 FUNCTIONS                                                   *dirvish-functions*
