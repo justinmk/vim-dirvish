@@ -351,7 +351,7 @@ function! s:new_dirvish()
 
       try
         if isdirectory(path)
-          exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' path
+          exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
         else
           exe splitcmd fnameescape(path)
         endif
@@ -362,7 +362,7 @@ function! s:new_dirvish()
         " E36: no room for any new splits; open in-situ.
         let splitcmd = 'edit'
         if isdirectory(path)
-          exe 'Dirvish' path
+          exe 'Dirvish' fnameescape(path)
         else
           exe splitcmd fnameescape(path)
         endif
