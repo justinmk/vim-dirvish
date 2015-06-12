@@ -208,20 +208,20 @@ function! s:new_dirvish()
     let normal_map['dirvish_toggleHidden'] = 'gh'
     let normal_map['dirvish_quit'] = 'q'
 
-    let normal_map['dirvish_visitTarget'] = 'o'
-    let visual_map['dirvish_visitTarget'] = 'o'
-    let normal_map['dirvish_bgVisitTarget'] = popout_key . 'o'
-    let visual_map['dirvish_bgVisitTarget'] = popout_key . 'o'
+    let normal_map['dirvish_visitTarget'] = 'i'
+    let visual_map['dirvish_visitTarget'] = 'i'
+    let normal_map['dirvish_bgVisitTarget'] = popout_key . 'i'
+    let visual_map['dirvish_bgVisitTarget'] = popout_key . 'i'
 
     let normal_map['dirvish_splitVerticalVisitTarget'] = 'v'
     let visual_map['dirvish_splitVerticalVisitTarget'] = 'v'
     let normal_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
     let visual_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
 
-    let normal_map['dirvish_splitVisitTarget'] = 's'
-    let visual_map['dirvish_splitVisitTarget'] = 's'
-    let normal_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
-    let visual_map['dirvish_bgSplitVisitTarget'] = popout_key . 's'
+    let normal_map['dirvish_splitVisitTarget'] = 'o'
+    let visual_map['dirvish_splitVisitTarget'] = 'o'
+    let normal_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
+    let visual_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
 
     let normal_map['dirvish_tabVisitTarget'] = 't'
     let visual_map['dirvish_tabVisitTarget'] = 't'
