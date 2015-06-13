@@ -191,13 +191,6 @@ function! s:new_dirvish()
   endfunction
 
   function! l:obj.setup_buffer_keymaps() dict
-    " Avoid 'cannot modify' error for  keys.
-    for key in [".", "p", "P", "C", "x", "X", "r", "R", "i", "I", "a", "A", "D", "S", "U"]
-      if !hasmapto(key, 'n')
-        execute "nnoremap <buffer> " . key . " <NOP>"
-      endif
-    endfor
-
     let popout_key = get(g:, 'dirvish_popout_key', 'p')
     let normal_map = {}
     let visual_map = {}
