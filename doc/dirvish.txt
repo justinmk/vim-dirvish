@@ -23,10 +23,9 @@ b:dirvish
 ===============================================================================
 BUFFER MAPPINGS                                              *dirvish-mappings*
 
-These key mappings are available in the Dirvish buffer.
+Dirvish defines some default buffer-local mappings, described below.
 
-Directory Listing and View~
-R               Refresh the directory listing.
+Directory View~
 f               Define and apply a regular expression filter for the file
                 entries.
 F               Toggle application of the regular expression filter.
@@ -35,94 +34,38 @@ gh              Toggle showing of hidden/(wild-)ignored files.
                 directory.
 q               Quit the Dirvish buffer.
 
-Opening Files and Directories~
+Actions~
+      Action*                     Normal   Popout
     +---------------------------+--------+--------+
-    | Action*                   | Normal | Popout |
-    +---------------------------+--------+--------+
-    | Open in Current Window    | o      | po     |
-    | Open in Horizontal Split  | s      | ps     |
-    | Open in Vertical Split    | v      | pv     |
-    | Open in Tab Page          | t      | pt     |
-    +---------------------------+------------+------------+
-    * If multiple files are selected in visual mode, the
-      action will be carried out on all visually-selected
-      files. The action can also take an optional V[count],
-      which specifies that the action will be carried out on
-      the file listed at line V[count] of the Dirvish
-      buffer, regardless of where the cursor is.
+    | Open in current window    | i      | pi     |
+    | Open in horizontal split  | o      | po     |
+    | Open in vertical split    | v      | pv     |
+    | Open in tab page          | t      | pt     |
 
-If there is a visual selection, all selected files will be targeted for the
-action invoked by the key mapping. For example, if four files are selected,
-then `v` opens the files in four vertical splits.
+    Note: visual selection allows you to perform an action on multiple files
+    at once. E.g. if four files are selected, then `v` opens the files in four
+    vertical splits.
 
-Alternatively, all key maps to open files or directory can take an optional
-V[count], which specifies the file or directory to open in terms of the line
-number in which it is listed. So, for example, while '`v`' will open the file
-or directory currently listed at the current cursor line in a new vertical
-split, '`42v`' will open the file or directory at line 42 in a new vertical
-split, regardless of where the cursor is.
+    Note: Use the `p` modifier to perform the "popout" version of an action
+    (the action will be done without focusing the resulting window or buffer).
 
-All actions can be carried in a "popout" by using the `p` prefix.
-This means the action is carried out in the background: the files are
-opened in splits or tabs as appropriate, but the Dirvish buffer maintains
-focus.
+<CR>            Open the file or directory under the cursor in the current
+i               window.
 
-<CR>
-o               Open the file or directory under the cursor in the current
-                window. Multiple files can be opened simultaneously by
-                selecting them in visual mode.
-V[count]<CR>
-V[count]o       Open the file or directory at line V[count] in the current
-                window.
-p<CR>
-po              Open the file or directory under the cursor in the current
-                window in the background. Multiple files can be opened
-                simultaneously by selecting them in visual mode.
-V[count]p<CR>
-V[count]po      Open the file or directory at line V[count] in the current
-                window in the background.
+p<CR>           Pop the file into a new hidden buffer.
+pi
 
+v               Open the file new vertical split.
 
-v               Open the currently selected file or directory in a new
-                vertical split. Multiple files can be opened simultaneously by
-                selecting them in visual mode.
+pv              Pop the file into a new vertical split without focusing it.
 
-V[count]v       Open the file or directory at line V[count] in a new
+o               Open the file new horizontal split.
 
-pv              Open the file or directory under the cursor in a new vertical
-                split in the background. Multiple files can be opened
-                simultaneously by selecting them in visual mode.
+po              Pop the file into a new horizontal split without focusing it.
 
-V[count]pv      Open the file or directory at line V[count] in a new
-                vertical split in the background.
-                vertical split.
+t               Open the file in a new tab.
 
-
-s               Open the currently selected file or directory in a new
-                horizontal split. Multiple files can be opened simultaneously
-                by selecting them in visual mode.
-V[count]s        Open the file or directory at line V[count] in a new horizontal
-                split.
-
-ps              Open the file or directory under the cursor in a new
-                horizontal split in the background. Multiple files can be
-                opened simultaneously by selecting them in visual mode.
-
-V[count]ps      Open the file or directory at line V[count] in a new horizontal
-                split in the background.
-
-
-t               Open the currently selected file in a new tab. Multiple files
-                can be opened simultaneously by selecting them in visual mode.
-
-V[count]t       Open the file or directory at line V[count] in a new tab.
-
-pt              Open the file or directory under the cursor in a new tab in
-                the background. Multiple files can be opened simultaneously
-                by selecting them in visual mode.
-
-V[count]pt      Open the file or directory at line V[count] in a new tab in
-                the background.
+pt              Pop the file into a new tab without focusing it.
 
 ===============================================================================
 OPTIONS                                                       *dirvish-options*
@@ -152,5 +95,11 @@ augroup END
 
 b:dirvish.showhidden
     Show hidden files by default (toggle with `gh` |dirvish-mappings|).
+
+===============================================================================
+FAQ                                                               *dirvish-faq*
+
+Q: How to refresh the buffer?
+A: :edit
 
  vim:tw=78:ts=8:ft=help:norl:

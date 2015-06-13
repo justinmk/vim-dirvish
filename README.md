@@ -41,6 +41,8 @@ see more plugins follow that pattern.
 - isn't netrw
 - original and "alternate" buffers are preserved with a vengeance
 - each line is literally just an absolute path to a file. You can treat a Dirvish buffer as a plain old text file that just contains file paths.
+- 2x faster than netrw (try a directory with 1000+ items)
+- visual-select lines to open multiple files at once
 
 ### FAQ
 

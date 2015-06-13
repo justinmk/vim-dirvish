@@ -202,7 +202,6 @@ function! s:new_dirvish()
     let normal_map = {}
     let visual_map = {}
 
-    let normal_map['dirvish_refresh'] = 'R'
     let normal_map['dirvish_setFilter'] = 'f'
     let normal_map['dirvish_toggleFilter'] = 'F'
     let normal_map['dirvish_toggleHidden'] = 'gh'

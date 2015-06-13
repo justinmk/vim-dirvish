@@ -28,7 +28,6 @@ if get(g:, 'dirvish_hijack_netrw', 1)
   augroup END
 endif
 
-nnoremap <Plug>(dirvish_refresh)                    :call b:dirvish.render_buffer()<CR>
 nnoremap <Plug>(dirvish_setFilter)                  :call b:dirvish.set_filter_exp()<CR>
 nnoremap <Plug>(dirvish_toggleFilter)               :call b:dirvish.toggle_filter()<CR>
 nnoremap <Plug>(dirvish_toggleHidden)               :call b:dirvish.toggle_hidden()<CR>
