@@ -143,9 +143,7 @@ function! s:new_dirvish()
     call b:dirvish.setup_buffer_syntax()
     call b:dirvish.setup_buffer_keymaps()
 
-    if line('$') == 1
-      call b:dirvish.render_buffer()
-    endif
+    call b:dirvish.render_buffer()
   endfunction
 
   function! l:obj.setup_buffer_opts() abort dict
@@ -441,11 +439,6 @@ function! dirvish#open(dir)
 
   if !isdirectory(dir)
     call s:notifier.error("invalid directory: '" . dir . "'")
-    return
-  endif
-
-  if exists('b:dirvish') && dir ==# s:normalize_dir(b:dirvish.dir)
-    "current buffer is already viewing that directory.
     return
   endif
 

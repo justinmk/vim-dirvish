@@ -100,6 +100,8 @@ b:dirvish.showhidden
 FAQ                                                               *dirvish-faq*
 
 Q: How to refresh the buffer?
-A: :edit
+A: :Dirvish %
+    Note: It will be possible to refresh the buffer via ":edit" (without
+    arguments) in the future.
 
  vim:tw=78:ts=8:ft=help:norl:
