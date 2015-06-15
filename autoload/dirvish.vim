@@ -24,6 +24,7 @@
 " Fixed bug: 'buffer <num>' may open buffer with actual number name.
 
 let s:sep = has("win32") ? '\' : '/'
+let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 
 function! s:new_notifier()
   let m = {}
@@ -129,9 +130,9 @@ function! s:new_dirvish()
 
     try
       if -1 == bnr
-        execute 'silent noau keepjumps noswapfile edit ' . fnameescape(d.dir)
+        execute 'silent noau keepjumps '.s:noswapfile.' edit ' . fnameescape(d.dir)
       else
-        execute 'silent noau keepjumps noswapfile '.bnr.'buffer'
+        execute 'silent noau keepjumps '.s:noswapfile.' '.bnr.'buffer'
       endif
     catch /E37:/
       call s:notifier.error("E37: No write since last change")
@@ -151,8 +152,8 @@ function! s:new_dirvish()
       if isdirectory(bufname('%'))
         " Just use the name Vim wants (avoid incrementing the buffer number).
         let d.dir = bufname('%')
-      else
-        execute 'silent noau keepjumps noswapfile file ' . fnameescape(d.dir)
+      else " [This should never happen] Rename to the fully-expanded path.
+        execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
       endif
     endif
 
@@ -319,7 +320,7 @@ function! s:new_dirvish()
   function! l:obj.visit_prevbuf() abort dict
     if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
           \ && type({}) != type(getbufvar(self.prevbuf, 'dirvish'))
-      exe 'noswapfile '.self.prevbuf.'buffer'
+      exe s:noswapfile.' '.self.prevbuf.'buffer'
       return 1
     endif
 
@@ -340,7 +341,7 @@ function! s:new_dirvish()
 
   function! l:obj.visit_altbuf() abort dict
     if bufexists(self.altbuf) && type({}) != type(getbufvar(self.altbuf, 'dirvish'))
-      exe 'noswapfile '.self.altbuf.'buffer'
+      exe s:noswapfile.' '.self.altbuf.'buffer'
     endif
   endfunction
 

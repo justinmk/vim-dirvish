@@ -99,9 +99,14 @@ b:dirvish.showhidden
 ===============================================================================
 FAQ                                                               *dirvish-faq*
 
-Q: How to refresh the buffer?
-A: :Dirvish %
+Q:  How to refresh the buffer?
+A:  :Dirvish %
     Note: It will be possible to refresh the buffer via ":edit" (without
     arguments) in the future.
+
+Q:  Why do I get the Vim "swap file" dialog if another Vim instance is viewing
+    the same directory in Dirvish?
+A:  To avoid this, Dirvish requires the |:noswapfile| command which was added
+    in Vim 7.4.213. https://github.com/vim/vim/commit/v7-4-213
 
  vim:tw=78:ts=8:ft=help:norl:
