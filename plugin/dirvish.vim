@@ -21,7 +21,7 @@ if get(g:, 'dirvish_hijack_netrw', 1)
     au!
     " nuke netrw brain damage
     autocmd VimEnter * silent! au! FileExplorer *
-    autocmd BufNew,BufEnter * if !exists('b:dirvish') && isdirectory(expand('<amatch>'))
+    autocmd BufEnter * if !exists('b:dirvish') && isdirectory(expand('<amatch>'))
       \ | redraw | echo ''
       \ | call dirvish#open(expand('<amatch>'))
       \ | endif
