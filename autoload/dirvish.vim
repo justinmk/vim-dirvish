@@ -179,6 +179,9 @@ function! s:new_dirvish()
     call b:dirvish.setup_buffer_keymaps()
 
     call b:dirvish.render_buffer()
+
+    "clear our 'loading...' message
+    redraw | echo ''
   endfunction
 
   function! l:obj.setup_buffer_opts() abort dict
@@ -477,6 +480,13 @@ function! dirvish#open(dir)
   if !isdirectory(dir)
     call s:notifier.error("invalid directory: '" . dir . "'")
     return
+  endif
+
+  if exists('b:dirvish') && dir ==# s:normalize_dir(b:dirvish.dir)
+    "current buffer is already showing that directory.
+    call s:notifier.info('reloading...')
+  else
+    call s:notifier.info('loading...')
   endif
 
   let d = s:new_dirvish()
