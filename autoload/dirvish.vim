@@ -105,6 +105,28 @@ function! s:new_dirvish()
     endif
 
     let bnr = bufnr('^' . d.dir . '$')
+
+    " Vim tends to name the directory buffer using its relative path.
+    " Examples (observed on Win32 gvim 7.4.618):
+    "     ~\AppData\Local\Temp\
+    "     ~\AppData\Local\Temp
+    "     AppData\Local\Temp\
+    "     AppData\Local\Temp
+    " Try to find the existing relative-path name before creating a new one.
+    for pat in [':~:.', ':~']
+      if -1 != bnr
+        break
+      endif
+
+      let modified_dirname = fnamemodify(d.dir, pat)
+      let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
+
+      let bnr = bufnr('^'.modified_dirname.'$')
+      if -1 == bnr
+        let bnr = bufnr('^'.modified_dirname_without_sep.'$')
+      endif
+    endfor
+
     try
       if -1 == bnr
         execute 'silent noau keepjumps noswapfile edit ' . fnameescape(d.dir)
@@ -119,10 +141,19 @@ function! s:new_dirvish()
     "HACK: If the directory was visited via an alias like '.', '..',
     "      'foo/../..', then Vim refuses to create a buffer with the expanded
     "      name even though we told it to in our :edit command above--instead,
-    "      Vim resolves to the aliased name. To prevent this, rename to the
-    "      fully-expanded path via :file.
-    if bufname('%') !=# d.dir && empty(getline(1)) && 1 == line('$')
-      execute 'silent noau keepjumps noswapfile file ' . fnameescape(d.dir)
+    "      Vim resolves to the aliased name. We _could_ rename to the
+    "      fully-expanded path via :file, but instead we just update our state
+    "      to match Vim's preferred buffer name, because:
+    "         - it avoids an extra buffer
+    "         - it avoids incrementing the buffer number
+    "         - it avoids a spurious *alternate* buffer
+    if bufname('%') !=# d.dir
+      if isdirectory(bufname('%'))
+        " Just use the name Vim wants (avoid incrementing the buffer number).
+        let d.dir = bufname('%')
+      else
+        execute 'silent noau keepjumps noswapfile file ' . fnameescape(d.dir)
+      endif
     endif
 
     if bufname('%') !=# d.dir  "sanity check. If this fails, we have a bug.
