@@ -99,6 +99,9 @@ b:dirvish.showhidden
 ===============================================================================
 FAQ                                                               *dirvish-faq*
 
+Q:  How can I control where Dirvish opens splits?
+A:  Configure the Vim built-in options 'splitbelow' and 'splitright'.
+
 Q:  How to refresh the buffer?
 A:  :Dirvish %
     Note: It will be possible to refresh the buffer via ":edit" (without

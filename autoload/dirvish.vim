@@ -365,6 +365,7 @@ function! s:new_dirvish()
 
     let curtab = tabpagenr()
     let curwin = winnr()
+    let wincount = winnr('$')
     let old_lazyredraw = &lazyredraw
     set lazyredraw
     let splitcmd = a:split_cmd
@@ -401,10 +402,12 @@ function! s:new_dirvish()
       endtry
     endfor
 
-    if a:open_in_background
-      "return to dirvish buffer
-      exe 'tabnext' curtab '|' curwin.'wincmd w'
-      if a:split_cmd ==# 'edit'
+    if a:open_in_background "return to dirvish buffer
+      if a:split_cmd ==# 'tabedit'
+        exe 'tabnext' curtab '|' curwin.'wincmd w'
+      elseif winnr('$') > wincount
+        exe 'wincmd p'
+      elseif a:split_cmd ==# 'edit'
         execute 'silent keepalt keepjumps ' . self.buf_num . 'buffer'
       endif
     elseif !exists('b:dirvish')
