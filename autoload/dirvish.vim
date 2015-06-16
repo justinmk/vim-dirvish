@@ -28,20 +28,20 @@ let s:sep = has("win32") ? '\' : '/'
 function! s:new_notifier()
   let m = {}
 
-  function! m.format(leader, msg) dict
-    return "dirvish: " . a:leader.a:msg
+  function! m.format(msg) dict
+    return "dirvish: ".a:msg
   endfunction
   function! m.error(msg) dict
     redraw
-    echohl ErrorMsg | echomsg self.format("", a:msg) | echohl None
+    echohl ErrorMsg | echomsg self.format(a:msg) | echohl None
   endfunction
   function! m.warn(msg) dict
     redraw
-    echohl WarningMsg | echomsg self.format("", a:msg) | echohl None
+    echohl WarningMsg | echomsg self.format(a:msg) | echohl None
   endfunction
   function! m.info(msg) dict
     redraw
-    echohl None | echo self.format("", a:msg)
+    echohl None | echo self.format(a:msg)
   endfunction
 
   return m
@@ -50,6 +50,7 @@ endfunction
 function! s:normalize_dir(dir)
   if !isdirectory(a:dir)
     echoerr 'not a directory:' a:dir
+    return
   endif
   let dir = fnamemodify(a:dir, ':p') "always full path
   let dir = substitute(a:dir, s:sep.'\+', s:sep, 'g') "replace consecutive slashes
@@ -62,6 +63,7 @@ endfunction
 function! s:parent_dir(dir)
   if !isdirectory(a:dir)
     echoerr 'not a directory:' a:dir
+    return
   endif
   return s:normalize_dir(fnamemodify(a:dir, ":p:h:h"))
 endfunction
@@ -125,6 +127,7 @@ function! s:new_dirvish()
 
     if bufname('%') !=# d.dir  "sanity check. If this fails, we have a bug.
       echoerr 'expected buffer name: "'.d.dir.'" (actual: "'.bufname('%').'")'
+      return
     endif
 
     let d.buf_num = bufnr('%')
@@ -249,6 +252,7 @@ function! s:new_dirvish()
   function! l:obj.render_buffer() abort dict
     if !isdirectory(bufname('%'))
       echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
+      return
     endif
 
     let old_lazyredraw = &lazyredraw
