@@ -412,8 +412,8 @@ function! s:new_dirvish()
       endif
     elseif !exists('b:dirvish')
       if self.visit_prevbuf() "tickle original buffer to make it the altbuf.
-        "return to the opened file.
-        b#
+        " Return to the opened file. (<c-^> is safer than b#)
+        execute "normal! \<c-^>"
       endif
     endif
 
