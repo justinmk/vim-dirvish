@@ -299,7 +299,7 @@ function! s:new_dirvish()
 
     setlocal modifiable
 
-    silent keepmarks keepjumps %delete
+    silent keepmarks keepjumps %delete _
 
     call self.setup_buffer_syntax()
     let paths = s:discover_paths(self.dir, '*', self.showhidden)
@@ -309,10 +309,10 @@ function! s:new_dirvish()
       let sep = escape(s:sep, '\') "only \ should be escaped in []
       "delete non-matches
       "TODO: do not match before first path separator.
-      exe 'silent g!/\v'.self.filter_exp.'/d'
+      exe 'silent g!/\v'.self.filter_exp.'/d_'
     endif
 
-    keepmarks keepjumps $delete " remove extra last line
+    keepmarks keepjumps $delete _ " remove extra last line
 
     setlocal nomodifiable nomodified
     call winrestview(w)
