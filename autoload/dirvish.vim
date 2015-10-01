@@ -467,6 +467,11 @@ function! s:new_dirvish()
 endfunction
 
 function! dirvish#open(dir)
+  if &autochdir
+    call s:notifier.error("'autochdir' is not supported")
+    return
+  endif
+
   let dir = fnamemodify(expand(a:dir, 1), ':p') "Resolves to CWD if a:dir is empty.
 
   if filereadable(dir) "chop off the filename
