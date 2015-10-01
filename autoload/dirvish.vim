@@ -139,25 +139,20 @@ function! s:new_dirvish()
       return
     endtry
 
-    "HACK: If the directory was visited via an alias like '.', '..',
-    "      'foo/../..', then Vim refuses to create a buffer with the expanded
-    "      name even though we told it to in our :edit command above--instead,
-    "      Vim resolves to the aliased name. We _could_ rename to the
-    "      fully-expanded path via :file, but instead we just update our state
-    "      to match Vim's preferred buffer name, because:
-    "         - it avoids an extra buffer
-    "         - it avoids incrementing the buffer number
-    "         - it avoids a spurious *alternate* buffer
+    "If the directory is relative to CWD, :edit refuses to create a buffer
+    "with the expanded name (it may be _relative_ instead); this will cause
+    "problems when the user navigates. Use :file to force the expanded path.
     if bufname('%') !=# d.dir
-      if isdirectory(bufname('%'))
-        " Just use the name Vim wants (avoid incrementing the buffer number).
-        let d.dir = bufname('%')
-      else " [This should never happen] Rename to the fully-expanded path.
-        execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+      execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+      if isdirectory(bufname('%')) "sanity check
+        "Kill it with fire, it is useless.
+        bwipeout #
       endif
+      call self.visit_altbuf() "tickle original alt buffer to restore @#
+      call self.visit_altbuf() "return to our regulary scheduled program
     endif
 
-    if bufname('%') !=# d.dir  "sanity check. If this fails, we have a bug.
+    if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
       echoerr 'expected buffer name: "'.d.dir.'" (actual: "'.bufname('%').'")'
       return
     endif
@@ -472,9 +467,9 @@ function! s:new_dirvish()
 endfunction
 
 function! dirvish#open(dir)
-  let dir = fnamemodify(expand(a:dir, 1), ':p') "Resolves to getcwd() if a:dir is empty.
+  let dir = fnamemodify(expand(a:dir, 1), ':p') "Resolves to CWD if a:dir is empty.
 
-  if !isdirectory(dir) "If '%' was passed (for example), chop off the filename.
+  if filereadable(dir) "chop off the filename
     let dir = fnamemodify(dir, ':p:h')
   endif
 
