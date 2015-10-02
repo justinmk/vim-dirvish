@@ -93,6 +93,109 @@ function! s:discover_paths(current_dir, glob_pattern, showhidden)
   endif
 endfunction
 
+function! s:buf_init() abort
+  setlocal filetype=dirvish
+  setlocal bufhidden=unload undolevels=-1 nobuflisted
+  setlocal buftype=nofile noswapfile nowrap nolist cursorline
+
+  if &l:spell
+    setlocal nospell
+    augroup dirvish_bufferopts
+      "Delete buffer-local events for this augroup.
+      autocmd! * <buffer>
+      "Restore window-local settings.
+      autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer>
+            \ setlocal spell
+    augroup END
+  endif
+endfunction
+
+function! s:buf_syntax()
+  if has("syntax")
+    syntax clear
+    let w:dirvish = get(w:, 'dirvish', {})
+    let w:dirvish.orig_concealcursor = &l:concealcursor
+    let w:dirvish.orig_conceallevel = &l:conceallevel
+    setlocal concealcursor=nvc conceallevel=3
+
+    let sep = escape(s:sep, '/\')
+    exe 'syntax match DirvishPathHead ''\v.*'.sep.'\ze[^'.sep.']+'.sep.'?$'' conceal'
+    exe 'syntax match DirvishPathTail ''\v[^'.sep.']+'.sep.'$'''
+    highlight! link DirvishPathTail Directory
+
+    augroup dirvish_syntaxteardown
+      "Delete buffer-local events for this augroup.
+      autocmd! * <buffer>
+      "Restore window-local settings.
+      autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer> if exists('w:dirvish')
+            \ |   let &l:concealcursor = w:dirvish.orig_concealcursor
+            \ |   let &l:conceallevel = w:dirvish.orig_conceallevel
+            \ | endif
+    augroup END
+  endif
+endfunction
+
+function! s:buf_keymaps()
+  let popout_key = get(g:, 'dirvish_popout_key', 'p')
+  let normal_map = {}
+  let visual_map = {}
+
+  let normal_map['dirvish_refresh'] = 'R'
+  let normal_map['dirvish_setFilter'] = 'cf'
+  let normal_map['dirvish_toggleFilter'] = 'cof'
+  let normal_map['dirvish_toggleHidden'] = 'gh'
+  let normal_map['dirvish_quit'] = 'q'
+
+  let normal_map['dirvish_bgPreviousVisitTarget'] = popout_key . 'p'
+
+  let normal_map['dirvish_visitTarget'] = 'i'
+  let visual_map['dirvish_visitTarget'] = 'i'
+  let normal_map['dirvish_bgVisitTarget'] = popout_key . 'i'
+  let visual_map['dirvish_bgVisitTarget'] = popout_key . 'i'
+
+  let normal_map['dirvish_splitVerticalVisitTarget'] = 'O'
+  let visual_map['dirvish_splitVerticalVisitTarget'] = 'O'
+  let normal_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'O'
+  let visual_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'O'
+
+  let normal_map['dirvish_splitVisitTarget'] = 'o'
+  let visual_map['dirvish_splitVisitTarget'] = 'o'
+  let normal_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
+  let visual_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
+
+  let normal_map['dirvish_tabVisitTarget'] = 't'
+  let visual_map['dirvish_tabVisitTarget'] = 't'
+  let normal_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
+  let visual_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
+
+  let normal_map['dirvish_focusOnParent'] = '-'
+
+  for k in keys(normal_map)
+    let v = normal_map[k]
+    let mapname = "<Plug>(".k.")"
+    if !empty(v) && !hasmapto(mapname, 'n')
+      execute "nmap <nowait><buffer><silent> ".v." ".mapname
+    endif
+  endfor
+
+  for k in keys(visual_map)
+    let v = visual_map[k]
+    let mapname = "<Plug>(".k.")"
+    if !empty(v) && !hasmapto(mapname, 'v')
+      execute "vmap <nowait><buffer><silent> ".v." ".mapname
+    endif
+  endfor
+
+  " HACK: do these extra mappings after the for-loops to avoid false
+  "       positives for hasmapto()
+
+  nmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
+  vmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
+  execute "nmap <nowait><buffer><silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
+
+  nmap <nowait><buffer><silent> u <Plug>(dirvish_focusOnParent)
+endfunction
+
 function! s:new_dirvish()
   let l:obj = { 'altbuf': -1, 'prevbuf': -1, 'showhidden': 0 }
 
@@ -169,114 +272,14 @@ function! s:new_dirvish()
       doautocmd User DirvishEnter
     endif
 
-    call b:dirvish.setup_buffer_opts()
-    call b:dirvish.setup_buffer_syntax()
-    call b:dirvish.setup_buffer_keymaps()
+    call s:buf_init()
+    call s:buf_syntax()
+    call s:buf_keymaps()
 
     call b:dirvish.render_buffer()
 
     "clear our 'loading...' message
     redraw | echo ''
-  endfunction
-
-  function! l:obj.setup_buffer_opts() abort dict
-    setlocal filetype=dirvish
-    setlocal bufhidden=unload undolevels=-1 nobuflisted
-    setlocal buftype=nofile noswapfile nowrap nolist cursorline
-
-    if &l:spell
-      setlocal nospell
-      augroup dirvish_bufferopts
-        "Delete buffer-local events for this augroup.
-        autocmd! * <buffer>
-        "Restore window-local settings.
-        autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer>
-              \ setlocal spell
-      augroup END
-    endif
-  endfunction
-
-  function! l:obj.setup_buffer_syntax() dict
-    if has("syntax")
-      syntax clear
-      let w:dirvish = get(w:, 'dirvish', {})
-      let w:dirvish.orig_concealcursor = &l:concealcursor
-      let w:dirvish.orig_conceallevel = &l:conceallevel
-      setlocal concealcursor=nvc conceallevel=3
-
-      let sep = escape(s:sep, '/\')
-      exe 'syntax match DirvishPathHead ''\v.*'.sep.'\ze[^'.sep.']+'.sep.'?$'' conceal'
-      exe 'syntax match DirvishPathTail ''\v[^'.sep.']+'.sep.'$'''
-      highlight! link DirvishPathTail Directory
-
-      augroup dirvish_syntaxteardown
-        "Delete buffer-local events for this augroup.
-        autocmd! * <buffer>
-        "Restore window-local settings.
-        autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer> if exists('w:dirvish')
-              \ |   let &l:concealcursor = w:dirvish.orig_concealcursor
-              \ |   let &l:conceallevel = w:dirvish.orig_conceallevel
-              \ | endif
-      augroup END
-    endif
-  endfunction
-
-  function! l:obj.setup_buffer_keymaps() dict
-    let popout_key = get(g:, 'dirvish_popout_key', 'p')
-    let normal_map = {}
-    let visual_map = {}
-
-    let normal_map['dirvish_setFilter'] = 'f'
-    let normal_map['dirvish_toggleFilter'] = 'F'
-    let normal_map['dirvish_toggleHidden'] = 'gh'
-    let normal_map['dirvish_quit'] = 'q'
-
-    let normal_map['dirvish_visitTarget'] = 'i'
-    let visual_map['dirvish_visitTarget'] = 'i'
-    let normal_map['dirvish_bgVisitTarget'] = popout_key . 'i'
-    let visual_map['dirvish_bgVisitTarget'] = popout_key . 'i'
-
-    let normal_map['dirvish_splitVerticalVisitTarget'] = 'v'
-    let visual_map['dirvish_splitVerticalVisitTarget'] = 'v'
-    let normal_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
-    let visual_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'v'
-
-    let normal_map['dirvish_splitVisitTarget'] = 'o'
-    let visual_map['dirvish_splitVisitTarget'] = 'o'
-    let normal_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
-    let visual_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
-
-    let normal_map['dirvish_tabVisitTarget'] = 't'
-    let visual_map['dirvish_tabVisitTarget'] = 't'
-    let normal_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
-    let visual_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
-
-    let normal_map['dirvish_focusOnParent'] = '-'
-
-    for k in keys(normal_map)
-      let v = normal_map[k]
-      let mapname = "<Plug>(".k.")"
-      if !empty(v) && !hasmapto(mapname, 'n')
-        execute "nmap <nowait><buffer><silent> ".v." ".mapname
-      endif
-    endfor
-
-    for k in keys(visual_map)
-      let v = visual_map[k]
-      let mapname = "<Plug>(".k.")"
-      if !empty(v) && !hasmapto(mapname, 'v')
-        execute "vmap <nowait><buffer><silent> ".v." ".mapname
-      endif
-    endfor
-
-    " HACK: do these extra mappings after the for-loops to avoid false
-    "       positives for hasmapto()
-
-    nmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
-    vmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
-    execute "nmap <nowait><buffer><silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
-
-    nmap <nowait><buffer><silent> u <Plug>(dirvish_focusOnParent)
   endfunction
 
   function! l:obj.render_buffer() abort dict
@@ -296,7 +299,7 @@ function! s:new_dirvish()
 
     silent keepmarks keepjumps %delete _
 
-    call self.setup_buffer_syntax()
+    call s:buf_syntax()
     let paths = s:discover_paths(self.dir, '*', self.showhidden)
     silent call append(0, paths)
 
