@@ -144,12 +144,12 @@ function! s:new_dirvish()
     "problems when the user navigates. Use :file to force the expanded path.
     if bufname('%') !=# d.dir
       execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
-      if isdirectory(bufname('%')) "sanity check
-        "Kill it with fire, it is useless.
-        bwipeout #
+      if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
+        bwipeout # "Kill it with fire, it is useless.
       endif
-      call self.visit_altbuf() "tickle original alt buffer to restore @#
-      call self.visit_altbuf() "return to our regulary scheduled program
+      let bnr = bufnr('%')
+      call self.visit_altbuf() "tickle original alt-buffer to restore @#
+      execute 'silent noau keepjumps' s:noswapfile bnr.'buffer'
     endif
 
     if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
@@ -339,7 +339,7 @@ function! s:new_dirvish()
 
   function! l:obj.visit_altbuf() abort dict
     if bufexists(self.altbuf) && type({}) != type(getbufvar(self.altbuf, 'dirvish'))
-      exe s:noswapfile.' '.self.altbuf.'buffer'
+      execute 'silent noau keepjumps' (s:noswapfile) (self.altbuf).'buffer'
     endif
   endfunction
 
