@@ -108,6 +108,12 @@ function! s:buf_init() abort
             \ setlocal spell
     augroup END
   endif
+
+  augroup dirvish_bufclosed
+    autocmd! * <buffer>
+    autocmd BufWipeout,BufUnload,BufDelete <buffer>
+          \ call <sid>on_buf_closed(expand('<abuf>'))
+  augroup END
 endfunction
 
 function! s:buf_syntax()
@@ -196,6 +202,38 @@ function! s:buf_keymaps()
   nmap <nowait><buffer><silent> u <Plug>(dirvish_focusOnParent)
 endfunction
 
+function! s:buf_isvisible(bnr)
+  for i in range(1, tabpagenr('$'))
+    for tbnr in tabpagebuflist(i)
+      if tbnr == a:bnr
+        return 1
+      endif
+    endfor
+  endfor
+  return 0
+endfunction
+
+function! s:on_buf_closed(...)
+  if a:0 <= 0
+    return
+  endif
+  let bnr = 0 + a:1
+  let d = getbufvar(bnr, 'dirvish', {})
+  if {} == d "BufDelete etc. may be raised after b:dirvish is gone.
+    return
+  endif
+  "Do we need to bother cleaning up buffer-local autocmds?
+  "silent! autocmd! dirvish_bufclosed * <buffer>
+
+  call d.visit_altbuf() "tickle original alt-buffer to restore @#
+  if !d.visit_prevbuf() "return to original buffer
+    call s:notifier.warn('no other buffers')
+  endif
+  if bufexists(bnr) && buflisted(bnr) && !s:buf_isvisible(bnr)
+    execute 'bdelete' bnr
+  endif
+endfunction
+
 function! s:new_dirvish()
   let l:obj = { 'altbuf': -1, 'prevbuf': -1, 'showhidden': 0 }
 
@@ -233,9 +271,9 @@ function! s:new_dirvish()
 
     try
       if -1 == bnr
-        execute 'silent noau keepjumps '.s:noswapfile.' edit ' . fnameescape(d.dir)
+        execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d.dir)
       else
-        execute 'silent noau keepjumps '.s:noswapfile.' '.bnr.'buffer'
+        execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
       endif
     catch /E37:/
       call s:notifier.error("E37: No write since last change")
@@ -292,9 +330,6 @@ function! s:new_dirvish()
     set lazyredraw
     let w = winsaveview()
 
-    " DEBUG
-    " echom localtime() 'prev:'.self.prevbuf 'buf:'.self.buf_num 'alt:'.self.altbuf
-
     setlocal modifiable
 
     silent keepmarks keepjumps %delete _
@@ -320,8 +355,8 @@ function! s:new_dirvish()
   " returns 1 on success, 0 on failure
   function! l:obj.visit_prevbuf() abort dict
     if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
-          \ && type({}) != type(getbufvar(self.prevbuf, 'dirvish'))
-      exe s:noswapfile.' '.self.prevbuf.'buffer'
+          \ && {} == getbufvar(self.prevbuf, 'dirvish', {})
+      execute 'silent noau keepjumps' s:noswapfile 'buffer' self.prevbuf
       return 1
     endif
 
@@ -334,7 +369,7 @@ function! s:new_dirvish()
           \  && !isdirectory(bufname(v:val))
           \ ')
     if len(validbufs) > 0
-      exe validbufs[0] . 'buffer'
+      execute 'buffer' validbufs[0]
       return 1
     endif
     return 0
@@ -342,18 +377,7 @@ function! s:new_dirvish()
 
   function! l:obj.visit_altbuf() abort dict
     if bufexists(self.altbuf) && type({}) != type(getbufvar(self.altbuf, 'dirvish'))
-      execute 'silent noau keepjumps' (s:noswapfile) (self.altbuf).'buffer'
-    endif
-  endfunction
-
-  function! l:obj.quit_buffer() dict
-    call self.visit_altbuf() "tickle original alt buffer to restore @#
-    if !self.visit_prevbuf() && exists('b:dirvish') "altbuf _and_ prevbuf failed
-      if winnr('$') > 1
-        wincmd c
-      else
-        bdelete
-      endif
+      execute 'silent noau keepjumps' s:noswapfile 'buffer' self.altbuf
     endif
   endfunction
 
@@ -503,7 +527,7 @@ function! dirvish#open(dir)
         \ : getbufvar('#', 'dirvish', {'altbuf':bufnr('#')}).altbuf
 
   " transfer previous ('original') buffer
-  let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : bufnr('%')
+  let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : 0 + bufnr('%')
 
   call d.open_dir(dir, 0, "")
 endfunction
