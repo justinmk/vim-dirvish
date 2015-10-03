@@ -219,7 +219,7 @@ function! s:on_buf_closed(...)
   endif
   let bnr = 0 + a:1
   let d = getbufvar(bnr, 'dirvish', {})
-  if {} == d "BufDelete etc. may be raised after b:dirvish is gone.
+  if empty(d) "BufDelete etc. may be raised after b:dirvish is gone.
     return
   endif
   "Do we need to bother cleaning up buffer-local autocmds?
@@ -355,7 +355,7 @@ function! s:new_dirvish()
   " returns 1 on success, 0 on failure
   function! l:obj.visit_prevbuf() abort dict
     if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
-          \ && {} == getbufvar(self.prevbuf, 'dirvish', {})
+          \ && empty(getbufvar(self.prevbuf, 'dirvish'))
       execute 'silent noau keepjumps' s:noswapfile 'buffer' self.prevbuf
       return 1
     endif
@@ -363,7 +363,7 @@ function! s:new_dirvish()
     "find a buffer that is _not_ a dirvish buffer.
     let validbufs = filter(range(1, bufnr('$')),
           \ 'buflisted(v:val)
-          \  && type({}) ==# type(getbufvar(v:val, "dirvish"))
+          \  && empty(getbufvar(v:val, "dirvish"))
           \  && "help"  !=# getbufvar(v:val, "&buftype")
           \  && v:val   !=  bufnr("%")
           \  && !isdirectory(bufname(v:val))
@@ -376,7 +376,7 @@ function! s:new_dirvish()
   endfunction
 
   function! l:obj.visit_altbuf() abort dict
-    if bufexists(self.altbuf) && type({}) != type(getbufvar(self.altbuf, 'dirvish'))
+    if bufexists(self.altbuf) && empty(getbufvar(self.altbuf, 'dirvish'))
       execute 'silent noau keepjumps' s:noswapfile 'buffer' self.altbuf
     endif
   endfunction
@@ -499,7 +499,10 @@ function! dirvish#open(dir)
     return
   endif
 
-  let dir = fnamemodify(expand(a:dir, 1), ':p') "Resolves to CWD if a:dir is empty.
+  let dir = fnamemodify(expand(fnameescape(a:dir), 1), ':p')
+  "                     ^      ^                        ^resolves to CWD if a:dir is empty
+  "                     |      `escape chars like '$' before expand()
+  "                     `expand() fixes slashes on Windows
 
   if filereadable(dir) "chop off the filename
     let dir = fnamemodify(dir, ':p:h')
