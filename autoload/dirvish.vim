@@ -69,17 +69,6 @@ function! s:parent_dir(dir)
   return s:normalize_dir(fnamemodify(a:dir, ":p:h:h"))
 endfunction
 
-function! s:sort_paths(p1, p2)
-  let isdir1 = (a:p1[-1:] ==# s:sep) "3x faster than isdirectory().
-  let isdir2 = (a:p2[-1:] ==# s:sep)
-  if isdir1 && !isdir2
-    return -1
-  elseif !isdir1 && isdir2
-    return 1
-  endif
-  return a:p1 ==# a:p2 ? 0 : a:p1 ># a:p2 ? 1 : -1
-endfunction
-
 function! s:discover_paths(current_dir, glob_pattern, showhidden)
   let curdir = s:normalize_dir(a:current_dir)
   let paths = glob(curdir.a:glob_pattern, 1, 1)
@@ -87,9 +76,9 @@ function! s:discover_paths(current_dir, glob_pattern, showhidden)
 
   if get(g:, 'dirvish_relative_paths', 0)
         \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
-    return sort(map(paths, "fnamemodify(v:val, ':.')"), '<sid>sort_paths')
+    return sort(map(paths, "fnamemodify(v:val, ':.')"))
   else
-    return sort(map(paths, "fnamemodify(v:val, ':p')"), '<sid>sort_paths')
+    return sort(map(paths, "fnamemodify(v:val, ':p')"))
   endif
 endfunction
 

@@ -93,22 +93,27 @@ augroup my_dirvish_events
     au User DirvishEnter let b:dirvish.showhidden = 1
 augroup END
 
-b:dirvish.showhidden
-    Show hidden files by default (toggle with `gh` |dirvish-mappings|).
 
 ===============================================================================
 FAQ                                                               *dirvish-faq*
 
-Q:  How can I control where Dirvish opens splits?
-A:  Configure the Vim built-in options 'splitbelow' and 'splitright'.
+How can I control where Dirvish opens splits? ~
+Set the Vim options 'splitbelow' and 'splitright'.
 
-Q:  How to refresh the buffer?
-A:  :Dirvish %
-    Note: It will be possible to refresh the buffer via ":edit" (without
-    arguments) in the future.
+How can I "group" (sort) directories/folders at the top? ~
+    To sort folders at the top: >
+    :set ma|sort r /[^\/]$/
+<
+    To sort folders at the bottom: >
+    :set ma|sort r /\/$/
+<
+How to refresh the buffer? ~
+:Dirvish %
+    Note: In the fture it will be possible to refresh the buffer via ":edit"
+    (without arguments).
 
-Q:  Why do I get the Vim "swap file" dialog if another Vim instance is viewing
-    the same directory in Dirvish?
+Why do I get the Vim "swap file" dialog if another Vim instance is viewing ~
+the same directory in Dirvish? ~
 A:  To avoid this, Dirvish requires the |:noswapfile| command which was added
     in Vim 7.4.213. https://github.com/vim/vim/commit/v7-4-213
 
