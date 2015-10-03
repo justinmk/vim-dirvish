@@ -69,10 +69,11 @@ function! s:parent_dir(dir)
   return s:normalize_dir(fnamemodify(a:dir, ":p:h:h"))
 endfunction
 
-function! s:discover_paths(current_dir, glob_pattern, showhidden)
+function! s:discover_paths(current_dir, glob_pattern)
   let curdir = s:normalize_dir(a:current_dir)
   let paths = glob(curdir.a:glob_pattern, 1, 1)
-  let paths = paths + (a:showhidden ? glob(curdir.'.[^.]'.a:glob_pattern, 1, 1) : [])
+  "Append dot-prefixed files. glob() cannot do both in 1 pass.
+  let paths = paths + glob(curdir.'.[^.]'.a:glob_pattern, 1, 1)
 
   if get(g:, 'dirvish_relative_paths', 0)
         \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
@@ -138,7 +139,6 @@ function! s:buf_keymaps()
   let normal_map['dirvish_refresh'] = 'R'
   let normal_map['dirvish_setFilter'] = 'cf'
   let normal_map['dirvish_toggleFilter'] = 'cof'
-  let normal_map['dirvish_toggleHidden'] = 'gh'
   let normal_map['dirvish_quit'] = 'q'
 
   let normal_map['dirvish_bgPreviousVisitTarget'] = popout_key . 'p'
@@ -224,7 +224,7 @@ function! s:on_buf_closed(...)
 endfunction
 
 function! s:new_dirvish()
-  let l:obj = { 'altbuf': -1, 'prevbuf': -1, 'showhidden': 0 }
+  let l:obj = { 'altbuf': -1, 'prevbuf': -1 }
 
   function! l:obj.open_dir(...) abort dict
     let d = self
@@ -324,7 +324,7 @@ function! s:new_dirvish()
     silent keepmarks keepjumps %delete _
 
     call s:buf_syntax()
-    let paths = s:discover_paths(self.dir, '*', self.showhidden)
+    let paths = s:discover_paths(self.dir, '*')
     silent call append(0, paths)
 
     if self.is_filtered && !empty(self.filter_exp)
@@ -467,16 +467,6 @@ function! s:new_dirvish()
         call self.set_filter_exp()
       endif
     endif
-  endfunction
-
-  function! l:obj.toggle_hidden() dict
-    if self.showhidden
-      call s:notifier.info("excluding hidden files")
-    else
-      call s:notifier.info("showing hidden files")
-    endif
-    let self.showhidden = !self.showhidden
-    call self.render_buffer()
   endfunction
 
   return l:obj

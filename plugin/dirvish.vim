@@ -30,7 +30,6 @@ endif
 
 nnoremap <Plug>(dirvish_setFilter)                  :call b:dirvish.set_filter_exp()<CR>
 nnoremap <Plug>(dirvish_toggleFilter)               :call b:dirvish.toggle_filter()<CR>
-nnoremap <Plug>(dirvish_toggleHidden)               :call b:dirvish.toggle_hidden()<CR>
 nnoremap <Plug>(dirvish_quit)                       :doautocmd dirvish_bufclosed BufDelete<CR>
 nnoremap <Plug>(dirvish_visitTarget)                :<C-U>call b:dirvish.visit("edit", 0)<CR>
 vnoremap <Plug>(dirvish_visitTarget)                :call b:dirvish.visit("edit", 0)<CR>

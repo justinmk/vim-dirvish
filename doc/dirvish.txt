@@ -101,11 +101,15 @@ How can I control where Dirvish opens splits? ~
 Set the Vim options 'splitbelow' and 'splitright'.
 
 How can I "group" (sort) directories/folders at the top? ~
-    To sort folders at the top: >
+Sort folders at the top: >
     :set ma|sort r /[^\/]$/
 <
-    To sort folders at the bottom: >
+Sort folders at the bottom: >
     :set ma|sort r /\/$/
+<
+How can I hide dot-prefixed files? ~
+Use :g to delete the lines with dot-prefixed files: >
+    :set ma|g@\v/\.[^\/]+/?$@d
 <
 How to refresh the buffer? ~
 :Dirvish %
