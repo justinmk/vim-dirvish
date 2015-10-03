@@ -345,7 +345,7 @@ function! s:new_dirvish()
   function! l:obj.visit_prevbuf() abort dict
     if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
           \ && empty(getbufvar(self.prevbuf, 'dirvish'))
-      execute 'silent noau keepjumps' s:noswapfile 'buffer' self.prevbuf
+      execute 'silent keepjumps' s:noswapfile 'buffer' self.prevbuf
       return 1
     endif
 
