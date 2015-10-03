@@ -23,7 +23,7 @@
 "
 " Fixed bug: 'buffer <num>' may open buffer with actual number name.
 
-let s:sep = has("win32") ? '\' : '/'
+let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 
 function! s:new_notifier()
