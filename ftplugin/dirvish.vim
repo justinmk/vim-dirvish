@@ -6,13 +6,11 @@ nmap <nowait><buffer><silent> i     <Plug>(dirvish_visitTarget)
 nmap <nowait><buffer><silent> <CR>  <Plug>(dirvish_visitTarget)
 nmap <nowait><buffer><silent> a     <Plug>(dirvish_splitVerticalVisitTarget)
 nmap <nowait><buffer><silent> o     <Plug>(dirvish_splitVisitTarget)
-nmap <nowait><buffer><silent> t     <Plug>(dirvish_tabVisitTarget)
 
 vmap <nowait><buffer><silent> i     <Plug>(dirvish_visitTarget)
 vmap <nowait><buffer><silent> <CR>  <Plug>(dirvish_visitTarget)
 vmap <nowait><buffer><silent> a     <Plug>(dirvish_splitVerticalVisitTarget)
 vmap <nowait><buffer><silent> o     <Plug>(dirvish_splitVisitTarget)
-vmap <nowait><buffer><silent> t     <Plug>(dirvish_tabVisitTarget)
 
 nnoremap <nowait><buffer><silent> R :Dirvish %<CR>
 

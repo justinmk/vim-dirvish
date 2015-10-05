@@ -37,8 +37,6 @@ nnoremap <Plug>(dirvish_splitVerticalVisitTarget)   :<C-U>call b:dirvish.visit("
 vnoremap <Plug>(dirvish_splitVerticalVisitTarget)   :call b:dirvish.visit("vsplit", 1)<CR>
 nnoremap <Plug>(dirvish_splitVisitTarget)           :<C-U>call b:dirvish.visit("split", 1)<CR>
 vnoremap <Plug>(dirvish_splitVisitTarget)           :call b:dirvish.visit("split", 1)<CR>
-nnoremap <Plug>(dirvish_tabVisitTarget)             :<C-U>call b:dirvish.visit("tabedit", 1)<CR>
-vnoremap <Plug>(dirvish_tabVisitTarget)             :call b:dirvish.visit("tabedit", 1)<CR>
 nnoremap <Plug>(dirvish_focusOnParent)              :call b:dirvish.visit_parent_dir()<CR>
 
 let &cpo = s:save_cpo

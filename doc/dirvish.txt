@@ -49,15 +49,20 @@ g:dirvish_relative_paths = 0                         *g:dirvish_relative_paths*
     1: Make paths in the Dirvish buffer relative to |getcwd()|.
 
 The `dirvish` |FileType| event fires after Dirvish mappings and options are
-set. You can override mappings and behavior by handling this event. For
-example, to map <C-R> to "reload" and `gh` to "hide hidden files":
-
-augroup my_events
-    autocmd!
-    autocmd FileType dirvish nnoremap <buffer> <C-R> :<C-U>Dirvish %<CR>
-    autocmd FileType dirvish nnoremap <buffer> gh :set ma<bar>g@\v/\.[^\/]+/?$@d<cr>:set noma<cr>
-augroup END
-
+set. You can override mappings and behavior by handling this event. Example:
+>
+    augroup my_events
+      autocmd!
+      " Map t to "open in new tab".
+      autocmd FileType dirvish nnoremap <buffer> t
+          \ :tabnew <C-R>=fnameescape(getline('.'))<CR><CR>
+      " Map CTRL-R to "reload" the Dirvish buffer.
+      autocmd FileType dirvish nnoremap <buffer> <C-R> :<C-U>Dirvish %<CR>
+      " Map gh to hide "hidden" files.
+      autocmd FileType dirvish nnoremap <buffer> gh 
+          \ :set ma<bar>g@\v/\.[^\/]+/?$@d<cr>:set noma<cr>
+    augroup END
+<
 
 ===============================================================================
 FAQ                                                               *dirvish-faq*
