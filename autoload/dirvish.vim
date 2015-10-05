@@ -26,26 +26,14 @@
 let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 
-function! s:new_notifier()
-  let m = {}
-
-  function! m.format(msg) dict
-    return "dirvish: ".a:msg
-  endfunction
-  function! m.error(msg) dict
-    redraw
-    echohl ErrorMsg | echomsg self.format(a:msg) | echohl None
-  endfunction
-  function! m.warn(msg) dict
-    redraw
-    echohl WarningMsg | echomsg self.format(a:msg) | echohl None
-  endfunction
-  function! m.info(msg) dict
-    redraw
-    echohl None | echo self.format(a:msg)
-  endfunction
-
-  return m
+function! s:msg_error(msg)
+  redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
+endfunction
+function! s:msg_warn(msg)
+  redraw | echohl WarningMsg | echomsg 'dirvish:' a:msg | echohl None
+endfunction
+function! s:msg_info(msg)
+  redraw | echo 'dirvish:' a:msg
 endfunction
 
 function! s:normalize_dir(dir)
@@ -157,7 +145,7 @@ function! s:on_buf_closed(...)
 
   call d.visit_altbuf() "tickle original alt-buffer to restore @#
   if !d.visit_prevbuf() "return to original buffer
-    call s:notifier.warn('no other buffers')
+    call s:msg_warn('no other buffers')
   endif
   if bufexists(bnr) && buflisted(bnr) && !s:buf_isvisible(bnr)
     execute 'bdelete' bnr
@@ -204,7 +192,7 @@ function! s:new_dirvish()
         execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
       endif
     catch /E37:/
-      call s:notifier.error("E37: No write since last change")
+      call s:msg_error("E37: No write since last change")
       return
     endtry
 
@@ -315,7 +303,7 @@ function! s:new_dirvish()
     let paths = getline(startline, endline)
     for path in paths
       if !isdirectory(path) && !filereadable(path)
-        call s:notifier.warn("invalid path: '" . path . "'")
+        call s:msg_warn("invalid path: '" . path . "'")
         continue
       elseif isdirectory(path) && startline > endline && splitcmd ==# 'edit'
         " opening a bunch of directories in the _same_ window is not useful.
@@ -330,14 +318,14 @@ function! s:new_dirvish()
           exe splitcmd fnameescape(path)
         endif
       catch /E37:/
-        call s:notifier.info("E37: No write since last change")
+        call s:msg_info("E37: No write since last change")
         return
       catch /E36:/
         " E36: no room for any new splits; open in-situ.
         let splitcmd = 'edit'
         exe (isdirectory(path) ? 'Dirvish' : splitcmd) fnameescape(path)
       catch /E325:/
-        call s:notifier.info("E325: swap file exists")
+        call s:msg_info("E325: swap file exists")
       endtry
     endfor
 
@@ -362,7 +350,7 @@ function! s:new_dirvish()
   function! l:obj.visit_parent_dir() dict
     let pdir = s:parent_dir(self.dir)
     if pdir ==# self.dir
-      call s:notifier.info("no parent directory")
+      call s:msg_info("no parent directory")
       return
     endif
 
@@ -374,7 +362,7 @@ endfunction
 
 function! dirvish#open(dir)
   if &autochdir
-    call s:notifier.error("'autochdir' is not supported")
+    call s:msg_error("'autochdir' is not supported")
     return
   endif
 
@@ -390,15 +378,14 @@ function! dirvish#open(dir)
   let dir = s:normalize_dir(dir)
 
   if !isdirectory(dir)
-    call s:notifier.error("invalid directory: '" . dir . "'")
+    call s:msg_error("invalid directory: '" . dir . "'")
     return
   endif
 
   if exists('b:dirvish') && dir ==# s:normalize_dir(b:dirvish.dir)
-    "current buffer is already showing that directory.
-    call s:notifier.info('reloading...')
+    call s:msg_info('reloading...')
   else
-    call s:notifier.info('loading...')
+    call s:msg_info('loading...')
   endif
 
   let d = s:new_dirvish()
@@ -413,7 +400,3 @@ function! dirvish#open(dir)
 
   call d.open_dir(dir, 0, "")
 endfunction
-
-unlet! s:notifier
-let s:notifier = s:new_notifier()
-
