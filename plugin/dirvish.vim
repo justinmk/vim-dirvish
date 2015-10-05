@@ -35,4 +35,3 @@ nnoremap <Plug>(dirvish_vsplit)             :<C-U>call b:dirvish.visit("vsplit",
 vnoremap <Plug>(dirvish_vsplit)             :call b:dirvish.visit("vsplit", 1)<CR>
 nnoremap <Plug>(dirvish_split)              :<C-U>call b:dirvish.visit("split", 1)<CR>
 vnoremap <Plug>(dirvish_split)              :call b:dirvish.visit("split", 1)<CR>
-nnoremap <Plug>(dirvish_up)                 :call b:dirvish.visit_parent_dir()<CR>

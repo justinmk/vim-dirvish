@@ -342,16 +342,6 @@ function! s:new_dirvish()
     let &lazyredraw = old_lazyredraw
   endfunction
 
-  function! l:obj.visit_parent_dir() dict
-    let pdir = s:parent_dir(self.dir)
-    if pdir ==# self.dir
-      call s:msg_info("no parent directory")
-      return
-    endif
-
-    call dirvish#open(pdir)
-  endfunction
-
   return l:obj
 endfunction
 

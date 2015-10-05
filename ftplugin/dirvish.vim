@@ -1,6 +1,6 @@
 nmap <nowait><buffer><silent> q     <Plug>(dirvish_quit)
-nmap <nowait><buffer><silent> -     <Plug>(dirvish_up)
-nmap <nowait><buffer><silent> p     <Plug>(dirvish_up)
+nmap <nowait><buffer><silent> -     :Dirvish %:h:h<CR>
+nmap <nowait><buffer><silent> p     <Plug>(dirvish_open_in_prev_win)
 
 nmap <nowait><buffer><silent> i     <Plug>(dirvish_open)
 nmap <nowait><buffer><silent> <CR>  <Plug>(dirvish_open)
