@@ -29,9 +29,9 @@ endif
 nnoremap <Plug>(dirvish_quit)                       :doautocmd dirvish_bufclosed BufDelete<CR>
 " TODO: handle case where Vim thinks the current window is the previous window, etc...
 nnoremap <Plug>(dirvish_open_in_prev_win)   yy<c-w>p:e <c-r>=fnameescape(getreg('"',1,1)[0])<cr><cr>
-nnoremap <Plug>(dirvish_open)               :<C-U>call b:dirvish.visit("edit", 0)<CR>
-vnoremap <Plug>(dirvish_open)               :call b:dirvish.visit("edit", 0)<CR>
-nnoremap <Plug>(dirvish_vsplit)             :<C-U>call b:dirvish.visit("vsplit", 1)<CR>
-vnoremap <Plug>(dirvish_vsplit)             :call b:dirvish.visit("vsplit", 1)<CR>
-nnoremap <Plug>(dirvish_split)              :<C-U>call b:dirvish.visit("split", 1)<CR>
-vnoremap <Plug>(dirvish_split)              :call b:dirvish.visit("split", 1)<CR>
+nnoremap <Plug>(dirvish_open)               :<C-U>call dirvish#visit("edit", 0)<CR>
+vnoremap <Plug>(dirvish_open)               :call dirvish#visit("edit", 0)<CR>
+nnoremap <Plug>(dirvish_vsplit)             :<C-U>call dirvish#visit("vsplit", 1)<CR>
+vnoremap <Plug>(dirvish_vsplit)             :call dirvish#visit("vsplit", 1)<CR>
+nnoremap <Plug>(dirvish_split)              :<C-U>call dirvish#visit("split", 1)<CR>
+vnoremap <Plug>(dirvish_split)              :call dirvish#visit("split", 1)<CR>

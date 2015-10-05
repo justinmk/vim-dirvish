@@ -26,17 +26,17 @@
 let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 
-function! s:msg_error(msg)
+function! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
 endfunction
-function! s:msg_warn(msg)
+function! s:msg_warn(msg) abort
   redraw | echohl WarningMsg | echomsg 'dirvish:' a:msg | echohl None
 endfunction
-function! s:msg_info(msg)
+function! s:msg_info(msg) abort
   redraw | echo 'dirvish:' a:msg
 endfunction
 
-function! s:normalize_dir(dir)
+function! s:normalize_dir(dir) abort
   if !isdirectory(a:dir)
     echoerr 'not a directory:' a:dir
     return
@@ -49,7 +49,7 @@ function! s:normalize_dir(dir)
   return dir
 endfunction
 
-function! s:parent_dir(dir)
+function! s:parent_dir(dir) abort
   if !isdirectory(a:dir)
     echoerr 'not a directory:' a:dir
     return
@@ -57,7 +57,7 @@ function! s:parent_dir(dir)
   return s:normalize_dir(fnamemodify(a:dir, ":p:h:h"))
 endfunction
 
-function! s:discover_paths(current_dir, glob_pattern)
+function! s:discover_paths(current_dir, glob_pattern) abort
   let curdir = s:normalize_dir(a:current_dir)
   let paths = glob(curdir.a:glob_pattern, 1, 1)
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
@@ -95,7 +95,7 @@ function! s:buf_init() abort
   setlocal filetype=dirvish
 endfunction
 
-function! s:buf_syntax()
+function! s:buf_syntax() abort
   if has("syntax")
     syntax clear
     let w:dirvish = get(w:, 'dirvish', {})
@@ -120,7 +120,7 @@ function! s:buf_syntax()
   endif
 endfunction
 
-function! s:buf_isvisible(bnr)
+function! s:buf_isvisible(bnr) abort
   for i in range(1, tabpagenr('$'))
     for tbnr in tabpagebuflist(i)
       if tbnr == a:bnr
@@ -131,7 +131,7 @@ function! s:buf_isvisible(bnr)
   return 0
 endfunction
 
-function! s:on_buf_closed(...)
+function! s:on_buf_closed(...) abort
   if a:0 <= 0
     return
   endif
@@ -143,8 +143,8 @@ function! s:on_buf_closed(...)
   "Do we need to bother cleaning up buffer-local autocmds?
   "silent! autocmd! dirvish_bufclosed * <buffer>
 
-  call d.visit_altbuf() "tickle original alt-buffer to restore @#
-  if !d.visit_prevbuf() "return to original buffer
+  call s:visit_altbuf(d) "tickle original alt-buffer to restore @#
+  if !s:visit_prevbuf(d) "return to original buffer
     call s:msg_warn('no other buffers')
   endif
   if bufexists(bnr) && buflisted(bnr) && !s:buf_isvisible(bnr)
@@ -152,7 +152,96 @@ function! s:on_buf_closed(...)
   endif
 endfunction
 
-function! s:new_dirvish()
+function! dirvish#visit(split_cmd, open_in_background) range abort
+  let d = b:dirvish
+  let startline = v:count ? v:count : a:firstline
+  let endline   = v:count ? v:count : a:lastline
+
+  let curtab = tabpagenr()
+  let curwin = winnr()
+  let wincount = winnr('$')
+  let old_lazyredraw = &lazyredraw
+  set lazyredraw
+  let splitcmd = a:split_cmd
+
+  let paths = getline(startline, endline)
+  for path in paths
+    if !isdirectory(path) && !filereadable(path)
+      call s:msg_warn("invalid path: '" . path . "'")
+      continue
+    elseif isdirectory(path) && startline > endline && splitcmd ==# 'edit'
+      " opening a bunch of directories in the _same_ window is not useful.
+      continue
+    endif
+
+    try
+      if isdirectory(path)
+        exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
+      else
+        exe splitcmd fnameescape(path)
+      endif
+    catch /E37:/
+      call s:msg_info("E37: No write since last change")
+      return
+    catch /E36:/
+      " E36: no room for any new splits; open in-situ.
+      let splitcmd = 'edit'
+      exe (isdirectory(path) ? 'Dirvish' : splitcmd) fnameescape(path)
+    catch /E325:/
+      call s:msg_info("E325: swap file exists")
+    endtry
+  endfor
+
+  if a:open_in_background "return to dirvish buffer
+    if a:split_cmd ==# 'tabedit'
+      exe 'tabnext' curtab '|' curwin.'wincmd w'
+    elseif winnr('$') > wincount
+      exe 'wincmd p'
+    elseif a:split_cmd ==# 'edit'
+      execute 'silent keepalt keepjumps ' . d.buf_num . 'buffer'
+    endif
+  elseif !exists('b:dirvish')
+    if s:visit_prevbuf(d) "tickle original buffer to make it the altbuf.
+      "return to the opened file.
+      b#
+    endif
+  endif
+
+  let &lazyredraw = old_lazyredraw
+endfunction
+
+" Returns 1 on success, 0 on failure
+function! s:visit_prevbuf(dirvish) abort
+  let d = a:dirvish
+  if d.prevbuf != bufnr('%') && bufexists(d.prevbuf)
+        \ && empty(getbufvar(d.prevbuf, 'dirvish'))
+    execute 'silent keepjumps' s:noswapfile 'buffer' d.prevbuf
+    return 1
+  endif
+
+  "find a buffer that is _not_ a dirvish buffer.
+  let validbufs = filter(range(1, bufnr('$')),
+        \ 'buflisted(v:val)
+        \  && empty(getbufvar(v:val, "dirvish"))
+        \  && "help"  !=# getbufvar(v:val, "&buftype")
+        \  && v:val   !=  bufnr("%")
+        \  && !isdirectory(bufname(v:val))
+        \ ')
+  if len(validbufs) > 0
+    execute 'buffer' validbufs[0]
+    return 1
+  endif
+  return 0
+endfunction
+
+function! s:visit_altbuf(dirvish) abort
+  let d = a:dirvish
+  if bufexists(d.altbuf) && empty(getbufvar(d.altbuf, 'dirvish'))
+    execute 'silent noau keepjumps' s:noswapfile 'buffer' d.altbuf
+  endif
+endfunction
+
+function! s:new_dirvish() abort
   let l:obj = { 'altbuf': -1, 'prevbuf': -1 }
 
   function! l:obj.do_open(dir) abort dict
@@ -201,7 +290,7 @@ function! s:new_dirvish()
         bwipeout # "Kill it with fire, it is useless.
       endif
       let bnr = bufnr('%')
-      call self.visit_altbuf() "tickle original alt-buffer to restore @#
+      call s:visit_altbuf(self) "tickle original alt-buffer to restore @#
       execute 'silent noau keepjumps' s:noswapfile bnr.'buffer'
     endif
 
@@ -256,96 +345,10 @@ function! s:new_dirvish()
     endif
   endfunction
 
-  " returns 1 on success, 0 on failure
-  function! l:obj.visit_prevbuf() abort dict
-    if self.prevbuf != bufnr('%') && bufexists(self.prevbuf)
-          \ && empty(getbufvar(self.prevbuf, 'dirvish'))
-      execute 'silent keepjumps' s:noswapfile 'buffer' self.prevbuf
-      return 1
-    endif
-
-    "find a buffer that is _not_ a dirvish buffer.
-    let validbufs = filter(range(1, bufnr('$')),
-          \ 'buflisted(v:val)
-          \  && empty(getbufvar(v:val, "dirvish"))
-          \  && "help"  !=# getbufvar(v:val, "&buftype")
-          \  && v:val   !=  bufnr("%")
-          \  && !isdirectory(bufname(v:val))
-          \ ')
-    if len(validbufs) > 0
-      execute 'buffer' validbufs[0]
-      return 1
-    endif
-    return 0
-  endfunction
-
-  function! l:obj.visit_altbuf() abort dict
-    if bufexists(self.altbuf) && empty(getbufvar(self.altbuf, 'dirvish'))
-      execute 'silent noau keepjumps' s:noswapfile 'buffer' self.altbuf
-    endif
-  endfunction
-
-  function! l:obj.visit(split_cmd, open_in_background) dict range
-    let startline = v:count ? v:count : a:firstline
-    let endline   = v:count ? v:count : a:lastline
-
-    let curtab = tabpagenr()
-    let curwin = winnr()
-    let wincount = winnr('$')
-    let old_lazyredraw = &lazyredraw
-    set lazyredraw
-    let splitcmd = a:split_cmd
-
-    let paths = getline(startline, endline)
-    for path in paths
-      if !isdirectory(path) && !filereadable(path)
-        call s:msg_warn("invalid path: '" . path . "'")
-        continue
-      elseif isdirectory(path) && startline > endline && splitcmd ==# 'edit'
-        " opening a bunch of directories in the _same_ window is not useful.
-        continue
-      endif
-
-      try
-        if isdirectory(path)
-          exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
-        else
-          exe splitcmd fnameescape(path)
-        endif
-      catch /E37:/
-        call s:msg_info("E37: No write since last change")
-        return
-      catch /E36:/
-        " E36: no room for any new splits; open in-situ.
-        let splitcmd = 'edit'
-        exe (isdirectory(path) ? 'Dirvish' : splitcmd) fnameescape(path)
-      catch /E325:/
-        call s:msg_info("E325: swap file exists")
-      endtry
-    endfor
-
-    if a:open_in_background "return to dirvish buffer
-      if a:split_cmd ==# 'tabedit'
-        exe 'tabnext' curtab '|' curwin.'wincmd w'
-      elseif winnr('$') > wincount
-        exe 'wincmd p'
-      elseif a:split_cmd ==# 'edit'
-        execute 'silent keepalt keepjumps ' . self.buf_num . 'buffer'
-      endif
-    elseif !exists('b:dirvish')
-      if self.visit_prevbuf() "tickle original buffer to make it the altbuf.
-        "return to the opened file.
-        b#
-      endif
-    endif
-
-    let &lazyredraw = old_lazyredraw
-  endfunction
-
   return l:obj
 endfunction
 
-function! dirvish#open(dir)
+function! dirvish#open(dir) abort
   if &autochdir
     call s:msg_error("'autochdir' is not supported")
     return
