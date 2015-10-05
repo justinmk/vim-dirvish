@@ -155,13 +155,9 @@ endfunction
 function! s:new_dirvish()
   let l:obj = { 'altbuf': -1, 'prevbuf': -1 }
 
-  function! l:obj.open_dir(...) abort dict
+  function! l:obj.do_open(dir) abort dict
     let d = self
-
-    if a:0 > 0
-      let d.dir = s:normalize_dir(a:1)  " full path to the directory
-    endif
-
+    let d.dir = s:normalize_dir(a:dir)  " full path to the directory
     let bnr = bufnr('^' . d.dir . '$')
 
     " Vim tends to name the directory buffer using its relative path.
@@ -310,7 +306,6 @@ function! s:new_dirvish()
         continue
       endif
 
-      let self.lastpath = path
       try
         if isdirectory(path)
           exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
@@ -390,6 +385,11 @@ function! dirvish#open(dir)
 
   let d = s:new_dirvish()
 
+  " Save lastpath when navigating _up_.
+  if exists('b:dirvish') && dir ==# s:parent_dir(b:dirvish.dir)
+    let d.lastpath = b:dirvish.dir
+  endif
+
   " remember alt buffer before clobbering.
   let d.altbuf = exists('b:dirvish')
         \ ? b:dirvish.altbuf
@@ -398,5 +398,5 @@ function! dirvish#open(dir)
   " transfer previous ('original') buffer
   let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : 0 + bufnr('%')
 
-  call d.open_dir(dir, 0, "")
+  call d.do_open(dir)
 endfunction
