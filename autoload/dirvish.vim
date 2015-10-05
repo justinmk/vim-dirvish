@@ -145,10 +145,10 @@ function! s:buf_keymaps()
   let normal_map['dirvish_bgVisitTarget'] = popout_key . 'i'
   let visual_map['dirvish_bgVisitTarget'] = popout_key . 'i'
 
-  let normal_map['dirvish_splitVerticalVisitTarget'] = 'O'
-  let visual_map['dirvish_splitVerticalVisitTarget'] = 'O'
-  let normal_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'O'
-  let visual_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'O'
+  let normal_map['dirvish_splitVerticalVisitTarget'] = 'a'
+  let visual_map['dirvish_splitVerticalVisitTarget'] = 'a'
+  let normal_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'a'
+  let visual_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'a'
 
   let normal_map['dirvish_splitVisitTarget'] = 'o'
   let visual_map['dirvish_splitVisitTarget'] = 'o'

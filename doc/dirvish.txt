@@ -26,21 +26,20 @@ BUFFER MAPPINGS                                              *dirvish-mappings*
 Dirvish defines some default buffer-local mappings, described below.
 
 Directory View~
-f               Define and apply a regular expression filter for the file
-                entries.
-F               Toggle application of the regular expression filter.
-gh              Toggle showing of hidden/(wild-)ignored files.
-- or u          Move up to the parent directory of the current focal
-                directory.
+                                                *dirvish-R*
+R               Reload the current listing.
+                                                *dirvish-p* *dirvish--*
+- or u          Go to the parent directory.
+                                                *dirvish-q*
 q               Quit the Dirvish buffer.
 
 Actions~
-      Action*                     Normal   Popout
-    +---------------------------+--------+--------+
-    | Open in current window    | i      | pi     |
-    | Open in horizontal split  | o      | po     |
-    | Open in vertical split    | v      | pv     |
-    | Open in tab page          | t      | pt     |
+     Action                      Normal      Popout
+    +---------------------------+-----------+--------+
+    | Open in current window    | i or <CR> | pi     |
+    | Open in horizontal split  | o         | po     |
+    | Open in vertical split    | O         | pO     |
+    | Open in tab page          | t         | pt     |
 
     Note: visual selection allows you to perform an action on multiple files
     at once. E.g. if four files are selected, then `v` opens the files in four
@@ -48,24 +47,9 @@ Actions~
 
     Note: Use the `p` modifier to perform the "popout" version of an action
     (the action will be done without focusing the resulting window or buffer).
-
-<CR>            Open the file or directory under the cursor in the current
-i               window.
-
-p<CR>           Pop the file into a new hidden buffer.
-pi
-
-v               Open the file new vertical split.
-
-pv              Pop the file into a new vertical split without focusing it.
-
-o               Open the file new horizontal split.
-
-po              Pop the file into a new horizontal split without focusing it.
-
-t               Open the file in a new tab.
-
-pt              Pop the file into a new tab without focusing it.
+    Examples:
+        - `pi` pops the file into a new hidden buffer
+        - `po` pops the file into a new horizontal split without focusing it
 
 ===============================================================================
 OPTIONS                                                       *dirvish-options*
