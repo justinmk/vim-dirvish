@@ -84,7 +84,6 @@ function! s:discover_paths(current_dir, glob_pattern)
 endfunction
 
 function! s:buf_init() abort
-  setlocal filetype=dirvish
   setlocal bufhidden=unload undolevels=-1 nobuflisted
   setlocal buftype=nofile noswapfile nowrap nolist cursorline
 
@@ -104,6 +103,8 @@ function! s:buf_init() abort
     autocmd BufWipeout,BufUnload,BufDelete <buffer>
           \ call <sid>on_buf_closed(expand('<abuf>'))
   augroup END
+
+  setlocal filetype=dirvish
 endfunction
 
 function! s:buf_syntax()
@@ -129,52 +130,6 @@ function! s:buf_syntax()
             \ | endif
     augroup END
   endif
-endfunction
-
-function! s:buf_keymaps()
-  let normal_map = {}
-  let visual_map = {}
-
-  let normal_map['dirvish_quit'] = 'q'
-
-
-  let normal_map['dirvish_visitTarget'] = 'i'
-
-  let normal_map['dirvish_splitVerticalVisitTarget'] = 'a'
-  let normal_map['dirvish_focusOnParent'] = '-'
-  let normal_map['dirvish_tabVisitTarget'] = 't'
-  let normal_map['dirvish_splitVisitTarget'] = 'o'
-
-  let visual_map['dirvish_visitTarget'] = 'i'
-  let visual_map['dirvish_splitVerticalVisitTarget'] = 'a'
-  let visual_map['dirvish_splitVisitTarget'] = 'o'
-  let visual_map['dirvish_tabVisitTarget'] = 't'
-
-
-  for k in keys(normal_map)
-    let v = normal_map[k]
-    let mapname = "<Plug>(".k.")"
-    if !empty(v) && !hasmapto(mapname, 'n')
-      execute "nmap <nowait><buffer><silent> ".v." ".mapname
-    endif
-  endfor
-
-  for k in keys(visual_map)
-    let v = visual_map[k]
-    let mapname = "<Plug>(".k.")"
-    if !empty(v) && !hasmapto(mapname, 'v')
-      execute "vmap <nowait><buffer><silent> ".v." ".mapname
-    endif
-  endfor
-
-  " HACK: do these extra mappings after the for-loops to avoid false
-  "       positives for hasmapto()
-
-  nmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
-  vmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
-
-  nmap <nowait><buffer><silent> p <Plug>(dirvish_focusOnParent)
-  nnoremap <nowait><buffer><silent> R :Dirvish %<CR>
 endfunction
 
 function! s:buf_isvisible(bnr)
@@ -285,7 +240,6 @@ function! s:new_dirvish()
 
     call s:buf_init()
     call s:buf_syntax()
-    call s:buf_keymaps()
 
     call b:dirvish.render_buffer()
 
@@ -466,4 +420,3 @@ endfunction
 unlet! s:notifier
 let s:notifier = s:new_notifier()
 
-" vim:foldlevel=4:
