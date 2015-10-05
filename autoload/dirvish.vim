@@ -234,10 +234,6 @@ function! s:new_dirvish()
       let b:dirvish = d
     endif
 
-    if exists('#User#DirvishEnter')
-      doautocmd User DirvishEnter
-    endif
-
     call s:buf_init()
     call s:buf_syntax()
 
