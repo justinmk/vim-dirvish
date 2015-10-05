@@ -160,8 +160,6 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
   let curtab = tabpagenr()
   let curwin = winnr()
   let wincount = winnr('$')
-  let old_lazyredraw = &lazyredraw
-  set lazyredraw
   let splitcmd = a:split_cmd
 
   let paths = getline(startline, endline)
@@ -206,8 +204,6 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
       b#
     endif
   endif
-
-  let &lazyredraw = old_lazyredraw
 endfunction
 
 " Returns 1 on success, 0 on failure
@@ -322,8 +318,6 @@ function! s:new_dirvish() abort
       return
     endif
 
-    let old_lazyredraw = &lazyredraw
-    set lazyredraw
     let w = winsaveview()
 
     setlocal modifiable
@@ -338,7 +332,6 @@ function! s:new_dirvish() abort
 
     setlocal nomodifiable nomodified
     call winrestview(w)
-    let &lazyredraw = old_lazyredraw
 
     if has_key(self, 'lastpath')
       keepjumps call search('\V\^'.(escape(self.lastpath, '\')).'\$', 'cw')
