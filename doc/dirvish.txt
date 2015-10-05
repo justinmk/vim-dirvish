@@ -1,50 +1,48 @@
 *dirvish.txt*	directory viewer
 
-===============================================================================
-COMMANDS                                                     *dirvish-commands*
+==============================================================================
+API                                                              *dirvish-api*
 
-
-:Dirvish [{path}]                                                    *:Dirvish*
+:Dirvish [{path}]                                                   *:Dirvish*
     Opens the directory at {path} or the |current-directory| if {path} is not
-    given. If {path} is a file, the parent directory is opened.
-    To open the current _buffer_ directory: >
-        :Dirvish %:p:h
+    given. If {path} is a file then its parent directory is opened.
+    To open the current buffer directory: >
+        :Dirvish %
 <
-===============================================================================
-FUNCTIONS                                                   *dirvish-functions*
-
 dirvish#open()
-
-===============================================================================
-OBJECTS                                                       *dirvish-objects*
 
 b:dirvish
 
-===============================================================================
-BUFFER MAPPINGS                                              *dirvish-mappings*
+==============================================================================
+MAPPINGS                                                    *dirvish-mappings*
 
-Dirvish defines some default buffer-local mappings, described below.
+Dirvish defines these buffer-local mappings.
 
-Directory View~
 R               Reload the current listing.
+
 - or p          Go to the parent directory.
+
 q               Quit the Dirvish buffer.
-i or <CR>       Open in current window.
-o               Open in horizontal split.
-a               Open in vertical split.
 
-    Note: visual selection operates on multiple files at once. E.g., select
-    4 files then press `a` to open the files in 4 vertical splits.
+i or <CR>
+{Visual}i
+{Visual}<CR>    Open file(s) in the current window.
 
-===============================================================================
-OPTIONS                                                       *dirvish-options*
+o
+{Visual}o       Open file(s) in horizontal split(s).
 
-g:dirvish_hijack_netrw = 1                             *g:dirvish_hijack_netrw*
+a
+{Visual}a       Open file(s) in vertical split(s).
+
+==============================================================================
+OPTIONS                                                      *dirvish-options*
+
+g:dirvish_hijack_netrw = 1                            *g:dirvish_hijack_netrw*
 
     0: ":edit /path/to/dir/" and "vim /path/to/dir/" will be handled by
        |netrw| instead of Dirvish.
 
-g:dirvish_relative_paths = 0                         *g:dirvish_relative_paths*
+g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
 
     1: Make paths in the Dirvish buffer relative to |getcwd()|.
 
@@ -64,8 +62,8 @@ set. You can override mappings and behavior by handling this event. Example:
     augroup END
 <
 
-===============================================================================
-FAQ                                                               *dirvish-faq*
+==============================================================================
+FAQ                                                              *dirvish-faq*
 
 How do I control where Dirvish opens splits? ~
 Set the Vim options 'splitbelow' and 'splitright'.
