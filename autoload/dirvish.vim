@@ -136,8 +136,6 @@ function! s:buf_keymaps()
   let normal_map = {}
   let visual_map = {}
 
-  let normal_map['dirvish_setFilter'] = 'cf'
-  let normal_map['dirvish_toggleFilter'] = 'cof'
   let normal_map['dirvish_quit'] = 'q'
 
   let normal_map['dirvish_bgPreviousVisitTarget'] = popout_key . 'p'
@@ -231,8 +229,6 @@ function! s:new_dirvish()
 
     if a:0 > 0
       let d.dir = s:normalize_dir(a:1)  " full path to the directory
-      let d.is_filtered = a:2           " if truthy, apply `filter_exp`
-      let d.filter_exp = a:3            " :g// filter
     endif
 
     let bnr = bufnr('^' . d.dir . '$')
@@ -326,13 +322,6 @@ function! s:new_dirvish()
     call s:buf_syntax()
     let paths = s:discover_paths(self.dir, '*')
     silent call append(0, paths)
-
-    if self.is_filtered && !empty(self.filter_exp)
-      let sep = escape(s:sep, '\') "only \ should be escaped in []
-      "delete non-matches
-      "TODO: do not match before first path separator.
-      exe 'silent g!/\v'.self.filter_exp.'/d_'
-    endif
 
     keepmarks keepjumps $delete _ " remove extra last line
 
@@ -439,34 +428,6 @@ function! s:new_dirvish()
     endif
 
     call dirvish#open(pdir)
-  endfunction
-
-  function! l:obj.set_filter_exp() dict
-    let self.filter_exp = input("filter: /\v", self.filter_exp)
-    if empty(self.filter_exp)
-      let self.is_filtered = 0
-      call s:notifier.info("filter disabled")
-    else
-      let self.is_filtered = 1
-      call s:notifier.info("filter enabled")
-    endif
-    call self.render_buffer()
-  endfunction
-
-  function! l:obj.toggle_filter() dict
-    if self.is_filtered
-      let self.is_filtered = 0
-      call s:notifier.info("filter disabled")
-      call self.render_buffer()
-    else
-      if !empty(self.filter_exp)
-        let self.is_filtered = 1
-        call s:notifier.info("filter enabled")
-        call self.render_buffer()
-      else
-        call self.set_filter_exp()
-      endif
-    endif
   endfunction
 
   return l:obj

@@ -104,6 +104,10 @@ How can I "group" (sort) directories/folders at the top? ~
 Sort folders at the top: >
     :set ma|sort r /[^\/]$/
 <
+How can I filter? ~
+>
+    :set ma|g/foo/d
+<
 Sort folders at the bottom: >
     :set ma|sort r /\/$/
 <
