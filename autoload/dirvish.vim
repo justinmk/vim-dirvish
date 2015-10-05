@@ -136,7 +136,6 @@ function! s:buf_keymaps()
   let normal_map = {}
   let visual_map = {}
 
-  let normal_map['dirvish_refresh'] = 'R'
   let normal_map['dirvish_setFilter'] = 'cf'
   let normal_map['dirvish_toggleFilter'] = 'cof'
   let normal_map['dirvish_quit'] = 'q'
@@ -189,6 +188,7 @@ function! s:buf_keymaps()
   execute "nmap <nowait><buffer><silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
 
   nmap <nowait><buffer><silent> u <Plug>(dirvish_focusOnParent)
+  nnoremap <nowait><buffer><silent> R :Dirvish %<CR>
 endfunction
 
 function! s:buf_isvisible(bnr)
