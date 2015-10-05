@@ -266,6 +266,10 @@ function! s:new_dirvish()
     setlocal nomodifiable nomodified
     call winrestview(w)
     let &lazyredraw = old_lazyredraw
+
+    if has_key(self, 'lastpath')
+      keepjumps call search('\V\^'.(escape(self.lastpath, '\')).'\$', 'cw')
+    endif
   endfunction
 
   " returns 1 on success, 0 on failure
@@ -318,6 +322,7 @@ function! s:new_dirvish()
         continue
       endif
 
+      let self.lastpath = path
       try
         if isdirectory(path)
           exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
@@ -330,11 +335,7 @@ function! s:new_dirvish()
       catch /E36:/
         " E36: no room for any new splits; open in-situ.
         let splitcmd = 'edit'
-        if isdirectory(path)
-          exe 'Dirvish' fnameescape(path)
-        else
-          exe splitcmd fnameescape(path)
-        endif
+        exe (isdirectory(path) ? 'Dirvish' : splitcmd) fnameescape(path)
       catch /E325:/
         call s:notifier.info("E325: swap file exists")
       endtry
