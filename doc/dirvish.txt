@@ -18,21 +18,19 @@ MAPPINGS                                                    *dirvish-mappings*
 
 Dirvish defines these buffer-local mappings.
 
-R               Reload the current listing.
-
-- or p          Go to the parent directory.
-
-q               Quit the Dirvish buffer.
-
-i or <CR>
+g?              Show this help.
+R               Reload/refresh the current directory.
+-
+p               Open the parent directory.
+q               Quit Dirvish and return to the original file.
+i
+<CR>            Open file.
 {Visual}i
-{Visual}<CR>    Open file(s) in the current window.
-
-o
-{Visual}o       Open file(s) in horizontal split(s).
-
-a
-{Visual}a       Open file(s) in vertical split(s).
+{Visual}<CR>    Open selected files.
+o               Open in horizontal split.
+{Visual}o       Open selected files in horizontal splits.
+a               Open in vertical split.
+{Visual}a       Open selected files in vertical splits.
 
 ==============================================================================
 OPTIONS                                                      *dirvish-options*

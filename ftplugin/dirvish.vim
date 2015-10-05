@@ -13,4 +13,5 @@ vmap <nowait><buffer><silent> a     <Plug>(dirvish_vsplit)
 vmap <nowait><buffer><silent> o     <Plug>(dirvish_split)
 
 nnoremap <nowait><buffer><silent> R :Dirvish %<CR>
+nnoremap <buffer><silent>     g?    :help dirvish-mappings<CR>
 
