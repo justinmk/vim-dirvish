@@ -132,35 +132,24 @@ function! s:buf_syntax()
 endfunction
 
 function! s:buf_keymaps()
-  let popout_key = get(g:, 'dirvish_popout_key', 'p')
   let normal_map = {}
   let visual_map = {}
 
   let normal_map['dirvish_quit'] = 'q'
 
-  let normal_map['dirvish_bgPreviousVisitTarget'] = popout_key . 'p'
 
   let normal_map['dirvish_visitTarget'] = 'i'
-  let visual_map['dirvish_visitTarget'] = 'i'
-  let normal_map['dirvish_bgVisitTarget'] = popout_key . 'i'
-  let visual_map['dirvish_bgVisitTarget'] = popout_key . 'i'
 
   let normal_map['dirvish_splitVerticalVisitTarget'] = 'a'
-  let visual_map['dirvish_splitVerticalVisitTarget'] = 'a'
-  let normal_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'a'
-  let visual_map['dirvish_bgSplitVerticalVisitTarget'] = popout_key . 'a'
-
-  let normal_map['dirvish_splitVisitTarget'] = 'o'
-  let visual_map['dirvish_splitVisitTarget'] = 'o'
-  let normal_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
-  let visual_map['dirvish_bgSplitVisitTarget'] = popout_key . 'o'
-
-  let normal_map['dirvish_tabVisitTarget'] = 't'
-  let visual_map['dirvish_tabVisitTarget'] = 't'
-  let normal_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
-  let visual_map['dirvish_bgTabVisitTarget'] = popout_key . 't'
-
   let normal_map['dirvish_focusOnParent'] = '-'
+  let normal_map['dirvish_tabVisitTarget'] = 't'
+  let normal_map['dirvish_splitVisitTarget'] = 'o'
+
+  let visual_map['dirvish_visitTarget'] = 'i'
+  let visual_map['dirvish_splitVerticalVisitTarget'] = 'a'
+  let visual_map['dirvish_splitVisitTarget'] = 'o'
+  let visual_map['dirvish_tabVisitTarget'] = 't'
+
 
   for k in keys(normal_map)
     let v = normal_map[k]
@@ -183,9 +172,8 @@ function! s:buf_keymaps()
 
   nmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
   vmap <nowait><buffer><silent> <CR> <Plug>(dirvish_visitTarget)
-  execute "nmap <nowait><buffer><silent> " . popout_key . "<CR> <Plug>(dirvish_bgVisitTarget)"
 
-  nmap <nowait><buffer><silent> u <Plug>(dirvish_focusOnParent)
+  nmap <nowait><buffer><silent> p <Plug>(dirvish_focusOnParent)
   nnoremap <nowait><buffer><silent> R :Dirvish %<CR>
 endfunction
 

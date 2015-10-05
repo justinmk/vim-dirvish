@@ -26,49 +26,27 @@ BUFFER MAPPINGS                                              *dirvish-mappings*
 Dirvish defines some default buffer-local mappings, described below.
 
 Directory View~
-                                                *dirvish-R*
 R               Reload the current listing.
-                                                *dirvish-p* *dirvish--*
-- or u          Go to the parent directory.
-                                                *dirvish-q*
+- or p          Go to the parent directory.
 q               Quit the Dirvish buffer.
+i or <CR>       Open in current window.
+o               Open in horizontal split.
+a               Open in vertical split.
 
-Actions~
-     Action                      Normal      Popout
-    +---------------------------+-----------+--------+
-    | Open in current window    | i or <CR> | pi     |
-    | Open in horizontal split  | o         | po     |
-    | Open in vertical split    | O         | pO     |
-    | Open in tab page          | t         | pt     |
-
-    Note: visual selection allows you to perform an action on multiple files
-    at once. E.g. if four files are selected, then `v` opens the files in four
-    vertical splits.
-
-    Note: Use the `p` modifier to perform the "popout" version of an action
-    (the action will be done without focusing the resulting window or buffer).
-    Examples:
-        - `pi` pops the file into a new hidden buffer
-        - `po` pops the file into a new horizontal split without focusing it
+    Note: visual selection operates on multiple files at once. E.g., select
+    4 files then press `a` to open the files in 4 vertical splits.
 
 ===============================================================================
 OPTIONS                                                       *dirvish-options*
 
+g:dirvish_hijack_netrw = 1                             *g:dirvish_hijack_netrw*
 
-g:dirvish_popout_key                                     *g:dirvish_popout_key*
-    Default: "p"
+    0: ":edit /path/to/dir/" and "vim /path/to/dir/" will be handled by
+       |netrw| instead of Dirvish.
 
+g:dirvish_relative_paths = 0                         *g:dirvish_relative_paths*
 
-g:dirvish_hijack_netrw                                 *g:dirvish_hijack_netrw*
-    Default: 1
-
-        0: ":edit /path/to/dir/" and "vim /path/to/dir/" will be handled by
-           |netrw| instead of Dirvish.
-
-g:dirvish_relative_paths                             *g:dirvish_relative_paths*
-    Default: 0
-
-        1: paths in dirvish will be relative to |getcwd()| when possible.
+    1: Make paths in the Dirvish buffer relative to |getcwd()|.
 
 
 augroup my_dirvish_events
@@ -81,32 +59,31 @@ augroup END
 ===============================================================================
 FAQ                                                               *dirvish-faq*
 
-How can I control where Dirvish opens splits? ~
+How do I control where Dirvish opens splits? ~
 Set the Vim options 'splitbelow' and 'splitright'.
 
-How can I "group" (sort) directories/folders at the top? ~
+How do I "group" (sort) directories/folders at the top? ~
 Sort folders at the top: >
     :set ma|sort r /[^\/]$/
-<
-How can I filter? ~
->
-    :set ma|g/foo/d
 <
 Sort folders at the bottom: >
     :set ma|sort r /\/$/
 <
-How can I hide dot-prefixed files? ~
+How do I filter? ~
+Use :g to delete lines matching any filter: >
+    :set ma|g/foo/d
+<
+How do I hide "hidden" (dot-prefixed) files? ~
 Use :g to delete the lines with dot-prefixed files: >
     :set ma|g@\v/\.[^\/]+/?$@d
 <
 How to refresh the buffer? ~
 :Dirvish %
-    Note: In the fture it will be possible to refresh the buffer via ":edit"
-    (without arguments).
+    Note: This currently does not work with ":edit".
 
-Why do I get the Vim "swap file" dialog if another Vim instance is viewing ~
-the same directory in Dirvish? ~
-A:  To avoid this, Dirvish requires the |:noswapfile| command which was added
-    in Vim 7.4.213. https://github.com/vim/vim/commit/v7-4-213
+I get the Vim "swap file" dialog if another Vim instance is viewing the same ~
+directory. ~
+To avoid this, Dirvish requires the |:noswapfile| command which was added in
+Vim 7.4.213. https://github.com/vim/vim/commit/v7-4-213
 
  vim:tw=78:ts=8:ft=help:norl:
