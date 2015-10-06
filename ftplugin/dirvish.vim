@@ -1,17 +1,18 @@
-nmap <nowait><buffer><silent> q     <Plug>(dirvish_quit)
-nmap <nowait><buffer><silent> -     :Dirvish %:h:h<CR>
-nmap <nowait><buffer><silent> p     <Plug>(dirvish_open_in_prev_win)
+let s:nowait = (v:version > 703 ? '<nowait>' : '')
+execute 'nmap '.s:nowait.'<buffer><silent> q :doautocmd dirvish_bufclosed BufDelete<CR>'
+nmap <buffer><silent> -     :Dirvish %:h:h<CR>
+nmap <buffer><silent> p     <Plug>(dirvish_open_in_prev_win)
 
-nmap <nowait><buffer><silent> i     <Plug>(dirvish_open)
-nmap <nowait><buffer><silent> <CR>  <Plug>(dirvish_open)
-nmap <nowait><buffer><silent> a     <Plug>(dirvish_vsplit)
-nmap <nowait><buffer><silent> o     <Plug>(dirvish_split)
+nmap <buffer><silent> i     <Plug>(dirvish_open)
+nmap <buffer><silent> <CR>  <Plug>(dirvish_open)
+nmap <buffer><silent> a     <Plug>(dirvish_vsplit)
+nmap <buffer><silent> o     <Plug>(dirvish_split)
 
-vmap <nowait><buffer><silent> i     <Plug>(dirvish_open)
-vmap <nowait><buffer><silent> <CR>  <Plug>(dirvish_open)
-vmap <nowait><buffer><silent> a     <Plug>(dirvish_vsplit)
-vmap <nowait><buffer><silent> o     <Plug>(dirvish_split)
+vmap <buffer><silent> i     <Plug>(dirvish_open)
+vmap <buffer><silent> <CR>  <Plug>(dirvish_open)
+vmap <buffer><silent> a     <Plug>(dirvish_vsplit)
+vmap <buffer><silent> o     <Plug>(dirvish_split)
 
-nnoremap <nowait><buffer><silent> R :Dirvish %<CR>
-nnoremap <buffer><silent>     g?    :help dirvish-mappings<CR>
+nnoremap <buffer><silent> R :Dirvish %<CR>
+nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 

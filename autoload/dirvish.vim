@@ -57,11 +57,21 @@ function! s:parent_dir(dir) abort
   return s:normalize_dir(fnamemodify(a:dir, ":p:h:h"))
 endfunction
 
+if v:version > 703
+  function! s:globlist(pat) abort
+    return glob(a:pat, 1, 1)
+  endfunction
+else "Vim 7.3 glob() cannot handle filenames containing newlines.
+  function! s:globlist(pat) abort
+    return split(glob(a:pat, 1), "\n")
+  endfunction
+endif
+
 function! s:discover_paths(current_dir, glob_pattern) abort
   let curdir = s:normalize_dir(a:current_dir)
-  let paths = glob(curdir.a:glob_pattern, 1, 1)
+  let paths = s:globlist(curdir.a:glob_pattern)
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
-  let paths = paths + glob(curdir.'.[^.]'.a:glob_pattern, 1, 1)
+  let paths = paths + s:globlist(curdir.'.[^.]'.a:glob_pattern)
 
   if get(g:, 'dirvish_relative_paths', 0)
         \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
@@ -136,7 +146,7 @@ function! s:on_buf_closed(...) abort
     return
   endif
   let bnr = 0 + a:1
-  let d = getbufvar(bnr, 'dirvish', {})
+  let d = getbufvar(bnr, 'dirvish')
   if empty(d) "BufDelete etc. may be raised after b:dirvish is gone.
     return
   endif
@@ -379,7 +389,10 @@ function! dirvish#open(dir) abort
   " remember alt buffer before clobbering.
   let d.altbuf = exists('b:dirvish')
         \ ? b:dirvish.altbuf
-        \ : getbufvar('#', 'dirvish', {'altbuf':bufnr('#')}).altbuf
+        \ : (empty(getbufvar('#', 'dirvish'))
+        \     ? bufnr('#')
+        \     : getbufvar('#', 'dirvish').altbuf)
+  
 
   " transfer previous ('original') buffer
   let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : 0 + bufnr('%')

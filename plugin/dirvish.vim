@@ -26,7 +26,6 @@ if get(g:, 'dirvish_hijack_netrw', 1)
   augroup END
 endif
 
-nnoremap <Plug>(dirvish_quit)                       :doautocmd dirvish_bufclosed BufDelete<CR>
 " TODO: handle case where Vim thinks the current window is the previous window, etc...
 nnoremap <Plug>(dirvish_open_in_prev_win)   yy<c-w>p:e <c-r>=fnameescape(getreg('"',1,1)[0])<cr><cr>
 nnoremap <Plug>(dirvish_open)               :<C-U>call dirvish#visit("edit", 0)<CR>
