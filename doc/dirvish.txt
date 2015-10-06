@@ -18,19 +18,19 @@ MAPPINGS                                                    *dirvish-mappings*
 
 Dirvish defines these buffer-local mappings.
 
-g?              Show this help.
-R               Reload/refresh the current directory.
--
-p               Open the parent directory.
-q               Quit Dirvish and return to the original file.
-i
-<CR>            Open file.
-{Visual}i
-{Visual}<CR>    Open selected files.
-o               Open in horizontal split.
-{Visual}o       Open selected files in horizontal splits.
-a               Open in vertical split.
-{Visual}a       Open selected files in vertical splits.
+    g?              Show this help.
+    R               Reload/refresh the current directory.
+    q               Quit Dirvish and return to the original file.
+    i
+    <CR>            Open file.
+    {Visual}i
+    {Visual}<CR>    Open selected files.
+    o               Open in horizontal split.
+    {Visual}o       Open selected files in horizontal splits.
+    a               Open in vertical split.
+    {Visual}a       Open selected files in vertical splits.
+    p               Open file in previous window.
+    -               Open the parent directory.
 
 ==============================================================================
 OPTIONS                                                      *dirvish-options*
@@ -43,6 +43,7 @@ g:dirvish_hijack_netrw = 1                            *g:dirvish_hijack_netrw*
 g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
 
     1: Make paths in the Dirvish buffer relative to |getcwd()|.
+       Note: Recommended on Vim 7.3 (because it lacks |conceal|).
 
 The `dirvish` |FileType| event fires after Dirvish mappings and options are
 set. You can override mappings and behavior by handling this event. Example:
@@ -85,9 +86,9 @@ How to refresh the buffer? ~
 :Dirvish %
     Note: This currently does not work with ":edit".
 
-I get the Vim "swap file" dialog if another Vim instance is viewing the same ~
-directory. ~
-To avoid this, Dirvish requires the |:noswapfile| command which was added in
-Vim 7.4.213. https://github.com/vim/vim/commit/v7-4-213
+How to avoid the "swap file" dialog if another Vim instance is viewing the ~
+same directory? ~
+Requires |:noswapfile|, which was added in Vim 7.4.213.
+https://github.com/vim/vim/commit/v7-4-213
 
  vim:tw=78:ts=8:ft=help:norl:

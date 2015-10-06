@@ -75,7 +75,7 @@ function! s:discover_paths(current_dir, glob_pattern) abort
 
   if get(g:, 'dirvish_relative_paths', 0)
         \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
-    return sort(map(paths, "fnamemodify(v:val, ':.')"))
+    return sort(map(paths, "fnamemodify(v:val, ':p:.')"))
   else
     return sort(map(paths, "fnamemodify(v:val, ':p')"))
   endif
