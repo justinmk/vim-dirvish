@@ -35,11 +35,14 @@ endfunction
 function! s:msg_info(msg) abort
   redraw | echo 'dirvish:' a:msg
 endfunction
+function! s:msg_dbg(msg) abort
+  call writefile([a:msg], expand('~/dirvish.log', 1), 'a')
+endfunction
 
 function! s:normalize_dir(dir) abort
   if !isdirectory(a:dir)
-    echoerr 'not a directory:' a:dir
-    return
+    call s:msg_error("invalid directory: '".a:dir."'")
+    return ''
   endif
   let dir = fnamemodify(a:dir, ':p') "always full path
   let dir = substitute(a:dir, s:sep.'\+', s:sep, 'g') "replace consecutive slashes
@@ -82,8 +85,9 @@ function! s:discover_paths(current_dir, glob_pattern) abort
 endfunction
 
 function! s:buf_init() abort
-  setlocal bufhidden=unload undolevels=-1 nobuflisted
-  setlocal buftype=nofile noswapfile nowrap nolist cursorline
+  setlocal buflisted "required for BufDelete event
+  setlocal undolevels=-1 buftype=nofile noswapfile
+  setlocal nowrap nolist cursorline
 
   if &l:spell
     setlocal nospell
@@ -98,8 +102,7 @@ function! s:buf_init() abort
 
   augroup dirvish_bufclosed
     autocmd! * <buffer>
-    autocmd BufWipeout,BufUnload,BufDelete <buffer>
-          \ call <sid>on_buf_closed(expand('<abuf>'))
+    autocmd BufDelete <buffer> call <sid>on_buf_closed(expand('<abuf>'))
   augroup END
 
   setlocal filetype=dirvish
@@ -150,16 +153,36 @@ function! s:on_buf_closed(...) abort
   if empty(d) "BufDelete etc. may be raised after b:dirvish is gone.
     return
   endif
-  "Do we need to bother cleaning up buffer-local autocmds?
-  "silent! autocmd! dirvish_bufclosed * <buffer>
 
-  call s:visit_altbuf(d) "tickle original alt-buffer to restore @#
-  if !s:visit_prevbuf(d) "return to original buffer
-    call s:msg_warn('no other buffers')
+  let w:dirvish = get(w:, 'dirvish', {})
+  let [w:dirvish.altbuf, w:dirvish.prevbuf] = [d.altbuf, d.prevbuf]
+
+  augroup dirvish_after
+    autocmd!
+    for i in [d.altbuf, d.prevbuf]
+      if bufexists(i)
+        " call s:msg_dbg('on_buf_closed i='.i)
+        exe 'autocmd CursorMoved <buffer='.i.
+          \ '> exe "autocmd! dirvish_after"|call <SID>restore_alt_prev()'
+      endif
+    endfor
+  augroup END
+
+  if d.prevbuf != bufnr('%') && !s:visit_prevbuf(d.prevbuf)
+    call s:msg_info('no other buffers')
   endif
+
   if bufexists(bnr) && buflisted(bnr) && !s:buf_isvisible(bnr)
-    execute 'bdelete' bnr
+    execute 'silent noau keepjumps bdelete' bnr
   endif
+endfunction
+
+function! s:restore_alt_prev()
+  if !exists('w:dirvish')
+    return
+  endif
+  call s:visit_altbuf(get(w:dirvish, 'altbuf', 0))
+  call s:visit_prevbuf(get(w:dirvish, 'prevbuf', 0))
 endfunction
 
 function! dirvish#visit(split_cmd, open_in_background) range abort
@@ -211,7 +234,7 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
       execute 'silent keepalt keepjumps buffer' d.buf_num
     endif
   elseif !exists('b:dirvish')
-    if s:visit_prevbuf(d) "tickle original buffer to make it the altbuf.
+    if s:visit_prevbuf(d.prevbuf) "tickle original buffer to make it the altbuf.
       "return to the opened file.
       b#
     endif
@@ -219,11 +242,10 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
 endfunction
 
 " Returns 1 on success, 0 on failure
-function! s:visit_prevbuf(dirvish) abort
-  let d = a:dirvish
-  if d.prevbuf != bufnr('%') && bufexists(d.prevbuf)
-        \ && empty(getbufvar(d.prevbuf, 'dirvish'))
-    execute 'silent keepjumps' s:noswapfile 'buffer' d.prevbuf
+function! s:visit_prevbuf(prevbuf) abort
+  if a:prevbuf != bufnr('%') && bufexists(a:prevbuf)
+        \ && empty(getbufvar(a:prevbuf, 'dirvish'))
+    execute 'silent noau keepjumps' s:noswapfile 'buffer' a:prevbuf
     return 1
   endif
 
@@ -236,16 +258,15 @@ function! s:visit_prevbuf(dirvish) abort
         \  && !isdirectory(bufname(v:val))
         \ ')
   if len(validbufs) > 0
-    execute 'buffer' validbufs[0]
+    execute 'silent noau keepjumps' s:noswapfile 'buffer' validbufs[0]
     return 1
   endif
   return 0
 endfunction
 
-function! s:visit_altbuf(dirvish) abort
-  let d = a:dirvish
-  if bufexists(d.altbuf) && empty(getbufvar(d.altbuf, 'dirvish'))
-    execute 'silent noau keepjumps' s:noswapfile 'buffer' d.altbuf
+function! s:visit_altbuf(altbuf) abort
+  if bufexists(a:altbuf) && empty(getbufvar(a:altbuf, 'dirvish'))
+    execute 'silent noau keepjumps' s:noswapfile 'buffer' a:altbuf
   endif
 endfunction
 
@@ -298,8 +319,8 @@ function! s:new_dirvish() abort
         bwipeout # "Kill it with fire, it is useless.
       endif
       let bnr = bufnr('%')
-      call s:visit_altbuf(self) "tickle original alt-buffer to restore @#
-      execute 'silent noau keepjumps' s:noswapfile bnr.'buffer'
+      call s:visit_altbuf(self.altbuf) "tickle original alt-buffer to restore @#
+      execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
     endif
 
     if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
@@ -369,9 +390,7 @@ function! dirvish#open(dir) abort
   endif
 
   let dir = s:normalize_dir(dir)
-
-  if !isdirectory(dir)
-    call s:msg_error("invalid directory: '" . dir . "'")
+  if '' ==# dir " s:normalize_dir() already displayed error message.
     return
   endif
 
