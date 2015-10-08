@@ -58,13 +58,13 @@ function! s:parent_dir(dir) abort
 endfunction
 
 if v:version > 703
-  function! s:globlist(pat) abort
-    return glob(a:pat, 1, 1)
-  endfunction
+function! s:globlist(pat) abort
+  return glob(a:pat, 1, 1)
+endfunction
 else "Vim 7.3 glob() cannot handle filenames containing newlines.
-  function! s:globlist(pat) abort
-    return split(glob(a:pat, 1), "\n")
-  endfunction
+function! s:globlist(pat) abort
+  return split(glob(a:pat, 1), "\n")
+endfunction
 endif
 
 function! s:discover_paths(current_dir, glob_pattern) abort
@@ -175,7 +175,7 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
   let paths = getline(startline, endline)
   for path in paths
     if !isdirectory(path) && !filereadable(path)
-      call s:msg_warn("invalid path: '" . path . "'")
+      call s:msg_info("invalid (or access denied): ".path)
       continue
     elseif isdirectory(path) && startline > endline && splitcmd ==# 'edit'
       " opening a bunch of directories in the _same_ window is not useful.
@@ -188,13 +188,17 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
       else
         exe splitcmd fnameescape(path)
       endif
+
+      " return to previous window after _each_ split, otherwise we get lost.
+      if a:open_in_background && splitcmd =~# 'sp' && winnr('$') > wincount
+        wincmd p
+      endif
     catch /E37:/
       call s:msg_info("E37: No write since last change")
       return
     catch /E36:/
-      " E36: no room for any new splits; open in-situ.
-      let splitcmd = 'edit'
-      exe (isdirectory(path) ? 'Dirvish' : splitcmd) fnameescape(path)
+      call s:msg_info(v:exception)
+      return
     catch /E325:/
       call s:msg_info("E325: swap file exists")
     endtry
@@ -203,10 +207,8 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
   if a:open_in_background "return to dirvish buffer
     if a:split_cmd ==# 'tabedit'
       exe 'tabnext' curtab '|' curwin.'wincmd w'
-    elseif winnr('$') > wincount
-      exe 'wincmd p'
     elseif a:split_cmd ==# 'edit'
-      execute 'silent keepalt keepjumps ' . d.buf_num . 'buffer'
+      execute 'silent keepalt keepjumps buffer' d.buf_num
     endif
   elseif !exists('b:dirvish')
     if s:visit_prevbuf(d) "tickle original buffer to make it the altbuf.
@@ -255,13 +257,13 @@ function! s:new_dirvish() abort
     let d.dir = s:normalize_dir(a:dir)  " full path to the directory
     let bnr = bufnr('^' . d.dir . '$')
 
-    " Vim tends to name the directory buffer using its relative path.
-    " Examples (observed on Win32 gvim 7.4.618):
+    " Vim tends to name the directory buffer using its reduced path.
+    " Examples (Win32 gvim 7.4.618):
     "     ~\AppData\Local\Temp\
     "     ~\AppData\Local\Temp
     "     AppData\Local\Temp\
     "     AppData\Local\Temp
-    " Try to find the existing relative-path name before creating a new one.
+    " Try to find an existing reduced-path name before creating a new one.
     for pat in [':~:.', ':~']
       if -1 != bnr
         break
@@ -392,7 +394,6 @@ function! dirvish#open(dir) abort
         \ : (empty(getbufvar('#', 'dirvish'))
         \     ? bufnr('#')
         \     : getbufvar('#', 'dirvish').altbuf)
-  
 
   " transfer previous ('original') buffer
   let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : 0 + bufnr('%')
