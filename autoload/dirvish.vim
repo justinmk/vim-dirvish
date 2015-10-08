@@ -89,17 +89,6 @@ function! s:buf_init() abort
   setlocal undolevels=-1 buftype=nofile noswapfile
   setlocal nowrap nolist cursorline
 
-  if &l:spell
-    setlocal nospell
-    augroup dirvish_bufferopts
-      "Delete buffer-local events for this augroup.
-      autocmd! * <buffer>
-      "Restore window-local settings.
-      autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer>
-            \ setlocal spell
-    augroup END
-  endif
-
   augroup dirvish_bufclosed
     autocmd! * <buffer>
     autocmd BufDelete <buffer> call <sid>on_buf_closed(expand('<abuf>'))
