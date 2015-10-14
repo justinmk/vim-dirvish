@@ -85,8 +85,9 @@ function! s:discover_paths(current_dir, glob_pattern) abort
 endfunction
 
 function! s:buf_init() abort
+  let w:dirvish = get(w:, 'dirvish', {})
   setlocal buflisted "required for BufDelete event
-  setlocal undolevels=-1 buftype=nofile noswapfile
+  setlocal undolevels=-1 buftype=nofile noswapfile bufhidden=unload
   setlocal nowrap nolist cursorline
 
   augroup dirvish_bufclosed
@@ -100,24 +101,21 @@ endfunction
 function! s:buf_syntax() abort
   if has("syntax")
     syntax clear
-    let w:dirvish = get(w:, 'dirvish', {})
-    let w:dirvish.orig_concealcursor = &l:concealcursor
-    let w:dirvish.orig_conceallevel = &l:conceallevel
-    setlocal concealcursor=nvc conceallevel=3
-
     let sep = escape(s:sep, '/\')
     exe 'syntax match DirvishPathHead ''\v.*'.sep.'\ze[^'.sep.']+'.sep.'?$'' conceal'
     exe 'syntax match DirvishPathTail ''\v[^'.sep.']+'.sep.'$'''
     highlight! link DirvishPathTail Directory
+  endif
 
-    augroup dirvish_syntaxteardown
+  if has('conceal')
+    let w:dirvish.orig_concealcursor = &l:concealcursor
+    let w:dirvish.orig_conceallevel = &l:conceallevel
+    setlocal concealcursor=nvc conceallevel=3
+
+    augroup dirvish_winlocal
       "Delete buffer-local events for this augroup.
       autocmd! * <buffer>
-      "Restore window-local settings.
-      autocmd BufLeave,BufHidden,BufWipeout,BufUnload,BufDelete <buffer> if exists('w:dirvish')
-            \ |   let &l:concealcursor = w:dirvish.orig_concealcursor
-            \ |   let &l:conceallevel = w:dirvish.orig_conceallevel
-            \ | endif
+      autocmd BufHidden <buffer> call <SID>restore_winlocal_settings()
     augroup END
   endif
 endfunction
@@ -134,17 +132,10 @@ function! s:buf_isvisible(bnr) abort
 endfunction
 
 function! s:on_buf_closed(...) abort
-  if a:0 <= 0
+  let d = get(w:, 'dirvish', {})
+  if empty(d)
     return
   endif
-  let bnr = 0 + a:1
-  let d = getbufvar(bnr, 'dirvish')
-  if empty(d) "BufDelete etc. may be raised after b:dirvish is gone.
-    return
-  endif
-
-  let w:dirvish = get(w:, 'dirvish', {})
-  let [w:dirvish.altbuf, w:dirvish.prevbuf] = [d.altbuf, d.prevbuf]
 
   augroup dirvish_after
     autocmd!
@@ -161,8 +152,15 @@ function! s:on_buf_closed(...) abort
     call s:msg_info('no other buffers')
   endif
 
-  if bufexists(bnr) && buflisted(bnr) && !s:buf_isvisible(bnr)
-    execute 'silent noau keepjumps bdelete' bnr
+endfunction
+
+function! s:restore_winlocal_settings()
+  if !exists('w:dirvish')
+    return
+  endif
+  if has('conceal') && has_key(w:dirvish, 'orig_concealcursor')
+    let &l:concealcursor = w:dirvish.orig_concealcursor
+    let &l:conceallevel = w:dirvish.orig_conceallevel
   endif
 endfunction
 
@@ -172,10 +170,10 @@ function! s:restore_alt_prev()
   endif
   call s:visit_altbuf(get(w:dirvish, 'altbuf', 0))
   call s:visit_prevbuf(get(w:dirvish, 'prevbuf', 0))
+  unlet! w:dirvish
 endfunction
 
 function! dirvish#visit(split_cmd, open_in_background) range abort
-  let d = b:dirvish
   let startline = v:count ? v:count : a:firstline
   let endline   = v:count ? v:count : a:lastline
 
@@ -220,10 +218,10 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
     if a:split_cmd ==# 'tabedit'
       exe 'tabnext' curtab '|' curwin.'wincmd w'
     elseif a:split_cmd ==# 'edit'
-      execute 'silent keepalt keepjumps buffer' d.buf_num
+      execute 'silent keepalt keepjumps buffer' w:dirvish.buf_num
     endif
   elseif !exists('b:dirvish')
-    if s:visit_prevbuf(d.prevbuf) "tickle original buffer to make it the altbuf.
+    if s:visit_prevbuf(w:dirvish.prevbuf) "tickle original buffer to make it the altbuf.
       "return to the opened file.
       b#
     endif
@@ -260,7 +258,7 @@ function! s:visit_altbuf(altbuf) abort
 endfunction
 
 function! s:new_dirvish() abort
-  let l:obj = { 'altbuf': -1, 'prevbuf': -1 }
+  let l:obj = {}
 
   function! l:obj.do_open(dir) abort dict
     let d = self
@@ -346,7 +344,6 @@ function! s:new_dirvish() abort
 
     silent keepmarks keepjumps %delete _
 
-    call s:buf_syntax()
     let paths = s:discover_paths(self.dir, '*')
     silent call append(0, paths)
 
@@ -361,6 +358,10 @@ function! s:new_dirvish() abort
   endfunction
 
   return l:obj
+endfunction
+
+function! s:buf_isvalid(bnr) abort
+  return bufexists(a:bnr) && !isdirectory(bufname(a:bnr))
 endfunction
 
 function! dirvish#open(dir) abort
@@ -396,15 +397,21 @@ function! dirvish#open(dir) abort
     let d.lastpath = b:dirvish.dir
   endif
 
-  " remember alt buffer before clobbering.
-  let d.altbuf = exists('b:dirvish')
-        \ ? b:dirvish.altbuf
-        \ : (empty(getbufvar('#', 'dirvish'))
-        \     ? bufnr('#')
-        \     : getbufvar('#', 'dirvish').altbuf)
+  " Remember previous ('original') buffer.
+  let d.prevbuf = s:buf_isvalid(bufnr('%')) || !exists('w:dirvish')
+        \ ? 0+bufnr('%') : w:dirvish.prevbuf
+  if exists('b:dirvish') && !s:buf_isvalid(d.prevbuf)
+    let d.prevbuf = b:dirvish.prevbuf
+  endif
 
-  " transfer previous ('original') buffer
-  let d.prevbuf = exists('b:dirvish') ? b:dirvish.prevbuf : 0 + bufnr('%')
+  " Remember alternate buffer.
+  let d.altbuf = s:buf_isvalid(bufnr('#')) || !exists('w:dirvish')
+        \ ? 0+bufnr('#') : w:dirvish.altbuf
+  if exists('b:dirvish') && (d.altbuf == d.prevbuf || !s:buf_isvalid(d.altbuf))
+    let d.altbuf = b:dirvish.altbuf
+  endif
+
+  let w:dirvish = extend(get(w:, 'dirvish', {}), d, 'force')
 
   call d.do_open(dir)
 endfunction
