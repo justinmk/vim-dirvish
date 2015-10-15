@@ -70,11 +70,11 @@ function! s:globlist(pat) abort
 endfunction
 endif
 
-function! s:discover_paths(current_dir, glob_pattern) abort
+function! s:list_dir(current_dir) abort
   let curdir = s:normalize_dir(a:current_dir)
-  let paths = s:globlist(curdir.a:glob_pattern)
+  let paths = s:globlist(curdir.'*')
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
-  let paths = paths + s:globlist(curdir.'.[^.]'.a:glob_pattern)
+  let paths = paths + s:globlist(curdir.'.[^.]*')
 
   if get(g:, 'dirvish_relative_paths', 0)
         \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
@@ -344,7 +344,7 @@ function! s:new_dirvish() abort
 
     silent keepmarks keepjumps %delete _
 
-    let paths = s:discover_paths(self.dir, '*')
+    let paths = s:list_dir(self.dir)
     silent call append(0, paths)
 
     keepmarks keepjumps $delete _ " remove extra last line
