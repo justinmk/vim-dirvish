@@ -83,8 +83,8 @@ function! s:list_dir(current_dir) abort
 endfunction
 
 function! s:buf_init() abort
-  setlocal buflisted "required for BufDelete event
-  setlocal undolevels=-1 buftype=nofile noswapfile bufhidden=unload
+  setlocal nobuflisted
+  setlocal undolevels=-1 buftype=nofile noswapfile
   setlocal nowrap nolist cursorline
 
   setlocal filetype=dirvish
