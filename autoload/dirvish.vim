@@ -13,7 +13,7 @@
 " for more details.
 "
 " Things that are unnecessary when you set the buffer name:
-" - let &titlestring = expand(self.dir, 1)
+" - let &titlestring = expand(b:dirvish.dir, 1)
 " - specialized 'cd', 'cl'
 "
 " Things that are unnecessary when you conceal the full file paths:
@@ -25,12 +25,10 @@
 
 let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
+let s:noau       = 'silent noautocmd keepjumps'
 
 function! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
-endfunction
-function! s:msg_warn(msg) abort
-  redraw | echohl WarningMsg | echomsg 'dirvish:' a:msg | echohl None
 endfunction
 function! s:msg_info(msg) abort
   redraw | echo 'dirvish:' a:msg
@@ -85,17 +83,19 @@ function! s:list_dir(current_dir) abort
 endfunction
 
 function! s:buf_init() abort
-  let w:dirvish = get(w:, 'dirvish', {})
   setlocal buflisted "required for BufDelete event
   setlocal undolevels=-1 buftype=nofile noswapfile bufhidden=unload
   setlocal nowrap nolist cursorline
 
-  augroup dirvish_bufclosed
-    autocmd! * <buffer>
-    autocmd BufDelete <buffer> call <sid>on_buf_closed(expand('<abuf>'))
-  augroup END
-
   setlocal filetype=dirvish
+
+  augroup dirvish_buflocal
+    autocmd! * <buffer>
+    " Ensure w:dirvish for window splits, etc.
+    autocmd WinEnter  <buffer> let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'force')
+    autocmd BufDelete <buffer> call <SID>on_buf_closed(expand('<abuf>'))
+    autocmd BufLeave  <buffer> call <SID>restore_winlocal_settings()
+  augroup END
 endfunction
 
 function! s:buf_syntax() abort
@@ -111,12 +111,6 @@ function! s:buf_syntax() abort
     let w:dirvish.orig_concealcursor = &l:concealcursor
     let w:dirvish.orig_conceallevel = &l:conceallevel
     setlocal concealcursor=nvc conceallevel=3
-
-    augroup dirvish_winlocal
-      "Delete buffer-local events for this augroup.
-      autocmd! * <buffer>
-      autocmd BufHidden <buffer> call <SID>restore_winlocal_settings()
-    augroup END
   endif
 endfunction
 
@@ -155,7 +149,7 @@ function! s:on_buf_closed(...) abort
 endfunction
 
 function! s:restore_winlocal_settings()
-  if !exists('w:dirvish')
+  if exists('b:dirvish') || !exists('w:dirvish')
     return
   endif
   if has('conceal') && has_key(w:dirvish, 'orig_concealcursor')
@@ -176,10 +170,7 @@ endfunction
 function! dirvish#visit(split_cmd, open_in_background) range abort
   let startline = v:count ? v:count : a:firstline
   let endline   = v:count ? v:count : a:lastline
-
-  let curtab = tabpagenr()
-  let curwin = winnr()
-  let wincount = winnr('$')
+  let [curtab, curwin, wincount] = [tabpagenr(), winnr(), winnr('$')]
   let splitcmd = a:split_cmd
 
   let paths = getline(startline, endline)
@@ -257,6 +248,47 @@ function! s:visit_altbuf(altbuf) abort
   endif
 endfunction
 
+" Saves or restores the view of all windows showing `bname`.
+function! s:windo_save_or_restore(save, bname)
+  let [curtab, curwin, curaltwin] = [tabpagenr(), winnr(), winnr('#')]
+  for tnr in range(1, tabpagenr('$'))
+    for wnr in range(1, tabpagewinnr(tnr, '$'))
+      if a:bname ==# bufname(winbufnr(wnr))
+        exe s:noau 'tabnext' tnr '|' s:noau wnr.'wincmd w'
+        if a:save
+          let w:dirvish['_view'] = winsaveview()
+        else
+          call winrestview(w:dirvish['_view'])
+        endif
+      endif
+    endfor
+  endfor
+  exe s:noau 'tabnext '.curtab
+  exe s:noau curaltwin.'wincmd w|' s:noau curwin.'wincmd w'
+endfunction
+
+function! s:buf_render(dir, lastpath) abort
+  let bname = bufname('%')
+  if !isdirectory(bname)
+    echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
+    return
+  endif
+
+  call s:windo_save_or_restore(1, bname)
+  setlocal modifiable
+
+  silent keepmarks keepjumps %delete _
+  silent call append(0, s:list_dir(a:dir))
+  keepmarks keepjumps $delete _ " remove extra last line
+
+  setlocal nomodifiable nomodified
+  call s:windo_save_or_restore(0, bname)
+
+  if !empty(a:lastpath)
+    keepjumps call search('\V\^'.escape(a:lastpath, '\').'\$', 'cw')
+  endif
+endfunction
+
 function! s:new_dirvish() abort
   let l:obj = {}
 
@@ -306,7 +338,7 @@ function! s:new_dirvish() abort
         bwipeout # "Kill it with fire, it is useless.
       endif
       let bnr = bufnr('%')
-      call s:visit_altbuf(self.altbuf) "tickle original alt-buffer to restore @#
+      call s:visit_altbuf(d.altbuf) "tickle original alt-buffer to restore @#
       execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
     endif
 
@@ -325,36 +357,10 @@ function! s:new_dirvish() abort
 
     call s:buf_init()
     call s:buf_syntax()
-
-    call b:dirvish.render_buffer()
+    call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
 
     "clear our 'loading...' message
     redraw | echo ''
-  endfunction
-
-  function! l:obj.render_buffer() abort dict
-    if !isdirectory(bufname('%'))
-      echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
-      return
-    endif
-
-    let w = winsaveview()
-
-    setlocal modifiable
-
-    silent keepmarks keepjumps %delete _
-
-    let paths = s:list_dir(self.dir)
-    silent call append(0, paths)
-
-    keepmarks keepjumps $delete _ " remove extra last line
-
-    setlocal nomodifiable nomodified
-    call winrestview(w)
-
-    if has_key(self, 'lastpath')
-      keepjumps call search('\V\^'.(escape(self.lastpath, '\')).'\$', 'cw')
-    endif
   endfunction
 
   return l:obj
