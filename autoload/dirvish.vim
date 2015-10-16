@@ -155,6 +155,7 @@ function! s:restore_winlocal_settings()
   if has('conceal') && has_key(w:dirvish, 'orig_concealcursor')
     let &l:concealcursor = w:dirvish.orig_concealcursor
     let &l:conceallevel = w:dirvish.orig_conceallevel
+    unlet w:dirvish.orig_concealcursor w:dirvish.orig_conceallevel
   endif
 endfunction
 
@@ -164,7 +165,6 @@ function! s:restore_alt_prev()
   endif
   call s:visit_altbuf(get(w:dirvish, 'altbuf', 0))
   call s:visit_prevbuf(get(w:dirvish, 'prevbuf', 0))
-  unlet! w:dirvish
 endfunction
 
 function! dirvish#visit(split_cmd, open_in_background) range abort
@@ -349,11 +349,7 @@ function! s:new_dirvish() abort
 
     let d.buf_num = bufnr('%')
 
-    if exists('b:dirvish')
-      call extend(b:dirvish, d, 'force')
-    else
-      let b:dirvish = d
-    endif
+    let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
     call s:buf_init()
     call s:buf_syntax()
