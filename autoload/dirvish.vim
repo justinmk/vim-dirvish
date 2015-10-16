@@ -85,7 +85,6 @@ endfunction
 function! s:buf_init() abort
   setlocal nobuflisted
   setlocal undolevels=-1 buftype=nofile noswapfile
-  setlocal nowrap nolist cursorline
 
   setlocal filetype=dirvish
 
@@ -98,7 +97,11 @@ function! s:buf_init() abort
   augroup END
 endfunction
 
-function! s:buf_syntax() abort
+function! s:win_init() abort
+  let wd = w:dirvish
+  let [wd._w_wrap, wd._w_cul] = [&l:wrap, &l:cul]
+  setlocal nowrap cursorline
+
   if has("syntax")
     syntax clear
     let sep = escape(s:sep, '/\')
@@ -108,8 +111,7 @@ function! s:buf_syntax() abort
   endif
 
   if has('conceal')
-    let w:dirvish.orig_concealcursor = &l:concealcursor
-    let w:dirvish.orig_conceallevel = &l:conceallevel
+    let [wd._w_cocu, wd._w_cole] = [&l:concealcursor, &l:conceallevel]
     setlocal concealcursor=nvc conceallevel=3
   endif
 endfunction
@@ -135,7 +137,6 @@ function! s:on_buf_closed(...) abort
     autocmd!
     for i in [d.altbuf, d.prevbuf]
       if bufexists(i)
-        " call s:msg_dbg('on_buf_closed i='.i)
         exe 'autocmd CursorMoved <buffer='.i.
           \ '> exe "autocmd! dirvish_after"|call <SID>restore_alt_prev()'
       endif
@@ -149,13 +150,12 @@ function! s:on_buf_closed(...) abort
 endfunction
 
 function! s:restore_winlocal_settings()
-  if exists('b:dirvish') || !exists('w:dirvish')
+  if !exists('w:dirvish')
     return
   endif
-  if has('conceal') && has_key(w:dirvish, 'orig_concealcursor')
-    let &l:concealcursor = w:dirvish.orig_concealcursor
-    let &l:conceallevel = w:dirvish.orig_conceallevel
-    unlet w:dirvish.orig_concealcursor w:dirvish.orig_conceallevel
+  if has('conceal') && has_key(w:dirvish, '_w_cocu')
+    let [&l:cocu, &l:cole] = [w:dirvish._w_cocu, w:dirvish._w_cole]
+    unlet w:dirvish._w_cocu w:dirvish._w_cole
   endif
 endfunction
 
@@ -177,9 +177,6 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
   for path in paths
     if !isdirectory(path) && !filereadable(path)
       call s:msg_info("invalid (or access denied): ".path)
-      continue
-    elseif isdirectory(path) && startline > endline && splitcmd ==# 'edit'
-      " opening a bunch of directories in the _same_ window is not useful.
       continue
     endif
 
@@ -352,7 +349,7 @@ function! s:new_dirvish() abort
     let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
     call s:buf_init()
-    call s:buf_syntax()
+    call s:win_init()
     call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
 
     "clear our 'loading...' message
