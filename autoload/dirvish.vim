@@ -351,9 +351,6 @@ function! s:new_dirvish() abort
     call s:buf_init()
     call s:win_init()
     call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
-
-    "clear our 'loading...' message
-    redraw | echo ''
   endfunction
 
   return l:obj
@@ -383,12 +380,7 @@ function! dirvish#open(dir) abort
     return
   endif
 
-  if exists('b:dirvish') && dir ==# s:normalize_dir(b:dirvish.dir)
-    call s:msg_info('reloading...')
-  else
-    call s:msg_info('loading...')
-  endif
-
+  let reloading = exists('b:dirvish') && dir ==# s:normalize_dir(b:dirvish.dir)
   let d = s:new_dirvish()
 
   " Save lastpath when navigating _up_.
