@@ -247,11 +247,13 @@ endfunction
 
 " Saves or restores the view of all windows showing `bname`.
 function! s:windo_save_or_restore(save, bname)
-  let [curtab, curwin, curaltwin] = [tabpagenr(), winnr(), winnr('#')]
+  let [curtab, curwin, curwinalt] = [tabpagenr(), winnr(), winnr('#')]
   for tnr in range(1, tabpagenr('$'))
+    exe s:noau 'tabnext' tnr
+    let [origwin, origwinalt] = [winnr(), winnr('#')]
     for wnr in range(1, tabpagewinnr(tnr, '$'))
       if a:bname ==# bufname(winbufnr(wnr))
-        exe s:noau 'tabnext' tnr '|' s:noau wnr.'wincmd w'
+        exe s:noau wnr.'wincmd w'
         if a:save
           let w:dirvish['_view'] = winsaveview()
         else
@@ -259,9 +261,10 @@ function! s:windo_save_or_restore(save, bname)
         endif
       endif
     endfor
+    exe s:noau origwinalt.'wincmd w|' s:noau origwin.'wincmd w'
   endfor
   exe s:noau 'tabnext '.curtab
-  exe s:noau curaltwin.'wincmd w|' s:noau curwin.'wincmd w'
+  exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
 endfunction
 
 function! s:buf_render(dir, lastpath) abort
