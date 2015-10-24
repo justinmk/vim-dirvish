@@ -7,12 +7,6 @@ let g:loaded_dirvish = 1
 
 command! -nargs=? -complete=dir Dirvish call dirvish#open(<q-args>)
 
-augroup dirvish_bufevents
-  autocmd!
-  autocmd BufEnter * if exists('b:dirvish') && isdirectory(expand('<amatch>'))
-    \ && empty(getline(1)) && 1 == line('$') | exe 'Dirvish %' | endif
-augroup END
-
 if get(g:, 'dirvish_hijack_netrw', 1)
   augroup dirvish_netrw
     autocmd!

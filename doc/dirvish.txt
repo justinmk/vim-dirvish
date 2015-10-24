@@ -3,15 +3,17 @@
 ==============================================================================
 API                                                              *dirvish-api*
 
-:Dirvish [{path}]                                                   *:Dirvish*
-    Opens the directory at {path} or the |current-directory| if {path} is not
-    given. If {path} is a file then its parent directory is opened.
-    To open the current buffer directory: >
-        :Dirvish %
-<
-dirvish#open()
+:Dirvish                                                          *:Dirvish*
+    Open the |current-directory|.
 
+:Dirvish {path}
+    Open the directory at {path}, or its parent directory if {path} is a file.
+    E.g. to open the directory of the current file: >
+        :Dirvish %
+
+dirvish#open()
 b:dirvish
+w:dirvish
 
 ==============================================================================
 MAPPINGS                                                    *dirvish-mappings*
@@ -19,7 +21,7 @@ MAPPINGS                                                    *dirvish-mappings*
 Dirvish defines these buffer-local mappings.
 
     g?              Show this help.
-    R               Reload/refresh the current directory.
+    R               Reload the current directory.
     q               Quit Dirvish and return to the original file.
     i
     <CR>            Open file.

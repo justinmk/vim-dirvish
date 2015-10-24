@@ -94,12 +94,14 @@ function! s:buf_init() abort
     autocmd WinEnter  <buffer> let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'force')
     autocmd BufDelete <buffer> call <SID>on_buf_closed(expand('<abuf>'))
     autocmd BufLeave  <buffer> call <SID>restore_winlocal_settings()
+    autocmd BufEnter  <buffer> if empty(getline(1)) && 1 == line('$') | exe 'Dirvish %' | endif
+    autocmd BufEnter  <buffer> if 0 == &l:cole | call <sid>win_init() | endif
   augroup END
 endfunction
 
 function! s:win_init() abort
-  let wd = w:dirvish
-  let [wd._w_wrap, wd._w_cul] = [&l:wrap, &l:cul]
+  let w:dirvish = get(w:, 'dirvish', copy(b:dirvish))
+  let [w:dirvish._w_wrap, w:dirvish._w_cul] = [&l:wrap, &l:cul]
   setlocal nowrap cursorline
 
   if has("syntax")
@@ -111,7 +113,7 @@ function! s:win_init() abort
   endif
 
   if has('conceal')
-    let [wd._w_cocu, wd._w_cole] = [&l:concealcursor, &l:conceallevel]
+    let [w:dirvish._w_cocu, w:dirvish._w_cole] = [&l:concealcursor, &l:conceallevel]
     setlocal concealcursor=nvc conceallevel=3
   endif
 endfunction
