@@ -92,11 +92,11 @@ function! s:buf_init() abort
     autocmd! * <buffer>
     " Ensure w:dirvish for window splits, etc.
     autocmd WinEnter  <buffer> let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'force')
-    autocmd BufDelete <buffer> call <SID>on_buf_closed(expand('<abuf>'))
-    autocmd BufLeave  <buffer> call <SID>restore_winlocal_settings()
     autocmd BufEnter  <buffer> if empty(getline(1)) && 1 == line('$') | exe 'Dirvish %' | endif
     autocmd BufEnter  <buffer> if 0 == &l:cole | call <sid>win_init() | endif
   augroup END
+
+  call s:buf_setup_onclosed(b:dirvish.altbuf, b:dirvish.prevbuf)
 endfunction
 
 function! s:win_init() abort
@@ -129,21 +129,21 @@ function! s:buf_isvisible(bnr) abort
   return 0
 endfunction
 
+function! s:buf_setup_onclosed(altbuf, prevbuf) abort
+  augroup dirvish_after
+    for i in [a:altbuf, a:prevbuf]
+      if bufexists(i)
+        exe 'autocmd CursorMoved <buffer='.i.'>|call <SID>restore_winlocal_settings()|call <SID>restore_alt_prev()'
+      endif
+    endfor
+  augroup END
+endfunction
+
 function! s:on_buf_closed(...) abort
   let d = get(w:, 'dirvish', {})
   if empty(d)
     return
   endif
-
-  augroup dirvish_after
-    autocmd!
-    for i in [d.altbuf, d.prevbuf]
-      if bufexists(i)
-        exe 'autocmd CursorMoved <buffer='.i.
-          \ '> exe "autocmd! dirvish_after"|call <SID>restore_alt_prev()'
-      endif
-    endfor
-  augroup END
 
   if d.prevbuf != bufnr('%') && !s:visit_prevbuf(d.prevbuf)
     call s:msg_info('no other buffers')
@@ -165,8 +165,13 @@ function! s:restore_alt_prev()
   if !exists('w:dirvish')
     return
   endif
+
   call s:visit_altbuf(get(w:dirvish, 'altbuf', 0))
+  silent! autocmd! dirvish_after <buffer>
   call s:visit_prevbuf(get(w:dirvish, 'prevbuf', 0))
+  silent! autocmd! dirvish_after <buffer>
+
+  unlet w:dirvish
 endfunction
 
 function! dirvish#visit(split_cmd, open_in_background) range abort
