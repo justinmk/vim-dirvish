@@ -302,78 +302,71 @@ function! s:buf_render(dir, lastpath) abort
   endif
 endfunction
 
-function! s:new_dirvish() abort
-  let l:obj = {}
+function! s:do_open(d) abort
+  let d = a:d
+  let bnr = bufnr('^' . d.dir . '$')
 
-  function! l:obj.do_open(dir) abort dict
-    let d = self
-    let d.dir = s:normalize_dir(a:dir)  " full path to the directory
-    let bnr = bufnr('^' . d.dir . '$')
-
-    " Vim tends to name the directory buffer using its reduced path.
-    " Examples (Win32 gvim 7.4.618):
-    "     ~\AppData\Local\Temp\
-    "     ~\AppData\Local\Temp
-    "     AppData\Local\Temp\
-    "     AppData\Local\Temp
-    " Try to find an existing reduced-path name before creating a new one.
-    for pat in [':~:.', ':~']
-      if -1 != bnr
-        break
-      endif
-
-      let modified_dirname = fnamemodify(d.dir, pat)
-      let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
-
-      let bnr = bufnr('^'.modified_dirname.'$')
-      if -1 == bnr
-        let bnr = bufnr('^'.modified_dirname_without_sep.'$')
-      endif
-    endfor
-
-    try
-      if -1 == bnr
-        execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d.dir)
-      else
-        execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
-      endif
-    catch /E37:/
-      call s:msg_error("E37: No write since last change")
-      return
-    endtry
-
-    if &buflisted
-      setlocal nobuflisted
+  " Vim tends to name the directory buffer using its reduced path.
+  " Examples (Win32 gvim 7.4.618):
+  "     ~\AppData\Local\Temp\
+  "     ~\AppData\Local\Temp
+  "     AppData\Local\Temp\
+  "     AppData\Local\Temp
+  " Try to find an existing reduced-path name before creating a new one.
+  for pat in [':~:.', ':~']
+    if -1 != bnr
+      break
     endif
 
-    "If the directory is relative to CWD, :edit refuses to create a buffer
-    "with the expanded name (it may be _relative_ instead); this will cause
-    "problems when the user navigates. Use :file to force the expanded path.
-    if bufname('%') !=# d.dir
-      execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
-      if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
-        bwipeout # "Kill it with fire, it is useless.
-      endif
-      let bnr = bufnr('%')
-      call s:visit_prevbuf(d.prevbuf, 0)
+    let modified_dirname = fnamemodify(d.dir, pat)
+    let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
+
+    let bnr = bufnr('^'.modified_dirname.'$')
+    if -1 == bnr
+      let bnr = bufnr('^'.modified_dirname_without_sep.'$')
+    endif
+  endfor
+
+  try
+    if -1 == bnr
+      execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d.dir)
+    else
       execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
     endif
+  catch /E37:/
+    call s:msg_error("E37: No write since last change")
+    return
+  endtry
 
-    if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
-      echoerr 'expected buffer name: "'.d.dir.'" (actual: "'.bufname('%').'")'
-      return
+  if &buflisted
+    setlocal nobuflisted
+  endif
+
+  "If the directory is relative to CWD, :edit refuses to create a buffer
+  "with the expanded name (it may be _relative_ instead); this will cause
+  "problems when the user navigates. Use :file to force the expanded path.
+  if bufname('%') !=# d.dir
+    execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+    if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
+      bwipeout # "Kill it with fire, it is useless.
     endif
+    let bnr = bufnr('%')
+    call s:visit_prevbuf(d.prevbuf, 0)
+    execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
+  endif
 
-    let d.buf_num = bufnr('%')
+  if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
+    echoerr 'expected buffer name: "'.d.dir.'" (actual: "'.bufname('%').'")'
+    return
+  endif
 
-    let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
+  let d.buf_num = bufnr('%')
 
-    call s:buf_init()
-    call s:win_init()
-    call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
-  endfunction
+  let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
-  return l:obj
+  call s:buf_init()
+  call s:win_init()
+  call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
 endfunction
 
 function! s:buf_isvalid(bnr) abort
@@ -386,29 +379,29 @@ function! dirvish#open(dir) abort
     return
   endif
 
-  let dir = fnamemodify(expand(fnameescape(a:dir), 1), ':p')
+  let d = {}
+  let d.dir = fnamemodify(expand(fnameescape(a:dir), 1), ':p')
   "                     ^      ^                        ^resolves to CWD if a:dir is empty
   "                     |      `escape chars like '$' before expand()
   "                     `expand() fixes slashes on Windows
 
-  if filereadable(dir) "chop off the filename
-    let dir = fnamemodify(dir, ':p:h')
+  if filereadable(d.dir) "chop off the filename
+    let d.dir = fnamemodify(d.dir, ':p:h')
   endif
 
-  let dir = s:normalize_dir(dir)
-  if '' ==# dir " s:normalize_dir() already displayed error message.
+  let d.dir = s:normalize_dir(d.dir)
+  if '' ==# d.dir " s:normalize_dir() already displayed error message.
     return
   endif
 
-  let reloading = exists('b:dirvish') && dir ==# s:normalize_dir(b:dirvish.dir)
-  let d = s:new_dirvish()
+  let reloading = exists('b:dirvish') && d.dir ==# s:normalize_dir(b:dirvish.dir)
 
   " Save lastpath when navigating _up_.
-  if exists('b:dirvish') && dir ==# s:parent_dir(b:dirvish.dir)
+  if exists('b:dirvish') && d.dir ==# s:parent_dir(b:dirvish.dir)
     let d.lastpath = b:dirvish.dir
   endif
 
   call s:on_enter(d)
   call s:visit_prevbuf(d.prevbuf, 0) "if closed via :bd etc.
-  call d.do_open(dir)
+  call s:do_open(d)
 endfunction
