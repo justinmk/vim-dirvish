@@ -83,7 +83,6 @@ function! s:list_dir(current_dir) abort
 endfunction
 
 function! s:buf_init() abort
-  setlocal nobuflisted
   setlocal undolevels=-1 buftype=nofile noswapfile
 
   setlocal filetype=dirvish
@@ -335,6 +334,10 @@ function! s:new_dirvish() abort
       call s:msg_error("E37: No write since last change")
       return
     endtry
+
+    if &buflisted
+      setlocal nobuflisted
+    endif
 
     "If the directory is relative to CWD, :edit refuses to create a buffer
     "with the expanded name (it may be _relative_ instead); this will cause

@@ -12,7 +12,7 @@ if get(g:, 'dirvish_hijack_netrw', 1)
     autocmd!
     " nuke netrw brain damage
     autocmd VimEnter * silent! au! FileExplorer *
-    autocmd BufEnter * if !exists('b:dirvish') && isdirectory(expand('<amatch>'))
+    autocmd BufEnter * if !exists('b:dirvish') && isdirectory(expand('%'))
       \ | redraw | echo ''
       \ | exe 'Dirvish %' | endif
   augroup END
