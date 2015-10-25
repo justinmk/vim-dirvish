@@ -83,19 +83,45 @@ function! s:list_dir(current_dir) abort
 endfunction
 
 function! s:buf_init() abort
-  call s:buf_onclosed_setup(b:dirvish.altbuf, b:dirvish.prevbuf)
+  augroup dirvish_after
+    if bufexists(b:dirvish.prevbuf) && empty(getbufvar(b:dirvish.prevbuf, 'dirvish'))
+      exe 'autocmd! dirvish_after CursorMoved <buffer='.b:dirvish.prevbuf.'> call <SID>on_bufclosed()'
+    endif
+  augroup END
 
   augroup dirvish_buflocal
     autocmd! * <buffer>
-    " Ensure w:dirvish for window splits, etc.
-    autocmd WinEnter  <buffer> let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
-    autocmd BufEnter  <buffer> if empty(getline(1)) && 1 == line('$')|exe 'Dirvish %'|endif
-    autocmd BufEnter  <buffer> if 0 == &l:cole|call <sid>win_init()|endif
-    autocmd BufDelete <buffer> call <SID>buf_onclosed()
+    autocmd BufEnter,WinEnter <buffer> call <SID>on_enter(b:dirvish)
+    autocmd BufEnter          <buffer> call <SID>on_bufenter()
+    autocmd BufDelete         <buffer> call <SID>on_bufclosed()
   augroup END
 
   setlocal undolevels=-1 buftype=nofile noswapfile
   setlocal filetype=dirvish
+endfunction
+
+function! s:on_bufenter() abort
+  if empty(getline(1)) && 1 == line('$')|exe 'Dirvish %'|return|endif
+  if 0 == &l:cole|call <sid>win_init()|endif
+endfunction
+
+function! s:on_enter(d) abort
+  " Remember previous ('original') buffer.
+  let a:d.prevbuf = s:buf_isvalid(bufnr('%')) || !exists('w:dirvish')
+        \ ? 0+bufnr('%') : w:dirvish.prevbuf
+  if exists('b:dirvish') && !s:buf_isvalid(a:d.prevbuf)
+    let a:d.prevbuf = b:dirvish.prevbuf
+  endif
+
+  " Remember alternate buffer.
+  let a:d.altbuf = s:buf_isvalid(bufnr('#')) || !exists('w:dirvish')
+        \ ? 0+bufnr('#') : w:dirvish.altbuf
+  if exists('b:dirvish') && (a:d.altbuf == a:d.prevbuf || !s:buf_isvalid(a:d.altbuf))
+    let a:d.altbuf = b:dirvish.altbuf
+  endif
+
+  " Ensure w:dirvish for window splits, `:b <nr>`, etc.
+  let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'keep')
 endfunction
 
 function! s:win_init() abort
@@ -128,29 +154,20 @@ function! s:buf_isvisible(bnr) abort
   return 0
 endfunction
 
-function! s:buf_onclosed_setup(altbuf, prevbuf) abort
-  augroup dirvish_after
-    if bufexists(a:prevbuf) && empty(getbufvar(a:prevbuf, 'dirvish'))
-      exe 'autocmd! dirvish_after * <buffer='.a:prevbuf.'>'
-      exe 'autocmd  dirvish_after CursorMoved <buffer='.a:prevbuf.'> call <SID>buf_onclosed()'
-    endif
-  augroup END
-endfunction
-
-function! s:buf_onclosed() abort
+function! s:on_bufclosed() abort
   let d = get(w:, 'dirvish', {})
   if empty(d)
     return
   endif
 
-  call s:restore_winlocal_settings()
-
-  let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
-  exe 'silent! autocmd! dirvish_after * <buffer='.altbuf.'>'
-  exe 'silent! autocmd! dirvish_after * <buffer='.prevbuf.'>'
-  call s:visit_altbuf(altbuf)
-  if !s:visit_prevbuf(prevbuf, 1)
+  call s:visit_altbuf(get(d, 'altbuf', 0))
+  if !s:visit_prevbuf(get(d, 'prevbuf', 0), 1)
     call s:msg_info('no other buffers')
+  endif
+
+  if !exists('b:dirvish')
+    call s:restore_winlocal_settings()
+    unlet! w:dirvish
   endif
 endfunction
 
@@ -391,22 +408,7 @@ function! dirvish#open(dir) abort
     let d.lastpath = b:dirvish.dir
   endif
 
-  " Remember previous ('original') buffer.
-  let d.prevbuf = s:buf_isvalid(bufnr('%')) || !exists('w:dirvish')
-        \ ? 0+bufnr('%') : w:dirvish.prevbuf
-  if exists('b:dirvish') && !s:buf_isvalid(d.prevbuf)
-    let d.prevbuf = b:dirvish.prevbuf
-  endif
-
-  " Remember alternate buffer.
-  let d.altbuf = s:buf_isvalid(bufnr('#')) || !exists('w:dirvish')
-        \ ? 0+bufnr('#') : w:dirvish.altbuf
-  if exists('b:dirvish') && (d.altbuf == d.prevbuf || !s:buf_isvalid(d.altbuf))
-    let d.altbuf = b:dirvish.altbuf
-  endif
-
-  let w:dirvish = extend(get(w:, 'dirvish', {}), d, 'force')
-
+  call s:on_enter(d)
   call s:visit_prevbuf(d.prevbuf, 0) "if closed via :bd etc.
   call d.do_open(dir)
 endfunction
