@@ -1,9 +1,30 @@
 *dirvish.txt*	directory viewer
 
 ==============================================================================
+INTRO                                                          *dirvish-intro*
+
+Dirvish is a minimalist directory viewer. It basically dumps a list of paths
+into a Vim buffer and provides some mappings to work with those paths. By
+working with built-in Vim mechanisms instead of inventing peripheral
+imitations, users (and other plugins) can compose and build upon known Vim
+concepts.
+
+Example: because each Dirvish buffer-name is a directory path, you can |:cd|
+to the directory: >
+  :cd %
+<or create a new file: >
+  :edit %/foo.txt
+<or |expand()| the directory path: >
+  :let &titlestring = expand('%', 1)
+<
+Example: because each dirvish buffer is just a list of absolute paths, you can
+use normal Vim commands to |y|ank, |:read|, |gf|, etc. All of the built-in
+CTRL-W mappings also work as expected.
+
+==============================================================================
 API                                                              *dirvish-api*
 
-:Dirvish                                                          *:Dirvish*
+:Dirvish                                                            *:Dirvish*
     Open the |current-directory|.
 
 :Dirvish {path}

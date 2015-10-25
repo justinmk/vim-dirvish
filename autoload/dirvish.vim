@@ -1,28 +1,3 @@
-" Copyright 2014 Jeet Sukumaran.
-" Modified by Justin M. Keyes.
-"
-" This program is free software; you can redistribute it and/or modify
-" it under the terms of the GNU General Public License as published by
-" the Free Software Foundation; either version 3 of the License, or
-" (at your option) any later version.
-"
-" This program is distributed in the hope that it will be useful,
-" but WITHOUT ANY WARRANTY; without even the implied warranty of
-" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-" GNU General Public License <http://www.gnu.org/licenses/>
-" for more details.
-"
-" Things that are unnecessary when you set the buffer name:
-" - let &titlestring = expand(b:dirvish.dir, 1)
-" - specialized 'cd', 'cl'
-"
-" Things that are unnecessary when you conceal the full file paths:
-" - specialized "yank" commands
-" - specialized "read" commands (instead: yy and :r ...)
-" - imitation CTRL-W_... mappings
-"
-" Fixed bug: 'buffer <num>' may open buffer with actual number name.
-
 let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
