@@ -192,7 +192,7 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
     if a:split_cmd ==# 'tabedit'
       exe 'tabnext' curtab '|' curwin.'wincmd w'
     elseif a:split_cmd ==# 'edit'
-      execute 'silent keepalt keepjumps buffer' w:dirvish.buf_num
+      execute 'silent keepalt keepjumps buffer' w:dirvish._bufnr
     endif
   elseif !exists('b:dirvish')
     if s:visit_prevbuf(w:dirvish.prevbuf, 1) "tickle original buffer to make it the altbuf.
@@ -325,9 +325,6 @@ function! s:do_open(d) abort
     if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
       bwipeout # "Kill it with fire, it is useless.
     endif
-    let bnr = bufnr('%')
-    call s:visit_prevbuf(d.prevbuf, 0)
-    execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
   endif
 
   if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
@@ -339,7 +336,11 @@ function! s:do_open(d) abort
     setlocal nobuflisted
   endif
 
-  let d.buf_num = bufnr('%')
+  "tickle original buffer in case of :bd etc.
+  let d._bufnr = bufnr('%')
+  call s:visit_prevbuf(d.prevbuf, 0)
+  execute s:noau s:noswapfile 'buffer' d._bufnr
+
   let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
   call s:buf_init()
@@ -380,6 +381,5 @@ function! dirvish#open(dir) abort
   endif
 
   call s:on_enter(d)
-  call s:visit_prevbuf(d.prevbuf, 0) "if closed via :bd etc.
   call s:do_open(d)
 endfunction
