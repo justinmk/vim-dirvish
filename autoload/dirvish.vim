@@ -281,24 +281,25 @@ function! s:do_open(d) abort
   let d = a:d
   let bnr = bufnr('^' . d.dir . '$')
 
-  " Vim tends to name the directory buffer using its reduced path.
+  let dirname_without_sep = substitute(d.dir, '[\\/]\+$', '', 'g')
+  let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
+   
+  " Vim tends to name the buffer using its reduced path.
   " Examples (Win32 gvim 7.4.618):
   "     ~\AppData\Local\Temp\
   "     ~\AppData\Local\Temp
   "     AppData\Local\Temp\
   "     AppData\Local\Temp
-  " Try to find an existing reduced-path name before creating a new one.
+  " Try to find an existing normalized-path name before creating a new one.
   for pat in [':~:.', ':~']
     if -1 != bnr
       break
     endif
-
     let modified_dirname = fnamemodify(d.dir, pat)
     let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
-
     let bnr = bufnr('^'.modified_dirname.'$')
-    if -1 == bnr
-      let bnr = bufnr('^'.modified_dirname_without_sep.'$')
+    if -1 == bnr_nonnormalized
+      let bnr_nonnormalized = bufnr('^'.modified_dirname_without_sep.'$')
     endif
   endfor
 
@@ -313,15 +314,14 @@ function! s:do_open(d) abort
     return
   endtry
 
-  if &buflisted
-    setlocal nobuflisted
-  endif
-
   "If the directory is relative to CWD, :edit refuses to create a buffer
   "with the expanded name (it may be _relative_ instead); this will cause
   "problems when the user navigates. Use :file to force the expanded path.
-  if bufname('%') !=# d.dir
-    execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+  if bnr_nonnormalized == bufnr('#') || bufname('%') !=# d.dir
+    if bufname('%') !=# d.dir
+      execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+    endif
+
     if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
       bwipeout # "Kill it with fire, it is useless.
     endif
@@ -335,8 +335,11 @@ function! s:do_open(d) abort
     return
   endif
 
-  let d.buf_num = bufnr('%')
+  if &buflisted
+    setlocal nobuflisted
+  endif
 
+  let d.buf_num = bufnr('%')
   let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
   call s:buf_init()
