@@ -8,8 +8,8 @@ endfunction
 function! s:msg_info(msg) abort
   redraw | echo 'dirvish:' a:msg
 endfunction
-function! s:msg_dbg(msg) abort
-  call writefile([a:msg], expand('~/dirvish.log', 1), 'a')
+function! s:msg_dbg(o) abort
+  call writefile([string(a:o)], expand('~/dirvish.log', 1), 'a')
 endfunction
 
 function! s:normalize_dir(dir) abort
@@ -68,7 +68,9 @@ function! s:buf_init() abort
     autocmd! * <buffer>
     autocmd BufEnter,WinEnter <buffer> call <SID>on_enter(b:dirvish)
     autocmd BufEnter          <buffer> call <SID>on_bufenter()
-    autocmd BufDelete         <buffer> call <SID>on_bufclosed()
+    " BufUnload is fired for :bwipeout, :bdelete, and :bunload, _even_ if
+    " 'nobuflisted'. BufDelete is _not_ fired if 'nobuflisted'.
+    autocmd BufUnload <buffer> call <SID>on_bufclosed()
   augroup END
 
   setlocal undolevels=-1 buftype=nofile noswapfile
@@ -84,8 +86,10 @@ function! s:on_enter(d) abort
   " Remember previous ('original') buffer.
   let a:d.prevbuf = s:buf_isvalid(bufnr('%')) || !exists('w:dirvish')
         \ ? 0+bufnr('%') : w:dirvish.prevbuf
-  if exists('b:dirvish') && !s:buf_isvalid(a:d.prevbuf)
-    let a:d.prevbuf = b:dirvish.prevbuf
+  if !s:buf_isvalid(a:d.prevbuf)
+    "If reached via :edit/:buffer/etc. we cannot get the (former) altbuf.
+    let a:d.prevbuf = exists('b:dirvish') && s:buf_isvalid(b:dirvish.prevbuf)
+        \ ? b:dirvish.prevbuf : bufnr('#')
   endif
 
   " Remember alternate buffer.
@@ -97,6 +101,7 @@ function! s:on_enter(d) abort
 
   " Ensure w:dirvish for window splits, `:b <nr>`, etc.
   let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'keep')
+  call s:msg_dbg(w:dirvish)
 endfunction
 
 function! s:win_init() abort
@@ -135,8 +140,12 @@ function! s:on_bufclosed() abort
     return
   endif
 
-  call s:visit_altbuf(get(d, 'altbuf', 0))
-  if !s:visit_prevbuf(get(d, 'prevbuf', 0), 1)
+  let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
+  exe 'silent! autocmd! dirvish_after CursorMoved <buffer='.prevbuf.'>'
+  echom 'on_bufclosed' altbuf prevbuf
+
+  call s:visit_altbuf(altbuf)
+  if !s:visit_prevbuf(prevbuf, 1)
     call s:msg_info('no other buffers')
   endif
 
@@ -321,7 +330,11 @@ function! s:do_open(d) abort
   "with the expanded name (it may be _relative_ instead); this will cause
   "problems when the user navigates. Use :file to force the expanded path.
   if bufname('%') !=# d.dir
+    try
     execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+    catch /^E95:/
+      call s:msg_dbg(printf('!!!!!!!!!!!!!! [caught E95] bufname="%" d.dir="%"', bufname('%'), d.dir))
+    endtry
     if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
       bwipeout # "Kill it with fire, it is useless.
     endif
@@ -376,6 +389,7 @@ function! dirvish#open(dir) abort
     let d.lastpath = b:dirvish.dir
   endif
 
+  call s:msg_dbg('#open')
   call s:on_enter(d)
   call s:visit_prevbuf(d.prevbuf, 0) "if closed via :bd etc.
   call s:do_open(d)
