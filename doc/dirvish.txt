@@ -110,4 +110,15 @@ directory? ~
 To avoid this, |:noswapfile| is required (Vim 7.4.213).
 https://github.com/vim/vim/commit/v7-4-213
 
+How can I rename files or perform other commands?~
+>
+    qqq
+    :g/^/let @Q='echo '.shellescape(getline('.')).' '.shellescape(getline('.'))."\n"
+    :exe 'e' tempname().'.sh'
+    "qp
+    j"_dd
+    :w
+    :!%
+<
+
  vim:tw=78:ts=8:ft=help:norl:
