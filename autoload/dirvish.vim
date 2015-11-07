@@ -201,7 +201,7 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
     if a:split_cmd ==# 'tabedit'
       exe 'tabnext' curtab '|' curwin.'wincmd w'
     elseif a:split_cmd ==# 'edit'
-      execute 'silent keepalt keepjumps buffer' w:dirvish.buf_num
+      execute 'silent keepalt keepjumps buffer' w:dirvish._bufnr
     endif
   elseif !exists('b:dirvish')
     if s:visit_prevbuf(w:dirvish.prevbuf, 1) "tickle original buffer to make it the altbuf.
@@ -290,24 +290,25 @@ function! s:do_open(d) abort
   let d = a:d
   let bnr = bufnr('^' . d.dir . '$')
 
-  " Vim tends to name the directory buffer using its reduced path.
+  let dirname_without_sep = substitute(d.dir, '[\\/]\+$', '', 'g')
+  let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
+   
+  " Vim tends to name the buffer using its reduced path.
   " Examples (Win32 gvim 7.4.618):
   "     ~\AppData\Local\Temp\
   "     ~\AppData\Local\Temp
   "     AppData\Local\Temp\
   "     AppData\Local\Temp
-  " Try to find an existing reduced-path name before creating a new one.
+  " Try to find an existing normalized-path name before creating a new one.
   for pat in [':~:.', ':~']
     if -1 != bnr
       break
     endif
-
     let modified_dirname = fnamemodify(d.dir, pat)
     let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
-
     let bnr = bufnr('^'.modified_dirname.'$')
-    if -1 == bnr
-      let bnr = bufnr('^'.modified_dirname_without_sep.'$')
+    if -1 == bnr_nonnormalized
+      let bnr_nonnormalized = bufnr('^'.modified_dirname_without_sep.'$')
     endif
   endfor
 
@@ -322,25 +323,21 @@ function! s:do_open(d) abort
     return
   endtry
 
-  if &buflisted
-    setlocal nobuflisted
-  endif
-
   "If the directory is relative to CWD, :edit refuses to create a buffer
   "with the expanded name (it may be _relative_ instead); this will cause
   "problems when the user navigates. Use :file to force the expanded path.
-  if bufname('%') !=# d.dir
-    try
-    execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
-    catch /^E95:/
-      call s:msg_dbg(printf('!!!!!!!!!!!!!! [caught E95] bufname="%" d.dir="%"', bufname('%'), d.dir))
-    endtry
+  if bnr_nonnormalized == bufnr('#') || bufname('%') !=# d.dir
+    if bufname('%') !=# d.dir
+      try
+      execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+      catch /^E95:/
+        call s:msg_dbg(printf('!!!!!!!!!!!!!! [caught E95] bufname="%" d.dir="%"', bufname('%'), d.dir))
+      endtry
+    endif
+
     if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
       bwipeout # "Kill it with fire, it is useless.
     endif
-    let bnr = bufnr('%')
-    call s:visit_prevbuf(d.prevbuf, 0)
-    execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
   endif
 
   if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
@@ -348,7 +345,14 @@ function! s:do_open(d) abort
     return
   endif
 
-  let d.buf_num = bufnr('%')
+  if &buflisted
+    setlocal nobuflisted
+  endif
+
+  "tickle original buffer in case of :bd etc.
+  let d._bufnr = bufnr('%')
+  call s:visit_prevbuf(d.prevbuf, 0)
+  execute s:noau s:noswapfile 'buffer' d._bufnr
 
   let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
@@ -391,6 +395,5 @@ function! dirvish#open(dir) abort
 
   call s:msg_dbg('#open')
   call s:on_enter(d)
-  call s:visit_prevbuf(d.prevbuf, 0) "if closed via :bd etc.
   call s:do_open(d)
 endfunction

@@ -105,16 +105,20 @@ How do I hide "hidden" (dot-prefixed) files? ~
 Use :g to delete the lines with dot-prefixed files: >
     :set ma|g@\v/\.[^\/]+/?$@d
 <
-I don't want old Dirvish buffers to appear in the buffer list. ~
-Use "setlocal bufhidden=wipe" in a "FileType dirvish" autocmd: >
-    augroup my_events
-      autocmd!
-      autocmd FileType dirvish setlocal bufhidden=wipe
-    augroup END
-<
 Why does the "swap file" dialog appear if another Vim is viewing the same ~
 directory? ~
 To avoid this, |:noswapfile| is required (Vim 7.4.213).
 https://github.com/vim/vim/commit/v7-4-213
+
+How can I rename files or perform other commands?~
+>
+    qqq
+    :g/^/let @Q='echo '.shellescape(getline('.')).' '.shellescape(getline('.'))."\n"
+    :exe 'e' tempname().'.sh'
+    "qp
+    j"_dd
+    :w
+    :!%
+<
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -5,7 +5,7 @@ if exists('g:loaded_dirvish') || &cp || version < 700 || &cpo =~# 'C'
 endif
 let g:loaded_dirvish = 1
 
-command! -nargs=? -complete=dir Dirvish call dirvish#open(<q-args>)
+command! -bar -nargs=? -complete=dir Dirvish call dirvish#open(<q-args>)
 
 if get(g:, 'dirvish_hijack_netrw', 1)
   augroup dirvish_netrw
