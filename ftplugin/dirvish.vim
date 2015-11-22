@@ -1,6 +1,6 @@
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
 execute 'nnoremap '.s:nowait.'<buffer><silent> q :doautocmd dirvish_buflocal BufDelete<CR>'
-nmap <buffer><silent> -     :Dirvish %:h:h<CR>
+nnoremap <buffer><silent> -     :Dirvish %:h:h<CR>
 nmap <buffer><silent> p     yy<c-w>p:e <c-r>=fnameescape(getreg('"',1,1)[0])<cr><cr>
 
 execute 'nnoremap '.s:nowait.'<buffer><silent> i    :<C-U>call dirvish#visit("edit", 0)<CR>'
