@@ -58,16 +58,12 @@ function! s:list_dir(current_dir) abort
 endfunction
 
 function! s:buf_init() abort
-  augroup dirvish_after
-    if bufexists(b:dirvish.prevbuf) && empty(getbufvar(b:dirvish.prevbuf, 'dirvish'))
-      exe 'autocmd! dirvish_after CursorMoved <buffer='.b:dirvish.prevbuf.'> call <SID>on_bufclosed()'
-    endif
-  augroup END
-
   augroup dirvish_buflocal
     autocmd! * <buffer>
-    autocmd BufEnter,WinEnter <buffer> call <SID>on_enter(b:dirvish)
     autocmd BufEnter          <buffer> call <SID>on_bufenter()
+    " Ensure w:dirvish for window splits, `:b <nr>`, etc.
+    autocmd BufEnter,WinEnter <buffer> 
+          \ let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
     " BufUnload is fired for :bwipeout, :bdelete, and :bunload, _even_ if
     " 'nobuflisted'. BufDelete is _not_ fired if 'nobuflisted'.
     autocmd BufUnload <buffer> call <SID>on_bufclosed()
@@ -82,7 +78,7 @@ function! s:on_bufenter() abort
   if 0 == &l:cole|call <sid>win_init()|endif
 endfunction
 
-function! s:on_enter(d) abort
+function! s:set_alt_prev_bufs(d) abort
   " Remember previous ('original') buffer.
   let a:d.prevbuf = s:buf_isvalid(bufnr('%')) || !exists('w:dirvish')
         \ ? 0+bufnr('%') : w:dirvish.prevbuf
@@ -99,9 +95,8 @@ function! s:on_enter(d) abort
     let a:d.altbuf = b:dirvish.altbuf
   endif
 
-  " Ensure w:dirvish for window splits, `:b <nr>`, etc.
-  let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'keep')
-  call s:msg_dbg(w:dirvish)
+  " Do we need this?
+  " let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'force')
 endfunction
 
 function! s:win_init() abort
@@ -141,9 +136,6 @@ function! s:on_bufclosed() abort
   endif
 
   let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
-  exe 'silent! autocmd! dirvish_after CursorMoved <buffer='.prevbuf.'>'
-  echom 'on_bufclosed' altbuf prevbuf
-
   call s:visit_altbuf(altbuf)
   if !s:visit_prevbuf(prevbuf, 1)
     call s:msg_info('no other buffers')
@@ -151,7 +143,6 @@ function! s:on_bufclosed() abort
 
   if !exists('b:dirvish')
     call s:restore_winlocal_settings()
-    unlet! w:dirvish
   endif
 endfunction
 
@@ -331,7 +322,7 @@ function! s:do_open(d) abort
       try
       execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
       catch /^E95:/
-        call s:msg_dbg(printf('!!!!!!!!!!!!!! [caught E95] bufname="%" d.dir="%"', bufname('%'), d.dir))
+        echom printf('!!!!!!!!!!!!!! [caught E95] bufname="%s" d.dir="%s"', bufname('%'), d.dir)
       endtry
     endif
 
@@ -393,7 +384,6 @@ function! dirvish#open(dir) abort
     let d.lastpath = b:dirvish.dir
   endif
 
-  call s:msg_dbg('#open')
-  call s:on_enter(d)
+  call s:set_alt_prev_bufs(d)
   call s:do_open(d)
 endfunction
