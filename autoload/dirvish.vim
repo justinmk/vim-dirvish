@@ -95,8 +95,7 @@ function! s:set_alt_prev_bufs(d) abort
     let a:d.altbuf = b:dirvish.altbuf
   endif
 
-  " Do we need this?
-  " let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'force')
+  let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'force')
 endfunction
 
 function! s:win_init() abort
