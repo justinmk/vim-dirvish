@@ -1,3 +1,4 @@
+let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
 execute 'nnoremap '.s:nowait.'<buffer><silent> q :doautocmd dirvish_buflocal BufUnload<CR>'
 nnoremap <buffer><silent> -   :Dirvish %:h:h<CR>
@@ -16,3 +17,7 @@ execute 'vnoremap '.s:nowait.'<buffer><silent> o    :call dirvish#visit("split",
 nnoremap <buffer><silent> R :Dirvish %<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
+" Buffer-local / and ? mappings to skip the concealed path fragment.
+let sep_cnt = strlen(substitute(b:dirvish.dir, '\v[^\'.s:sep.']{-}\'.s:sep, s:sep, 'g'))
+execute 'nnoremap <buffer> / /\v(([^\'.s:sep.']*\'.s:sep.'){'.sep_cnt.'}.*\zs)'
+execute 'nnoremap <buffer> ? ?\v(([^\'.s:sep.']*\'.s:sep.'){'.sep_cnt.'}.*\zs)'
