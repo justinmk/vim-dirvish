@@ -29,7 +29,7 @@ API                                                              *dirvish-api*
 
 :Dirvish {path}
     Open the directory at {path}, or its parent directory if {path} is a file.
-    E.g. to open the directory of the current file: >
+    To open the directory of the current file: >
         :Dirvish %
 
 dirvish#open()
@@ -76,8 +76,10 @@ set. You can override mappings and behavior by handling this event. Example:
       " Map t to "open in new tab".
       autocmd FileType dirvish nnoremap <buffer> t
           \ :tabnew <C-R>=fnameescape(getline('.'))<CR><CR>
-      " Map CTRL-R to "reload" the Dirvish buffer.
+
+      " Map CTRL-R to reload the Dirvish buffer.
       autocmd FileType dirvish nnoremap <buffer> <C-R> :<C-U>Dirvish %<CR>
+
       " Map gh to hide "hidden" files.
       autocmd FileType dirvish nnoremap <buffer> gh 
           \ :set ma<bar>g@\v/\.[^\/]+/?$@d<cr>:set noma<cr>

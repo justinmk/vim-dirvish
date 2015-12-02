@@ -60,7 +60,7 @@ endfunction
 function! s:buf_init() abort
   augroup dirvish_buflocal
     autocmd! * <buffer>
-    autocmd BufEnter          <buffer> call <SID>on_bufenter()
+    autocmd BufEnter <buffer> call <SID>on_bufenter()
     " Ensure w:dirvish for window splits, `:b <nr>`, etc.
     autocmd BufEnter,WinEnter <buffer> 
           \ let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
@@ -74,8 +74,13 @@ function! s:buf_init() abort
 endfunction
 
 function! s:on_bufenter() abort
-  if empty(getline(1)) && 1 == line('$')|exe 'Dirvish %'|return|endif
-  if 0 == &l:cole|call <sid>win_init()|endif
+  if empty(getline(1)) && 1 == line('$')
+    Dirvish %
+    return
+  endif
+  if 0 == &l:cole
+    call <sid>win_init()
+  endif
 endfunction
 
 function! s:set_alt_prev_bufs(d) abort
@@ -276,7 +281,7 @@ function! s:buf_render(dir, lastpath) abort
   endif
 endfunction
 
-function! s:do_open(d) abort
+function! s:do_open(d, reload) abort
   let d = a:d
   let bnr = bufnr('^' . d.dir . '$')
 
@@ -348,7 +353,9 @@ function! s:do_open(d) abort
 
   call s:buf_init()
   call s:win_init()
-  call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
+  if a:reload || (empty(getline(1)) && 1 == line('$'))
+    call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
+  endif
 endfunction
 
 function! s:buf_isvalid(bnr) abort
@@ -384,5 +391,5 @@ function! dirvish#open(dir) abort
   endif
 
   call s:set_alt_prev_bufs(d)
-  call s:do_open(d)
+  call s:do_open(d, reloading)
 endfunction
