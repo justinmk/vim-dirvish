@@ -13,12 +13,17 @@ function! s:msg_dbg(o) abort
 endfunction
 
 function! s:normalize_dir(dir) abort
-  if !isdirectory(a:dir)
-    call s:msg_error("invalid directory: '".a:dir."'")
-    return ''
+  let dir = a:dir
+  if !isdirectory(dir)
+    "cygwin/MSYS fallback for paths that lack a drive letter.
+    let dir = empty($SYSTEMDRIVE) ? dir : '/'.tolower($SYSTEMDRIVE[0]).(dir)
+    if !isdirectory(dir)
+      call s:msg_error("invalid directory: '".a:dir."'")
+      return ''
+    endif
   endif
-  let dir = fnamemodify(a:dir, ':p') "always full path
-  let dir = substitute(a:dir, s:sep.'\+', s:sep, 'g') "replace consecutive slashes
+
+  let dir = substitute(dir, s:sep.'\+', s:sep, 'g') "replace consecutive slashes
   if dir[-1:] !~# '[\/]' "always end with separator
     return dir . s:sep
   endif
@@ -43,8 +48,8 @@ function! s:globlist(pat) abort
 endfunction
 endif
 
-function! s:list_dir(current_dir) abort
-  let curdir = s:normalize_dir(a:current_dir)
+function! s:list_dir(dir) abort
+  let curdir = s:normalize_dir(a:dir)
   let paths = s:globlist(curdir.'*')
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
   let paths = paths + s:globlist(curdir.'.[^.]*')
