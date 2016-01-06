@@ -146,7 +146,7 @@ function! s:on_bufclosed() abort
 
   let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
   call s:visit_altbuf(altbuf)
-  if !s:visit_prevbuf(prevbuf, 1)
+  if !s:visit_prevbuf(prevbuf, 0)
     call s:msg_info('no other buffers')
   endif
 
