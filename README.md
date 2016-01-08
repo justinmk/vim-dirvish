@@ -1,18 +1,15 @@
-# dirvish.vim :cyclone:
+# dirvish.vim :zap:
 
 ---
 
-**Note:** there are still some bugs. This plugin isn't ready to use yet.
+This plugin is in "beta", though it's quite stable. The 1.0 release will follow
+after some final polishing.
 
 ---
 
-Dirvish is a heavily modified (60% smaller) fork of
-[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle). Thanks to
-@jeetsukumaran.
-
----
-
-Dirvish is to [dired](http://en.wikipedia.org/wiki/Dired) as ed is to vi. It
+Dirvish is minimalist directory browser for Vim. I call it
+"[dired](http://en.wikipedia.org/wiki/Dired) on a diet", though in some ways it
+is more powerful than netrw and NERDTree. It
 does very little: only a few things that aren't already provided by Vim or the
 Vim ecosystem.
 
@@ -48,38 +45,30 @@ see more plugins follow that pattern.
 
 > But how could I possibly create a new directory without netrw?
 
-Platform-agnostic way with [eunuch](https://github.com/tpope/vim-eunuch):
-
-    :Mkdir %/foo
-
-or use plain ol' `:!`:
-
-    :!mkdir %/foo
+Try `:!mkdir %/foo`. Also check out [eunuch](https://github.com/tpope/vim-eunuch).
 
 > Yeah but how do I delete files?
 
-    :call delete(getline('.'))
-
-> I meant a *range* of files, silly--
-
-Select the files to delete, then:
+The Vim built-in `delete()` function works to delete files:
 
     :'<,'>call delete(getline('.'))
 
-or use any other [range](http://neovim.org/doc/user/cmdline.html#cmdline-ranges)
-specifier.
+Dirvish also provides a powerful (yet simple) `:Shdo` command to perform any
+shell command on a [range](http://neovim.org/doc/user/cmdline.html#cmdline-ranges)
+of lines. Press `x` on any line(s) in a Dirvish buffer to try it.
 
 > netrw allows me to SORT!!!!!!!!!!!
 
     set ma | sort i
 
-or...
+It's totally fine to smash up any Dirvish buffer however you want. Just press
+`R` at any time to get the default listing back.
 
-    %y | new | put | %sort i
 
-> netrw works with remote filesystems.
+## Acknowledgements
 
-Good luck with that ;)
+Dirvish was originally forked from
+[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle). Thanks to @jeetsukumaran.
 
 ---
 
