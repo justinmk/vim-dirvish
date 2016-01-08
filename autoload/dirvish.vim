@@ -1,4 +1,5 @@
 let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
+let s:nowait = (v:version > 703 ? '<nowait>' : '')
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
 
@@ -62,6 +63,27 @@ function! s:list_dir(dir) abort
   endif
 endfunction
 
+function! s:shdo(l1, l2, cmd)
+  " let sh_ft = matchstr(&shell, '\c\v[^\\\/.]+\ze(\.exe)?$')
+  let lines = getline(a:l1, a:l2)
+  let cmd = -1 == match(a:cmd, '\V$.') ? a:cmd.' $.' : a:cmd
+  let tmpfile = tempname()
+  for i in range(0, (a:l2-a:l1))
+    let lines[i] = substitute(cmd, '\V$.', shellescape(lines[i]), 'g')
+  endfor
+  execute 'split' tmpfile
+  setlocal nobuflisted
+  call append(0, lines)
+  norm! G"_dd
+  write
+  if executable('chmod')
+    call system('chmod u+x '.tmpfile)
+  endif
+  " if !empty(sh_ft)
+  "   execute 'setlocal filetype='.sh_ft
+  " endif
+endfunction
+
 function! s:buf_init() abort
   augroup dirvish_buflocal
     autocmd! * <buffer>
@@ -75,7 +97,11 @@ function! s:buf_init() abort
   augroup END
 
   setlocal undolevels=-1 buftype=nofile noswapfile
+
   setlocal filetype=dirvish
+  command! -buffer -range -bar -nargs=* Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
+  execute 'nnoremap '.s:nowait.'<buffer> x :Shdo '
+  execute 'xnoremap '.s:nowait.'<buffer> x :Shdo '
 endfunction
 
 function! s:on_bufenter() abort

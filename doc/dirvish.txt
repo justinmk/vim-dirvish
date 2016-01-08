@@ -39,7 +39,7 @@ w:dirvish
 ==============================================================================
 MAPPINGS                                                    *dirvish-mappings*
 
-Dirvish defines these buffer-local mappings.
+Dirvish defines these buffer-local mappings and commands.
 
     g?              Show this help.
     R               Reload the current directory.
@@ -54,6 +54,10 @@ Dirvish defines these buffer-local mappings.
     {Visual}a       Open selected files in vertical splits.
     p               Open file in previous window.
     -               Open the parent directory.
+
+    :[range]Shdo {cmd}                                         *dirvish-:Shdo*
+                    Creates a shell script where {cmd} is repeated for each of
+                    the files in [range]. Run the script with ":!%". |:!|
 
 ==============================================================================
 OPTIONS                                                      *dirvish-options*
