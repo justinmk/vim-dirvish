@@ -65,6 +65,13 @@ endfunction
 
 function! s:shdo(l1, l2, cmd)
   " let sh_ft = matchstr(&shell, '\c\v[^\\\/.]+\ze(\.exe)?$')
+  augroup dirvish_shcmd
+    autocmd! * <buffer>
+    " Refresh after executing the command.
+    exe 'autocmd ShellCmdPost * autocmd dirvish_shcmd BufEnter,WinEnter <buffer='.bufnr('%')
+          \ .'> Dirvish %|au! dirvish_shcmd * <buffer='.bufnr('%').'>'
+  augroup END
+
   let lines = getline(a:l1, a:l2)
   let cmd = -1 == match(a:cmd, '\V$.') ? a:cmd.' $.' : a:cmd
   let tmpfile = tempname()
@@ -268,8 +275,8 @@ function! s:visit_altbuf(altbuf) abort
   endif
 endfunction
 
-" Saves or restores the view of all windows showing `bname`.
-function! s:windo_save_or_restore(save, bname)
+" Performs `cmd` in all windows showing `bname`.
+function! s:win_do(cmd, bname)
   let [curtab, curwin, curwinalt] = [tabpagenr(), winnr(), winnr('#')]
   for tnr in range(1, tabpagenr('$'))
     exe s:noau 'tabnext' tnr
@@ -277,11 +284,7 @@ function! s:windo_save_or_restore(save, bname)
     for wnr in range(1, tabpagewinnr(tnr, '$'))
       if a:bname ==# bufname(winbufnr(wnr))
         exe s:noau wnr.'wincmd w'
-        if a:save
-          let w:dirvish['_view'] = winsaveview()
-        else
-          call winrestview(w:dirvish['_view'])
-        endif
+        exe a:cmd
       endif
     endfor
     exe s:noau origwinalt.'wincmd w|' s:noau origwin.'wincmd w'
@@ -297,7 +300,7 @@ function! s:buf_render(dir, lastpath) abort
     return
   endif
 
-  call s:windo_save_or_restore(1, bname)
+  call s:win_do('let w:dirvish["_view"] = winsaveview()', bname)
   setlocal modifiable
 
   silent keepmarks keepjumps %delete _
@@ -305,7 +308,7 @@ function! s:buf_render(dir, lastpath) abort
   keepmarks keepjumps $delete _ " remove extra last line
 
   setlocal nomodifiable nomodified
-  call s:windo_save_or_restore(0, bname)
+  call s:win_do('call winrestview(w:dirvish["_view"])', bname)
 
   if !empty(a:lastpath)
     keepjumps call search('\V\^'.escape(a:lastpath, '\').'\$', 'cw')
