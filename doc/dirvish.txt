@@ -46,12 +46,12 @@ Dirvish defines these buffer-local mappings and commands.
     q               Quit Dirvish and return to the original file.
     i
     <CR>            Open file.
-    {Visual}i
+    {Visual}I
     {Visual}<CR>    Open selected files.
     o               Open in horizontal split.
-    {Visual}o       Open selected files in horizontal splits.
+    {Visual}O       Open selected files in horizontal splits.
     a               Open in vertical split.
-    {Visual}a       Open selected files in vertical splits.
+    {Visual}A       Open selected files in vertical splits.
     p               Open file in previous window.
     -               Open the parent directory.
 

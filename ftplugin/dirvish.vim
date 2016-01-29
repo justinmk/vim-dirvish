@@ -9,10 +9,10 @@ execute 'nnoremap '.s:nowait.'<buffer><silent> <CR> :<C-U>call dirvish#visit("ed
 execute 'nnoremap '.s:nowait.'<buffer><silent> a    :<C-U>call dirvish#visit("vsplit", 1)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> o    :<C-U>call dirvish#visit("split", 1)<CR>'
 
-execute 'vnoremap '.s:nowait.'<buffer><silent> i    :call dirvish#visit("edit", 0)<CR>'
+execute 'vnoremap '.s:nowait.'<buffer><silent> I    :call dirvish#visit("edit", 0)<CR>'
 execute 'vnoremap '.s:nowait.'<buffer><silent> <CR> :call dirvish#visit("edit", 0)<CR>'
-execute 'vnoremap '.s:nowait.'<buffer><silent> a    :call dirvish#visit("vsplit", 1)<CR>'
-execute 'vnoremap '.s:nowait.'<buffer><silent> o    :call dirvish#visit("split", 1)<CR>'
+execute 'vnoremap '.s:nowait.'<buffer><silent> A    :call dirvish#visit("vsplit", 1)<CR>'
+execute 'vnoremap '.s:nowait.'<buffer><silent> O    :call dirvish#visit("split", 1)<CR>'
 
 nnoremap <buffer><silent> R :Dirvish %<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
