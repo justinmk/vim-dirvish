@@ -181,7 +181,7 @@ function! s:on_bufclosed() abort
 
   let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
   call s:visit_altbuf(altbuf)
-  if !s:visit_prevbuf(prevbuf, 0)
+  if !s:visit_prevbuf(prevbuf)
     call s:msg_info('no other buffers')
   endif
 
@@ -239,7 +239,7 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
       execute 'silent keepalt keepjumps buffer' w:dirvish._bufnr
     endif
   elseif !exists('b:dirvish')
-    if s:visit_prevbuf(w:dirvish.prevbuf, 1) "tickle original buffer to make it the altbuf.
+    if s:visit_prevbuf(w:dirvish.prevbuf) "make prevbuf the altbuf.
       "return to the opened file.
       b#
     endif
@@ -247,25 +247,10 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
 endfunction
 
 " Returns 1 on success, 0 on failure
-function! s:visit_prevbuf(prevbuf, force) abort
+function! s:visit_prevbuf(prevbuf) abort
   if a:prevbuf != bufnr('%') && bufexists(a:prevbuf)
         \ && empty(getbufvar(a:prevbuf, 'dirvish'))
     execute 'silent noau keepjumps' s:noswapfile 'buffer' a:prevbuf
-    return 1
-  elseif !a:force
-    return 0
-  endif
-
-  "find a buffer that is _not_ a dirvish buffer.
-  let validbufs = filter(range(1, bufnr('$')),
-        \ 'buflisted(v:val)
-        \  && empty(getbufvar(v:val, "dirvish"))
-        \  && "help"  !=# getbufvar(v:val, "&buftype")
-        \  && v:val   !=  bufnr("%")
-        \  && !isdirectory(bufname(v:val))
-        \ ')
-  if len(validbufs) > 0
-    execute 'silent noau keepjumps' s:noswapfile 'buffer' validbufs[0]
     return 1
   endif
   return 0
@@ -380,9 +365,8 @@ function! s:do_open(d, reload) abort
     setlocal nobuflisted
   endif
 
-  "tickle original buffer in case of :bd etc.
   let d._bufnr = bufnr('%')
-  call s:visit_prevbuf(d.prevbuf, 0)
+  call s:visit_prevbuf(d.prevbuf) "in case of :bd, :read#, etc.
   execute s:noau s:noswapfile 'buffer' d._bufnr
 
   let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
