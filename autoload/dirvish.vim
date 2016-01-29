@@ -64,7 +64,10 @@ function! s:list_dir(dir) abort
 endfunction
 
 function! s:shdo(l1, l2, cmd)
-  " let sh_ft = matchstr(&shell, '\c\v[^\\\/.]+\ze(\.exe)?$')
+  let dir = b:dirvish.dir
+  let lines = getline(a:l1, a:l2)
+  let tmpfile = tempname()
+
   augroup dirvish_shcmd
     autocmd! * <buffer>
     " Refresh after executing the command.
@@ -72,13 +75,12 @@ function! s:shdo(l1, l2, cmd)
           \ .'> Dirvish %|au! dirvish_shcmd * <buffer='.bufnr('%').'>'
   augroup END
 
-  let lines = getline(a:l1, a:l2)
-  let cmd = -1 == match(a:cmd, '\V$.') ? a:cmd.' $.' : a:cmd
-  let tmpfile = tempname()
   for i in range(0, (a:l2-a:l1))
-    let lines[i] = substitute(cmd, '\V$.', shellescape(lines[i]), 'g')
+    let f = substitute(lines[i],s:sep.'$','','g') "remove trailing slash
+    let f = 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i] "relative
+    let lines[i] = substitute(a:cmd, '\V{}', shellescape(f), 'g')
   endfor
-  execute 'split' tmpfile
+  execute 'split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
   setlocal nobuflisted
   call append(0, lines)
   norm! G"_dd
@@ -107,8 +109,8 @@ function! s:buf_init() abort
 
   setlocal filetype=dirvish
   command! -buffer -range -bar -nargs=* Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
-  execute 'nnoremap '.s:nowait.'<buffer> x :Shdo '
-  execute 'xnoremap '.s:nowait.'<buffer> x :Shdo '
+  execute 'nnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
+  execute 'xnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 endfunction
 
 function! s:on_bufenter() abort

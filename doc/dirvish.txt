@@ -55,9 +55,13 @@ Dirvish defines these buffer-local mappings and commands.
     p               Open file in previous window.
     -               Open the parent directory.
 
-    :[range]Shdo {cmd}                                         *dirvish-:Shdo*
-                    Creates a shell script where {cmd} is repeated for each of
-                    the files in [range]. Run the script with ":!%". |:!|
+    :[range]Shdo {cmd} {}                                      *dirvish-:Shdo*
+                    Generates a shell script where {cmd} is repeated for each
+                    of the files in [range], with each filename inserted
+                    wherever {} appears in the :Shdo command.
+                    EXAMPLE: To rename a list of visual-selected files: >
+                        :'<,'>Shdo mv {} {}-copy.txt
+<                    Run the script with ":!%" (see |:!|).
 
 ==============================================================================
 OPTIONS                                                      *dirvish-options*
@@ -117,7 +121,8 @@ To avoid this, |:noswapfile| is required (Vim 7.4.213).
 https://github.com/vim/vim/commit/v7-4-213
 
 How can I rename files or perform other commands?~
->
+Use the |dirvish-:Shdo| command in a Dirvish buffer.
+Or the old-school way: >
     qqq
     :g/^/let @Q='echo '.shellescape(getline('.')).' '.shellescape(getline('.'))."\n"
     :exe 'e' tempname().'.sh'
@@ -127,4 +132,5 @@ How can I rename files or perform other commands?~
     :!%
 <
 
+==============================================================================
  vim:tw=78:ts=8:ft=help:norl:
