@@ -105,7 +105,10 @@ function! s:buf_init() abort
     autocmd BufUnload <buffer> call <SID>on_bufclosed()
   augroup END
 
-  setlocal undolevels=-1 buftype=nofile noswapfile
+  if v:version > 704 || v:version == 704 && has("patch73")
+    setlocal undolevels=-1
+  endif
+  setlocal buftype=nofile noswapfile
 
   setlocal filetype=dirvish
   command! -buffer -range -bar -nargs=* Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
