@@ -97,9 +97,14 @@ function! s:buf_init() abort
     " Ensure w:dirvish for window splits, `:b <nr>`, etc.
     autocmd BufEnter,WinEnter <buffer> 
           \ let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
-    " BufUnload is fired for :bwipeout, :bdelete, and :bunload, _even_ if
+
+    " BufUnload is fired for :bwipeout/:bdelete/:bunload, _even_ if
     " 'nobuflisted'. BufDelete is _not_ fired if 'nobuflisted'.
-    autocmd BufUnload <buffer> call <SID>on_bufclosed()
+    " NOTE: For 'nohidden' we cannot reliably handle :bdelete like this;
+    "       but with 7.4.605 (writable @#) this isn't needed anyway.
+    if &hidden
+      autocmd BufUnload <buffer> call s:on_bufclosed()
+    endif
   augroup END
 
   if v:version > 704 || v:version == 704 && has("patch73")
@@ -180,9 +185,9 @@ function! s:on_bufclosed() abort
   endif
 
   let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
-  call s:visit_altbuf(altbuf)
-  if !s:visit_prevbuf(prevbuf)
-    call s:msg_info('no other buffers')
+  let found_alt = s:try_visit(altbuf)
+  if !s:try_visit(prevbuf) && !found_alt
+    bdelete
   endif
 
   if !exists('b:dirvish')
@@ -198,6 +203,7 @@ function! s:restore_winlocal_settings()
 endfunction
 
 function! dirvish#visit(split_cmd, open_in_background) range abort
+  let curbuf = bufnr('%')
   let startline = v:count ? v:count : a:firstline
   let endline   = v:count ? v:count : a:lastline
   let [curtab, curwin, wincount] = [tabpagenr(), winnr(), winnr('$')]
@@ -236,30 +242,31 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
     if a:split_cmd ==# 'tabedit'
       exe 'tabnext' curtab '|' curwin.'wincmd w'
     elseif a:split_cmd ==# 'edit'
-      execute 'silent keepalt keepjumps buffer' w:dirvish._bufnr
+      execute 'silent keepalt keepjumps buffer' curbuf
     endif
   elseif !exists('b:dirvish')
-    if s:visit_prevbuf(w:dirvish.prevbuf) "make prevbuf the altbuf.
-      "return to the opened file.
-      b#
-    endif
+    call s:set_altbuf(w:dirvish.prevbuf)
   endif
 endfunction
 
-" Returns 1 on success, 0 on failure
-function! s:visit_prevbuf(prevbuf) abort
-  if a:prevbuf != bufnr('%') && bufexists(a:prevbuf)
-        \ && empty(getbufvar(a:prevbuf, 'dirvish'))
-    execute 'silent noau keepjumps' s:noswapfile 'buffer' a:prevbuf
+function! s:set_altbuf(bnr) abort
+  let curbuf = bufnr('%')
+  call s:try_visit(a:bnr)
+  let noau = bufloaded(curbuf) ? 'noau' : ''
+  " Return to the current buffer.
+  execute 'silent keepjumps' noau s:noswapfile 'buffer' curbuf
+endfunction
+
+function! s:try_visit(bnr) abort
+  if a:bnr != bufnr('%') && bufexists(a:bnr)
+        \ && empty(getbufvar(a:bnr, 'dirvish'))
+    " If _previous_ buffer is _not_ loaded (because of 'nohidden'), we must
+    " allow autocmds (else no syntax highlighting; #13).
+    let noau = bufloaded(a:bnr) ? 'noau' : ''
+    execute 'silent keepjumps' noau s:noswapfile 'buffer' a:bnr
     return 1
   endif
   return 0
-endfunction
-
-function! s:visit_altbuf(altbuf) abort
-  if bufexists(a:altbuf) && empty(getbufvar(a:altbuf, 'dirvish'))
-    execute 'silent noau keepjumps' s:noswapfile 'buffer' a:altbuf
-  endif
 endfunction
 
 " Performs `cmd` in all windows showing `bname`.
@@ -365,9 +372,7 @@ function! s:do_open(d, reload) abort
     setlocal nobuflisted
   endif
 
-  let d._bufnr = bufnr('%')
-  call s:visit_prevbuf(d.prevbuf) "in case of :bd, :read#, etc.
-  execute s:noau s:noswapfile 'buffer' d._bufnr
+  call s:set_altbuf(d.prevbuf) "in case of :bd, :read#, etc.
 
   let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
@@ -413,3 +418,5 @@ function! dirvish#open(dir) abort
   call s:set_alt_prev_bufs(d)
   call s:do_open(d, reloading)
 endfunction
+
+nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>on_bufclosed()<CR>

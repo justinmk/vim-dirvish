@@ -1,6 +1,6 @@
 let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
-execute 'nnoremap '.s:nowait.'<buffer><silent> q :doautocmd dirvish_buflocal BufUnload<CR>'
+execute 'nmap '    .s:nowait.'<buffer><silent> q    <Plug>(dirvish_quit)'
 nnoremap <buffer><silent> -   :Dirvish %:h:h<CR>
 nnoremap <buffer><silent> p   yy<c-w>p:e <c-r>=fnameescape(getreg('"',1,1)[0])<cr><cr>
 
