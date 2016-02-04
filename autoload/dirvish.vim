@@ -6,9 +6,6 @@ let s:noau       = 'silent noautocmd keepjumps'
 function! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
 endfunction
-function! s:msg_info(msg) abort
-  redraw | echo 'dirvish:' a:msg
-endfunction
 function! s:msg_dbg(o) abort
   call writefile([string(a:o)], expand('~/dirvish.log', 1), 'a')
 endfunction
@@ -209,7 +206,7 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
   let paths = getline(startline, endline)
   for path in paths
     if !isdirectory(path) && !filereadable(path)
-      call s:msg_info("invalid (or access denied): ".path)
+      call s:msg_error("invalid (or access denied): ".path)
       continue
     endif
 
@@ -225,13 +222,13 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
         wincmd p
       endif
     catch /E37:/
-      call s:msg_info("E37: No write since last change")
+      call s:msg_error("E37: No write since last change")
       return
     catch /E36:/
-      call s:msg_info(v:exception)
+      call s:msg_error(v:exception)
       return
     catch /E325:/
-      call s:msg_info("E325: swap file exists")
+      call s:msg_error("E325: swap file exists")
     endtry
   endfor
 
