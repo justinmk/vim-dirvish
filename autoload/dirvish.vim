@@ -73,8 +73,8 @@ function! s:shdo(l1, l2, cmd)
   augroup END
 
   for i in range(0, (a:l2-a:l1))
-    let f = substitute(lines[i],s:sep.'$','','g') "remove trailing slash
-    let f = 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i] "relative
+    let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
+    let f = 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]  "relative
     let lines[i] = substitute(a:cmd, '\V{}', shellescape(f), 'g')
   endfor
   execute 'split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
