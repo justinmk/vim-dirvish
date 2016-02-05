@@ -63,7 +63,7 @@ endfunction
 function! s:shdo(l1, l2, cmd)
   let dir = b:dirvish.dir
   let lines = getline(a:l1, a:l2)
-  let tmpfile = tempname()
+  let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
 
   augroup dirvish_shcmd
     autocmd! * <buffer>
@@ -85,9 +85,6 @@ function! s:shdo(l1, l2, cmd)
   if executable('chmod')
     call system('chmod u+x '.tmpfile)
   endif
-  " if !empty(sh_ft)
-  "   execute 'setlocal filetype='.sh_ft
-  " endif
 endfunction
 
 function! s:buf_init() abort
