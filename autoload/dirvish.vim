@@ -273,7 +273,7 @@ function! s:buf_render(dir, lastpath) abort
 
   silent keepmarks keepjumps %delete _
   silent call append(0, s:list_dir(a:dir))
-  keepmarks keepjumps $delete _ " remove extra last line
+  silent keepmarks keepjumps $delete _ " remove extra last line
 
   setlocal nomodifiable nomodified
   call s:win_do('call winrestview(w:dirvish["_view"])', bname)
