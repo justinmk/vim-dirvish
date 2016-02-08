@@ -176,14 +176,12 @@ function! s:restore_winlocal_settings()
   endif
 endfunction
 
-function! dirvish#visit(split_cmd, open_in_background) range abort
+function! s:open_selected(split_cmd, bg, line1, line2) abort
   let curbuf = bufnr('%')
-  let startline = v:count ? v:count : a:firstline
-  let endline   = v:count ? v:count : a:lastline
   let [curtab, curwin, wincount] = [tabpagenr(), winnr(), winnr('$')]
   let splitcmd = a:split_cmd
 
-  let paths = getline(startline, endline)
+  let paths = getline(a:line1, a:line2)
   for path in paths
     if !isdirectory(path) && !filereadable(path)
       call s:msg_error("invalid (or access denied): ".path)
@@ -198,7 +196,7 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
       endif
 
       " return to previous window after _each_ split, otherwise we get lost.
-      if a:open_in_background && splitcmd =~# 'sp' && winnr('$') > wincount
+      if a:bg && splitcmd =~# 'sp' && winnr('$') > wincount
         wincmd p
       endif
     catch /E37:/
@@ -212,13 +210,13 @@ function! dirvish#visit(split_cmd, open_in_background) range abort
     endtry
   endfor
 
-  if a:open_in_background "return to dirvish buffer
+  if a:bg "return to dirvish buffer
     if a:split_cmd ==# 'tabedit'
       exe 'tabnext' curtab '|' curwin.'wincmd w'
     elseif a:split_cmd ==# 'edit'
       execute 'silent keepalt keepjumps buffer' curbuf
     endif
-  elseif !exists('b:dirvish')
+  elseif !exists('b:dirvish') && exists('w:dirvish')
     call s:set_altbuf(w:dirvish.prevbuf)
   endif
 endfunction
@@ -363,17 +361,22 @@ function! s:buf_isvalid(bnr) abort
   return bufexists(a:bnr) && !isdirectory(bufname(a:bnr))
 endfunction
 
-function! dirvish#open(dir) abort
+function! dirvish#open(...) range abort
   if &autochdir
     call s:msg_error("'autochdir' is not supported")
     return
   endif
 
+  if a:0 > 1
+    call s:open_selected(a:1, a:2, a:firstline, a:lastline)
+    return
+  endif
+
   let d = {}
-  let d.dir = fnamemodify(expand(fnameescape(a:dir), 1), ':p')
-  "                     ^      ^                        ^resolves to CWD if a:dir is empty
-  "                     |      `escape chars like '$' before expand()
-  "                     `expand() fixes slashes on Windows
+  let d.dir = fnamemodify(expand(fnameescape(a:1), 1), ':p')
+  "                       ^      ^                      ^resolves to CWD if a:1 is empty
+  "                       |      `escape chars like '$' before expand()
+  "                       `expand() fixes slashes on Windows
 
   if filereadable(d.dir) "chop off the filename
     let d.dir = fnamemodify(d.dir, ':p:h')
