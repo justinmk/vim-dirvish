@@ -89,10 +89,7 @@ endfunction
 function! s:buf_init() abort
   augroup dirvish_buflocal
     autocmd! * <buffer>
-    autocmd BufEnter <buffer> call <SID>on_bufenter()
-    " Ensure w:dirvish for window splits, `:b <nr>`, etc.
-    autocmd BufEnter,WinEnter <buffer> 
-          \ let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
+    autocmd BufEnter,WinEnter <buffer> call <SID>on_bufenter()
 
     " BufUnload is fired for :bwipeout/:bdelete/:bunload, _even_ if
     " 'nobuflisted'. BufDelete is _not_ fired if 'nobuflisted'.
@@ -112,6 +109,9 @@ function! s:buf_init() abort
 endfunction
 
 function! s:on_bufenter() abort
+  " Ensure w:dirvish for window splits, `:b <nr>`, etc.
+  let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
+
   if empty(getline(1)) && 1 == line('$')
     Dirvish %
     return
@@ -171,7 +171,7 @@ function! s:on_bufclosed() abort
 endfunction
 
 function! s:restore_winlocal_settings()
-  if has('conceal')
+  if has('conceal') && has_key(w:dirvish, '_w_cocu')
     let [&l:cocu, &l:cole] = [w:dirvish._w_cocu, w:dirvish._w_cole]
   endif
 endfunction
