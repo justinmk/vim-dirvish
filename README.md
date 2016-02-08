@@ -2,44 +2,42 @@
 
 ---
 
-This plugin is in "beta", though it's quite stable. The 1.0 release will follow
-after some final polishing.
+Status: 1.0 "Release Candidate". 1.0 release will follow after some bake-time.
 
 ---
 
-Dirvish is minimalist directory browser for Vim. I call it
-"[dired](http://en.wikipedia.org/wiki/Dired) on a diet", though in some ways it
-is more powerful than netrw and NERDTree. It
-does very little: only a few things that aren't already provided by Vim or its
-ecosystem.
-
-Dirvish is designed with the philosophy that Vim (combined with complementary
-plugins such as [eunuch](https://github.com/tpope/vim-eunuch) and
-[unimpaired](https://github.com/tpope/vim-unimpaired)) *already* provides
-mechanisms for file and path manipulation tasks that are re-invented by netrw
-and NERDTree[1].
-
-Dirvish is for  _viewing_, not _editing_. Each line in a Dirvish buffer
-contains the _full path_ of the respective file/directory (abbreviated by Vim's
-_conceal_ feature). This means you can use plain old `y` to yank the path under
-the cursor, then feed it to `:r` or `:e` or whatever. Instead of figuring out
-netrw's super special mapping to move a file, you can
-`:!mv <c-r><c-a> <c-r><c-a>foo`. The buffer name is set to the name of the
-directory, so Vim commands and plugins that work with the buffer name do the
-Right Thing.
-
-Vim users are better off if they build on composable concepts instead of having
-an all-in-one solution for each particular task. @tope's plugins demonstrate
-this theme, more plugins should do so.
-
 ### Features
 
-- isn't netrw
-- _original_ and _alternate_ buffers are always preserved
-- each line is literally just an absolute path to a file or directory
+- original and _alternate_ buffers are preserved
+- meticulous, non-intrusive defaults
+- each line is literally just a filepath
 - 2x faster than netrw (try a directory with 1000+ items)
-- visual-select to open multiple files at once
-- press `x` (or `:Shdo`) to perform any shell command on the selected file(s)
+- visual selection opens multiple files
+- `:Shdo` performs any shell command on selected file(s)
+- 97% smaller than netrw (400 lines of code vs. 11000): fewer bugs
+- compatible with Vim 7.3+
+
+Dirvish is a minimalist directory viewer for Vim, designed with the
+philosophy that plugins should harmonize with Vim's built-in
+mechanisms—and with complementary plugins such as
+[eunuch](https://github.com/tpope/vim-eunuch) and
+[unimpaired](https://github.com/tpope/vim-unimpaired))—instead of awkwardly
+re-inventing similar yet non-reusable functions.
+
+Each line in a Dirvish buffer contains an absolute filepath (hidden by Vim's
+_conceal_ feature). This means you can use plain old `y` to yank the path
+under the cursor, then feed it to `:r` or `:e` or whatever. Instead of
+netrw's super-special mappings to mark and move files, you can `:!mv
+<c-r><c-a> <c-r><c-a>foo`. Each Dirvish buffer name is the _actual directory
+name_, so Vim commands and plugins (fugitive.vim) that work with the buffer
+name do the Right Thing.
+
+Reuse and composition of concepts _multiplies_ the utility of those concepts;
+if a plugin does _not_ reuse a concept, both that concept _and_ the new,
+redundant mechanism are made mutually _less valuable_—the sum is less than
+the parts—because the user now must learn or choose from two slightly
+different things instead of one augmented system. @tope's plugins demonstrate
+this theme; more plugins should do so.
 
 ### FAQ
 
@@ -47,13 +45,13 @@ this theme, more plugins should do so.
 
 `:!mkdir %/foo`. Also check out [eunuch](https://github.com/tpope/vim-eunuch).
 
-> But how do I delete files?
+> How do I delete files?
 
-The Vim `delete()` function works on files (but not directories):
+Vim's `delete()` function works on files (but not directories):
 
     :'<,'>call delete(getline('.'))
 
-Dirvish also provides `:Shdo` to perform any shell command on
+Dirvish provides the `:Shdo` command to perform any shell command on
 a [range](http://neovim.org/doc/user/cmdline.html#cmdline-ranges) of lines.
 Press `x` or `:Shdo` to try it.
 
