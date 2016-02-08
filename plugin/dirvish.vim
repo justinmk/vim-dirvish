@@ -21,3 +21,4 @@ if get(g:, 'dirvish_hijack_netrw', 1)
   augroup END
 endif
 
+highlight! link DirvishPathTail Directory

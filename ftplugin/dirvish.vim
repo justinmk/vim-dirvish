@@ -17,6 +17,9 @@ execute 'vnoremap '.s:nowait.'<buffer><silent> O    :call dirvish#visit("split",
 nnoremap <buffer><silent> R :Dirvish %<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
+execute 'nnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
+execute 'xnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
+
 " Buffer-local / and ? mappings to skip the concealed path fragment.
 let sep_cnt = strlen(substitute(b:dirvish.dir, '\v[^\'.s:sep.']{-}\'.s:sep, s:sep, 'g'))
 execute 'nnoremap <buffer> / /\v(([^\'.s:sep.']*\'.s:sep.'){'.sep_cnt.'}.*\zs)'

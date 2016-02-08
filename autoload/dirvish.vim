@@ -1,5 +1,4 @@
 let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
-let s:nowait = (v:version > 703 ? '<nowait>' : '')
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
 
@@ -109,10 +108,7 @@ function! s:buf_init() abort
   endif
   setlocal buftype=nofile noswapfile
 
-  setlocal filetype=dirvish
   command! -buffer -range -bar -nargs=* Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
-  execute 'nnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
-  execute 'xnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 endfunction
 
 function! s:on_bufenter() abort
@@ -150,29 +146,10 @@ function! s:win_init() abort
   let [w:dirvish._w_wrap, w:dirvish._w_cul] = [&l:wrap, &l:cul]
   setlocal nowrap cursorline
 
-  if has("syntax")
-    syntax clear
-    let sep = escape(s:sep, '/\')
-    exe 'syntax match DirvishPathHead ''\v.*'.sep.'\ze[^'.sep.']+'.sep.'?$'' conceal'
-    exe 'syntax match DirvishPathTail ''\v[^'.sep.']+'.sep.'$'''
-    highlight! link DirvishPathTail Directory
-  endif
-
   if has('conceal')
     let [w:dirvish._w_cocu, w:dirvish._w_cole] = [&l:concealcursor, &l:conceallevel]
     setlocal concealcursor=nvc conceallevel=3
   endif
-endfunction
-
-function! s:buf_isvisible(bnr) abort
-  for i in range(1, tabpagenr('$'))
-    for tbnr in tabpagebuflist(i)
-      if tbnr == a:bnr
-        return 1
-      endif
-    endfor
-  endfor
-  return 0
 endfunction
 
 function! s:on_bufclosed() abort
@@ -375,6 +352,8 @@ function! s:do_open(d, reload) abort
 
   call s:buf_init()
   call s:win_init()
+  setlocal filetype=dirvish
+
   if a:reload || (empty(getline(1)) && 1 == line('$'))
     call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
   endif
