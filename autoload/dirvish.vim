@@ -278,7 +278,7 @@ function! s:buf_render(dir, lastpath) abort
   setlocal nomodifiable nomodified
   call s:win_do('call winrestview(w:dirvish["_view"])', bname)
 
-  if !empty(a:lastpath)
+  if 1 == line('.') && !empty(a:lastpath)
     keepjumps call search('\V\^'.escape(a:lastpath, '\').'\$', 'cw')
   endif
 endfunction
