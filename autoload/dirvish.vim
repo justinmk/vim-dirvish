@@ -93,8 +93,7 @@ function! s:buf_init() abort
 
     " BufUnload is fired for :bwipeout/:bdelete/:bunload, _even_ if
     " 'nobuflisted'. BufDelete is _not_ fired if 'nobuflisted'.
-    " NOTE: For 'nohidden' we cannot reliably handle :bdelete like this;
-    "       but with 7.4.605 (writable @#) this isn't needed anyway.
+    " NOTE: For 'nohidden' we cannot reliably handle :bdelete like this.
     if &hidden
       autocmd BufUnload <buffer> call s:on_bufclosed()
     endif
@@ -156,6 +155,10 @@ function! s:win_init() abort
 endfunction
 
 function! s:on_bufclosed() abort
+  call s:restore_winlocal_settings()
+endfunction
+
+function! s:buf_close() abort
   let d = get(w:, 'dirvish', {})
   if empty(d)
     return
@@ -164,13 +167,12 @@ function! s:on_bufclosed() abort
   let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
   let found_alt = s:try_visit(altbuf)
   if !s:try_visit(prevbuf) && !found_alt
+      \ && prevbuf != bufnr('%') && altbuf != bufnr('%')
     bdelete
   endif
-
-  call s:restore_winlocal_settings()
 endfunction
 
-function! s:restore_winlocal_settings()
+function! s:restore_winlocal_settings() abort
   if has('conceal') && has_key(w:dirvish, '_w_cocu')
     let [&l:cocu, &l:cole] = [w:dirvish._w_cocu, w:dirvish._w_cole]
   endif
@@ -398,4 +400,4 @@ function! dirvish#open(...) range abort
   call s:do_open(d, reloading)
 endfunction
 
-nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>on_bufclosed()<CR>
+nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
