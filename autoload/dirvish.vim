@@ -121,7 +121,7 @@ function! s:on_bufenter() abort
   endif
 endfunction
 
-function! s:set_alt_prev_bufs(d) abort
+function! s:save_state(d) abort
   " Remember previous ('original') buffer.
   let a:d.prevbuf = s:buf_isvalid(bufnr('%')) || !exists('w:dirvish')
         \ ? 0+bufnr('%') : w:dirvish.prevbuf
@@ -138,16 +138,19 @@ function! s:set_alt_prev_bufs(d) abort
     let a:d.altbuf = b:dirvish.altbuf
   endif
 
+  " Save window-local settings.
   let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'force')
+  let [w:dirvish._w_wrap, w:dirvish._w_cul] = [&l:wrap, &l:cul]
+  if has('conceal') && !exists('b:dirvish')
+    let [w:dirvish._w_cocu, w:dirvish._w_cole] = [&l:concealcursor, &l:conceallevel]
+  endif
 endfunction
 
 function! s:win_init() abort
   let w:dirvish = get(w:, 'dirvish', copy(b:dirvish))
-  let [w:dirvish._w_wrap, w:dirvish._w_cul] = [&l:wrap, &l:cul]
   setlocal nowrap cursorline
 
   if has('conceal')
-    let [w:dirvish._w_cocu, w:dirvish._w_cole] = [&l:concealcursor, &l:conceallevel]
     setlocal concealcursor=nvc conceallevel=3
   endif
 endfunction
@@ -164,15 +167,12 @@ function! s:on_bufclosed() abort
     bdelete
   endif
 
-  if !exists('b:dirvish')
-    call s:restore_winlocal_settings()
-  endif
+  call s:restore_winlocal_settings()
 endfunction
 
 function! s:restore_winlocal_settings()
-  if has('conceal') && has_key(w:dirvish, '_w_cocu')
+  if has('conceal')
     let [&l:cocu, &l:cole] = [w:dirvish._w_cocu, w:dirvish._w_cole]
-    unlet w:dirvish._w_cocu w:dirvish._w_cole
   endif
 endfunction
 
@@ -394,7 +394,7 @@ function! dirvish#open(...) range abort
     let d.lastpath = b:dirvish.dir
   endif
 
-  call s:set_alt_prev_bufs(d)
+  call s:save_state(d)
   call s:do_open(d, reloading)
 endfunction
 
