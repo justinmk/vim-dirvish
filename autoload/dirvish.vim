@@ -350,11 +350,11 @@ function! s:do_open(d, reload) abort
 
   call s:buf_init()
   call s:win_init()
-  setlocal filetype=dirvish
-
   if a:reload || (empty(getline(1)) && 1 == line('$'))
     call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
   endif
+
+  setlocal filetype=dirvish
 endfunction
 
 function! s:buf_isvalid(bnr) abort
