@@ -136,7 +136,6 @@ Or the old-school way: >
     :g/^/let @Q='echo '.shellescape(getline('.')).' '.shellescape(getline('.'))."\n"
     :exe 'e' tempname().'.sh'
     "qp
-    j"_dd
     :w
     :!%
 <

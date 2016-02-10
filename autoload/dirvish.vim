@@ -78,8 +78,7 @@ function! s:shdo(l1, l2, cmd)
   endfor
   execute 'split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
   setlocal nobuflisted
-  call append(0, lines)
-  norm! G"_dd
+  silent keepmarks keepjumps call setline(1, lines)
   write
   if executable('chmod')
     call system('chmod u+x '.tmpfile)
@@ -272,8 +271,7 @@ function! s:buf_render(dir, lastpath) abort
   setlocal modifiable
 
   silent keepmarks keepjumps %delete _
-  silent call append(0, s:list_dir(a:dir))
-  silent keepmarks keepjumps $delete _ " remove extra last line
+  silent keepmarks keepjumps call setline(1, s:list_dir(a:dir))
 
   setlocal nomodifiable nomodified
   call s:win_do('call winrestview(w:dirvish["_view"])', bname)
