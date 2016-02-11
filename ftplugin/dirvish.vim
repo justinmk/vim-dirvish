@@ -21,6 +21,5 @@ execute 'nnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 execute 'xnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
-let sep_cnt = strlen(substitute(b:dirvish.dir, '\v[^\'.s:sep.']{-}\'.s:sep, s:sep, 'g'))
-execute 'nnoremap <buffer> / /\v(([^\'.s:sep.']*\'.s:sep.'){'.sep_cnt.'}.*\zs)'
-execute 'nnoremap <buffer> ? ?\v(([^\'.s:sep.']*\'.s:sep.'){'.sep_cnt.'}.*\zs)'
+nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
+nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
