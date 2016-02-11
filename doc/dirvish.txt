@@ -81,7 +81,7 @@ g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
        Note: Recommended on Vim 7.3 (because it lacks |conceal|).
 
 The "dirvish" |FileType| event fires after Dirvish is initialized, so all
-mappings and options can be overridden by handling this event.
+mappings, options, and content can be overridden by handling this event.
 Example: >
 
     augroup my_dirvish_events
@@ -99,7 +99,7 @@ Example: >
 
       " Map gh to hide "hidden" files.
       autocmd FileType dirvish nnoremap <buffer> gh 
-          \ :set ma<bar>g@\v/\.[^\/]+/?$@d<cr>:set noma<cr>
+          \ :g@\v/\.[^\/]+/?$@d<cr>
     augroup END
 <
 
@@ -111,18 +111,18 @@ Set the Vim options 'splitbelow' and 'splitright'.
 
 How do I "group" (sort) directories/folders at the top? ~
 Sort folders at the top: >
-    :set ma|sort r /[^\/]$/
+    :sort r /[^\/]$/
 <
 Sort folders at the bottom: >
-    :set ma|sort r /\/$/
+    :sort r /\/$/
 <
 How do I filter? ~
 Use :g to delete lines matching any filter: >
-    :set ma|g/foo/d
+    :g/foo/d
 <
 How do I hide "hidden" (dot-prefixed) files? ~
 Use :g to delete the lines with dot-prefixed files: >
-    :set ma|g@\v/\.[^\/]+/?$@d
+    :g@\v/\.[^\/]+/?$@d
 <
 Why does the "swap file" dialog appear if another Vim is viewing the same ~
 directory? ~
@@ -135,9 +135,7 @@ Or the old-school way: >
     qqq
     :g/^/let @Q='echo '.shellescape(getline('.')).' '.shellescape(getline('.'))."\n"
     :exe 'e' tempname().'.sh'
-    "qp
-    :w
-    :!%
+    :put q|w|!%
 <
 
 ==============================================================================

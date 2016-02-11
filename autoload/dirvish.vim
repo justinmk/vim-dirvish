@@ -98,9 +98,6 @@ function! s:buf_init() abort
     endif
   augroup END
 
-  if v:version > 704 || v:version == 704 && has("patch73")
-    setlocal undolevels=-1
-  endif
   setlocal buftype=nofile noswapfile
 
   command! -buffer -range -bar -nargs=* Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
@@ -270,10 +267,15 @@ function! s:buf_render(dir, lastpath) abort
   call s:win_do('let w:dirvish["_view"] = winsaveview()', bname)
   setlocal modifiable
 
+  if v:version > 704 || v:version == 704 && has("patch73")
+    let ul=&g:undolevels|setlocal undolevels=-1
+  endif
   silent keepmarks keepjumps %delete _
   silent keepmarks keepjumps call setline(1, s:list_dir(a:dir))
+  if v:version > 704 || v:version == 704 && has("patch73")
+    let &l:undolevels=ul
+  endif
 
-  setlocal nomodifiable nomodified
   call s:win_do('call winrestview(w:dirvish["_view"])', bname)
 
   if 1 == line('.') && !empty(a:lastpath)

@@ -58,7 +58,7 @@ Since `:'<,'>call delete(getline('.'))` is a bit much to type, try `:Shdo`
 
 > How do I sort?
 
-`:set ma|sort i`. It's totally fine to slice, dice, and smash any Dirvish
+`:sort i`. It's totally fine to slice, dice, and smash any Dirvish
 buffer—it will never modify the filesystem. Just press `R` to get the default
 listing back.
 
