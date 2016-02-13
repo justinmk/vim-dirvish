@@ -37,7 +37,7 @@ _conceal_ feature). Each Dirvish buffer name is the _actual directory name_, so
 Vim commands and plugins (fugitive.vim) that work with the buffer name do the
 Right Thing.
 
-- Create directories with `:!mkdir %/foo`.
+- Create directories with `:!mkdir %foo`.
 - Create files with `:e %foo.txt`
 - Use plain old `y` to yank the path under the cursor, then feed it to `:r` or
   `:e` or whatever.
@@ -46,7 +46,7 @@ Right Thing.
     - Or add lines to the quickfix list (`:'<,'>caddb`) and iterate them
       (`:cdo`, `:cfdo`).
 - `:set ft=dirvish` works on _any_ list of files. Try
-  `git ls-files|vim -c 'set ft=dirvish -'`.
+  `git ls-files|vim +'setf dirvish' -`.
 
 ## FAQ
 
