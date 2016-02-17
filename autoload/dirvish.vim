@@ -169,6 +169,9 @@ function! s:buf_close() abort
 endfunction
 
 function! s:restore_winlocal_settings() abort
+  if !exists('w:dirvish') " can happen during VimLeave, etc.
+    return
+  endif
   if has('conceal') && has_key(w:dirvish, '_w_cocu')
     let [&l:cocu, &l:cole] = [w:dirvish._w_cocu, w:dirvish._w_cole]
   endif
