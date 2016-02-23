@@ -47,7 +47,7 @@ endif
 
 function! s:list_dir(dir) abort
   let curdir = s:normalize_dir(a:dir)
-  let curdir_esc = escape(curdir, '[]')
+  let curdir_esc = has('win32')?tr(curdir, '\', '/'):escape(curdir, '[]')
   let paths = s:globlist(curdir_esc.'*')
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
   let paths = paths + s:globlist(curdir_esc.'.[^.]*')
