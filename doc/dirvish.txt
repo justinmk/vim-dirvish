@@ -137,6 +137,9 @@ Or the old-school way: >
     :exe 'e' tempname().'.sh'
     :put q|w|!%
 <
+Why does Dirvish report "invalid directory" for a filename that contains ~
+unusual characters (e.g. brackets "[]")? ~
+Make sure 'isfname' contains the weird characters.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

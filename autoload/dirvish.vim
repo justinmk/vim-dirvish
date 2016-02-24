@@ -46,14 +46,15 @@ endfunction
 endif
 
 function! s:list_dir(dir) abort
-  let curdir = s:normalize_dir(a:dir)
-  let curdir_esc = has('win32')?tr(curdir, '\', '/'):escape(curdir, '[]')
-  let paths = s:globlist(curdir_esc.'*')
+  let dir = s:normalize_dir(a:dir)
+  " Escape for glob().
+  let dir_esc = substitute(dir,'\V[','[[]','g')
+  let paths = s:globlist(dir_esc.'*')
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
-  let paths = paths + s:globlist(curdir_esc.'.[^.]*')
+  let paths = paths + s:globlist(dir_esc.'.[^.]*')
 
   if get(g:, 'dirvish_relative_paths', 0)
-        \ && curdir != s:parent_dir(getcwd()) "avoid blank line for cwd
+      \ && dir != s:parent_dir(getcwd()) "avoid blank CWD
     return sort(map(paths, "fnamemodify(v:val, ':p:.')"))
   else
     return sort(map(paths, "fnamemodify(v:val, ':p')"))
