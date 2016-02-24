@@ -46,15 +46,14 @@ endfunction
 endif
 
 function! s:list_dir(dir) abort
-  let dir = s:normalize_dir(a:dir)
   " Escape for glob().
-  let dir_esc = substitute(dir,'\V[','[[]','g')
+  let dir_esc = substitute(a:dir,'\V[','[[]','g')
   let paths = s:globlist(dir_esc.'*')
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
   let paths = paths + s:globlist(dir_esc.'.[^.]*')
 
   if get(g:, 'dirvish_relative_paths', 0)
-      \ && dir != s:parent_dir(getcwd()) "avoid blank CWD
+      \ && a:dir != s:parent_dir(getcwd()) "avoid blank CWD
     return sort(map(paths, "fnamemodify(v:val, ':p:.')"))
   else
     return sort(map(paths, "fnamemodify(v:val, ':p')"))
@@ -62,7 +61,7 @@ function! s:list_dir(dir) abort
 endfunction
 
 function! s:shdo(l1, l2, cmd)
-  let dir = b:dirvish.dir
+  let dir = b:dirvish._dir
   let lines = getline(a:l1, a:l2)
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
 
@@ -290,9 +289,9 @@ endfunction
 
 function! s:do_open(d, reload) abort
   let d = a:d
-  let bnr = bufnr('^' . d.dir . '$')
+  let bnr = bufnr('^' . d._dir . '$')
 
-  let dirname_without_sep = substitute(d.dir, '[\\/]\+$', '', 'g')
+  let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
   let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
    
   " Vim tends to name the buffer using its reduced path.
@@ -306,7 +305,7 @@ function! s:do_open(d, reload) abort
     if -1 != bnr
       break
     endif
-    let modified_dirname = fnamemodify(d.dir, pat)
+    let modified_dirname = fnamemodify(d._dir, pat)
     let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
     let bnr = bufnr('^'.modified_dirname.'$')
     if -1 == bnr_nonnormalized
@@ -316,7 +315,7 @@ function! s:do_open(d, reload) abort
 
   try
     if -1 == bnr
-      execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d.dir)
+      execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d._dir)
     else
       execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
     endif
@@ -328,12 +327,12 @@ function! s:do_open(d, reload) abort
   "If the directory is relative to CWD, :edit refuses to create a buffer
   "with the expanded name (it may be _relative_ instead); this will cause
   "problems when the user navigates. Use :file to force the expanded path.
-  if bnr_nonnormalized == bufnr('#') || bufname('%') !=# d.dir
-    if bufname('%') !=# d.dir
+  if bnr_nonnormalized == bufnr('#') || bufname('%') !=# d._dir
+    if bufname('%') !=# d._dir
       try
-      execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d.dir)
+      execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d._dir)
       catch /^E95:/
-        echom printf('!!!!!!!!!!!!!! [caught E95] bufname="%s" d.dir="%s"', bufname('%'), d.dir)
+        echom printf('!!!!!!!!!!!!!! [caught E95] bufname="%s" d._dir="%s"', bufname('%'), d._dir)
       endtry
     endif
 
@@ -342,8 +341,8 @@ function! s:do_open(d, reload) abort
     endif
   endif
 
-  if bufname('%') !=# d.dir  "We have a bug or Vim has a regression.
-    echoerr 'expected buffer name: "'.d.dir.'" (actual: "'.bufname('%').'")'
+  if bufname('%') !=# d._dir  "We have a bug or Vim has a regression.
+    echoerr 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
     return
   endif
 
@@ -358,7 +357,7 @@ function! s:do_open(d, reload) abort
   call s:buf_init()
   call s:win_init()
   if a:reload || (empty(getline(1)) && 1 == line('$'))
-    call s:buf_render(b:dirvish.dir, get(b:dirvish, 'lastpath', ''))
+    call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
   endif
 
   setlocal filetype=dirvish
@@ -380,25 +379,25 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  let d.dir = fnamemodify(expand(fnameescape(a:1), 1), ':p')
+  let d._dir = fnamemodify(expand(fnameescape(a:1), 1), ':p')
   "                       ^      ^                      ^resolves to CWD if a:1 is empty
   "                       |      `escape chars like '$' before expand()
   "                       `expand() fixes slashes on Windows
 
-  if filereadable(d.dir) "chop off the filename
-    let d.dir = fnamemodify(d.dir, ':p:h')
+  if filereadable(d._dir) "chop off the filename
+    let d._dir = fnamemodify(d._dir, ':p:h')
   endif
 
-  let d.dir = s:normalize_dir(d.dir)
-  if '' ==# d.dir " s:normalize_dir() already displayed error message.
+  let d._dir = s:normalize_dir(d._dir)
+  if '' ==# d._dir " s:normalize_dir() already showed error.
     return
   endif
 
-  let reloading = exists('b:dirvish') && d.dir ==# s:normalize_dir(b:dirvish.dir)
+  let reloading = exists('b:dirvish') && d._dir ==# s:normalize_dir(b:dirvish._dir)
 
   " Save lastpath when navigating _up_.
-  if exists('b:dirvish') && d.dir ==# s:parent_dir(b:dirvish.dir)
-    let d.lastpath = b:dirvish.dir
+  if exists('b:dirvish') && d._dir ==# s:parent_dir(b:dirvish._dir)
+    let d.lastpath = b:dirvish._dir
   endif
 
   call s:save_state(d)
