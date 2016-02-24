@@ -329,11 +329,7 @@ function! s:do_open(d, reload) abort
   "problems when the user navigates. Use :file to force the expanded path.
   if bnr_nonnormalized == bufnr('#') || bufname('%') !=# d._dir
     if bufname('%') !=# d._dir
-      try
       execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d._dir)
-      catch /^E95:/
-        echom printf('!!!!!!!!!!!!!! [caught E95] bufname="%s" d._dir="%s"', bufname('%'), d._dir)
-      endtry
     endif
 
     if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
