@@ -243,19 +243,28 @@ function! s:try_visit(bnr) abort
   return 0
 endfunction
 
+function! s:tab_win_do(tnr, cmd, bname) abort
+  exe s:noau 'tabnext' a:tnr
+  for wnr in range(1, tabpagewinnr(a:tnr, '$'))
+    if a:bname ==# bufname(winbufnr(wnr))
+      exe s:noau wnr.'wincmd w'
+      exe a:cmd
+    endif
+  endfor
+endfunction
+
 " Performs `cmd` in all windows showing `bname`.
-function! s:win_do(cmd, bname)
+function! s:win_do(cmd, bname) abort
   let [curtab, curwin, curwinalt] = [tabpagenr(), winnr(), winnr('#')]
   for tnr in range(1, tabpagenr('$'))
-    exe s:noau 'tabnext' tnr
-    let [origwin, origwinalt] = [winnr(), winnr('#')]
-    for wnr in range(1, tabpagewinnr(tnr, '$'))
-      if a:bname ==# bufname(winbufnr(wnr))
-        exe s:noau wnr.'wincmd w'
-        exe a:cmd
+    let [origwin, origwinalt] = [tabpagewinnr(tnr), tabpagewinnr(tnr, '#')]
+    for bnr in tabpagebuflist(tnr)
+      if a:bname ==# bufname(bnr) " tab has at least 1 matching window
+        call s:tab_win_do(tnr, a:cmd, a:bname)
+        exe s:noau origwinalt.'wincmd w|' s:noau origwin.'wincmd w'
+        break
       endif
     endfor
-    exe s:noau origwinalt.'wincmd w|' s:noau origwin.'wincmd w'
   endfor
   exe s:noau 'tabnext '.curtab
   exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
