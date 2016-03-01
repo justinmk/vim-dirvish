@@ -84,6 +84,12 @@ function! s:shdo(l1, l2, cmd)
   if executable('chmod')
     call system('chmod u+x '.tmpfile)
   endif
+
+  if exists(':terminal')
+    nnoremap <buffer><silent> Z! :write<Bar>te %<CR>
+  else
+    nnoremap <buffer><silent> Z! :write<Bar>!%<CR>
+  endif
 endfunction
 
 function! s:buf_init() abort

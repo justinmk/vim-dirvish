@@ -1,7 +1,7 @@
 *dirvish.txt*	directory viewer
 
 ==============================================================================
-INTRO                                                          *dirvish-intro*
+OVERVIEW                                                             *dirvish*
 
 Dirvish is a minimalist directory viewer. It basically dumps a list of paths
 into a Vim buffer and provides some mappings to work with those paths. By
@@ -43,7 +43,7 @@ w:dirvish
 ==============================================================================
 MAPPINGS                                                    *dirvish-mappings*
 
-Dirvish defines these buffer-local mappings and commands.
+Dirvish provides these buffer-local mappings and commands.
 
     g?              Show this help.
     R               Reload the current directory.
@@ -58,6 +58,8 @@ Dirvish defines these buffer-local mappings and commands.
     {Visual}A       Open selected files in vertical splits.
     p               Open file in previous window.
     -               Open the parent directory.
+    Z!              (experimental) |:write| and execute the shell script
+                    created by :Shdo.
 
     :[range]Shdo {cmd} {}                                      *dirvish-:Shdo*
                     Generates a shell script where {cmd} is repeated for each
