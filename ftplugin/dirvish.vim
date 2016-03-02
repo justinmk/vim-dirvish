@@ -1,4 +1,3 @@
-let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
 execute 'nmap '    .s:nowait.'<buffer><silent> q    <Plug>(dirvish_quit)'
 nnoremap <buffer><silent> -   :Dirvish %:h:h<CR>
