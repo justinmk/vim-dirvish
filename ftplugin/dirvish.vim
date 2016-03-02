@@ -59,7 +59,7 @@ try
   function! s:on_change(input)
     call setpos('.', s:pos)
     call search(join(a:input, '') . '\ze[^\/]*[\/]\=$', s:dir == '/' ? '' : 'bw')
-    exe "normal \<C-G>"
+    normal! 0
   endfunction
 catch
   nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
