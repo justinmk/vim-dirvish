@@ -47,6 +47,7 @@ try
     call prompter#input({
     \ 'prompt': a:dir,
     \ 'color': 'Normal',
+    \ 'histtype': '/',
     \ 'on_change': function('<SID>on_change'),
     \ 'on_cancel': function('<SID>on_cancel'),
     \ })
