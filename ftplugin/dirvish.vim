@@ -47,7 +47,7 @@ try
     call prompter#input({
     \ 'prompt': a:dir,
     \ 'prompt_color': 'Normal',
-    \ 'cursor': '|',
+    \ 'cursor': '_',
     \ 'cursor_color': 'StatusLine',
     \ 'histtype': '/',
     \ 'on_change': function('<SID>on_change'),
