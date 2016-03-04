@@ -46,7 +46,9 @@ try
     let s:pos = getpos('.')
     call prompter#input({
     \ 'prompt': a:dir,
-    \ 'color': 'Normal',
+    \ 'prompt_color': 'Normal',
+    \ 'cursor': '|',
+    \ 'cursor_color': 'StatusLine',
     \ 'histtype': '/',
     \ 'on_change': function('<SID>on_change'),
     \ 'on_cancel': function('<SID>on_cancel'),
