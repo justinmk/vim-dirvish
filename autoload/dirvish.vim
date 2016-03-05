@@ -253,8 +253,10 @@ function! s:tab_win_do(tnr, cmd, bname) abort
   exe s:noau 'tabnext' a:tnr
   for wnr in range(1, tabpagewinnr(a:tnr, '$'))
     if a:bname ==# bufname(winbufnr(wnr))
+      echom printf('tnr:%s bname:%s w:dirvish:%s linecnt:%s wincnt:%s tabcnt:%s',
+            \ a:tnr, a:bname, exists('w:dirvish'), len(getbufline(a:bname,1,'$')), winnr('$'), tabpagenr('$'))
       exe s:noau wnr.'wincmd w'
-      exe a:cmd
+      " exe a:cmd
     endif
   endfor
 endfunction
