@@ -253,16 +253,14 @@ function! s:tab_win_do(tnr, cmd, bname) abort
   exe s:noau 'tabnext' a:tnr
   for wnr in range(1, tabpagewinnr(a:tnr, '$'))
     if a:bname ==# bufname(winbufnr(wnr))
-      echom printf('tnr:%s bname:%s w:dirvish:%s linecnt:%s wincnt:%s tabcnt:%s',
-            \ a:tnr, a:bname, exists('w:dirvish'), len(getbufline(a:bname,1,'$')), winnr('$'), tabpagenr('$'))
       exe s:noau wnr.'wincmd w'
-      " exe a:cmd
+      exe a:cmd
     endif
   endfor
 endfunction
 
 " Performs `cmd` in all windows showing `bname`.
-function! s:win_do(cmd, bname) abort
+function! s:bufwin_do(cmd, bname) abort
   let [curtab, curwin, curwinalt] = [tabpagenr(), winnr(), winnr('#')]
   for tnr in range(1, tabpagenr('$'))
     let [origwin, origwinalt] = [tabpagewinnr(tnr), tabpagewinnr(tnr, '#')]
@@ -280,24 +278,29 @@ endfunction
 
 function! s:buf_render(dir, lastpath) abort
   let bname = bufname('%')
+  let isnew = empty(getline(1))
+
   if !isdirectory(bname)
     echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
     return
   endif
 
-  call s:win_do('let w:dirvish["_view"] = winsaveview()', bname)
-  setlocal modifiable
+  if !isnew
+    call s:bufwin_do('let w:dirvish["_view"] = winsaveview()', bname)
+  endif
 
   if v:version > 704 || v:version == 704 && has("patch73")
-    let ul=&g:undolevels|setlocal undolevels=-1
+    setlocal undolevels=-1
   endif
   silent keepmarks keepjumps %delete _
   silent keepmarks keepjumps call setline(1, s:list_dir(a:dir))
   if v:version > 704 || v:version == 704 && has("patch73")
-    let &l:undolevels=ul
+    setlocal undolevels<
   endif
 
-  call s:win_do('call winrestview(w:dirvish["_view"])', bname)
+  if !isnew
+    call s:bufwin_do('call winrestview(w:dirvish["_view"])', bname)
+  endif
 
   if 1 == line('.') && !empty(a:lastpath)
     keepjumps call search('\V\^'.escape(a:lastpath, '\').'\$', 'cw')
