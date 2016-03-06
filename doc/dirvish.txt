@@ -9,17 +9,28 @@ working with built-in Vim mechanisms instead of inventing peripheral
 imitations, users (and other plugins) can compose and build upon known Vim
 concepts.
 
-Example: because each Dirvish buffer-name is a directory path, you can |:cd|
-to the directory: >
+Because each Dirvish buffer-name is the literal directory path, you can |:cd|
+to the directory, >
   :cd %
-<or create a new file: >
+create a new file, >
   :edit %/foo.txt
-<or |expand()| the directory path: >
+|expand()| the directory path, >
   :let &titlestring = expand('%', 1)
-<
-Example: because each dirvish buffer is just a list of absolute paths, you can
-use normal Vim commands to |y|ank, |:read|, |gf|, etc. All of the built-in
-CTRL-W mappings also work as expected.
+and use complementary plugin commands like |]f|/|[f| (unimpaired.vim).
+
+Because each dirvish buffer is just a list of paths, you can use normal Vim
+commands to |y|ank, |:read|, |gf|, etc. All of the built-in CTRL-W mappings
+also work as expected.
+
+It's totally fine to slice, dice, and smash any Dirvish buffer: it will never
+modify the filesystem. Just press `R` to reload the default listing.
+
+Re-use and composition of concepts multiplies the utility of those concepts;
+if a plugin does _not_ reuse a concept, both that concept _and_ the new,
+redundant mechanism are made mutually _less valuable_—the sum is less than the
+parts—because the user now must learn or choose from two slightly different
+things instead of one augmented system. @tpope's plugins demonstrate this
+theme; more plugins should too.
 
 ==============================================================================
 API                                                              *dirvish-api*
@@ -99,9 +110,10 @@ Example: >
       " Map CTRL-R to reload the Dirvish buffer.
       autocmd FileType dirvish nnoremap <buffer> <C-R> :<C-U>Dirvish %<CR>
 
-      " Map gh to hide "hidden" files.
-      autocmd FileType dirvish nnoremap <buffer> gh 
-          \ :g@\v/\.[^\/]+/?$@d<cr>
+      " Map `gh` to hide dot-prefixed files.
+      " To "toggle" this, just press `R` to reload.
+      autocmd FileType dirvish nnoremap <buffer>
+        \ gh :keeppatterns g@\v/\.[^\/]+/?$@d<cr>
     augroup END
 <
 
@@ -124,16 +136,23 @@ Use :g to delete lines matching any filter: >
 <
 How do I hide "hidden" (dot-prefixed) files? ~
 Use :g to delete the lines with dot-prefixed files: >
-    :g@\v/\.[^\/]+/?$@d
-<
+    :keeppatterns g@\v/\.[^\/]+/?$@d
+<To "toggle", just reload. |dirvish-mappings|
+
+To hide dotfiles by _default_, use this autocmd: >
+    autocmd FileType dirvish keeppatterns g@\v/\.[^\/]+/?$@d
+To un-hide, just undo |u|. To hide again, reload. |dirvish-mappings|
+
 Why does the "swap file" dialog appear if another Vim is viewing the same ~
 directory? ~
 To avoid this, |:noswapfile| is required (Vim 7.4.213).
 https://github.com/vim/vim/commit/v7-4-213
 
-How can I rename files or perform other commands?~
-Use the |dirvish-:Shdo| command in a Dirvish buffer.
-Or the old-school way: >
+How can I delete files, rename files, or perform other commands?~
+Since ":'<,'>call delete(getline('.'))" is a bit much to type, Dirvish
+provides the ":Shdo" command. |dirvish-:Shdo|
+
+Just for fun, here's the old-school way: >
     qqq
     :g/^/let @Q='echo '.shellescape(getline('.')).' '.shellescape(getline('.'))."\n"
     :exe 'e' tempname().'.sh'
