@@ -61,6 +61,7 @@ function! s:list_dir(dir) abort
 endfunction
 
 function! s:shdo(l1, l2, cmd)
+  let cmd = a:cmd =~# '\V{}' ? a:cmd : (empty(a:cmd)?'{}':(a:cmd.' {}')) "DWIM
   let dir = b:dirvish._dir
   let lines = getline(a:l1, a:l2)
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
@@ -75,7 +76,7 @@ function! s:shdo(l1, l2, cmd)
   for i in range(0, (a:l2-a:l1))
     let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
     let f = 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]  "relative
-    let lines[i] = substitute(a:cmd, '\V{}', shellescape(f), 'g')
+    let lines[i] = substitute(cmd, '\V{}', shellescape(f), 'g')
   endfor
   execute 'split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
   setlocal nobuflisted
