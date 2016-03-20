@@ -5,12 +5,14 @@ let s:noau       = 'silent noautocmd keepjumps'
 function! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
 endfunction
-function! s:msg_dbg(o) abort
-  call writefile([string(a:o)], expand('~/dirvish.log', 1), 'a')
+
+" Normalize slashes for safe use of fnameescape(), isdirectory(). Vim bug #541.
+function! s:sl(path) abort
+  return tr(a:path, '\', '/')
 endfunction
 
 function! s:normalize_dir(dir) abort
-  let dir = a:dir
+  let dir = s:sl(a:dir)
   if !isdirectory(dir)
     "cygwin/MSYS fallback for paths that lack a drive letter.
     let dir = empty($SYSTEMDRIVE) ? dir : '/'.tolower($SYSTEMDRIVE[0]).(dir)
@@ -19,16 +21,13 @@ function! s:normalize_dir(dir) abort
       return ''
     endif
   endif
-
-  let dir = substitute(dir, s:sep.'\+', s:sep, 'g') "replace consecutive slashes
-  if dir[-1:] !~# '[\/]' "always end with separator
-    return dir . s:sep
-  endif
-  return dir
+  let dir = substitute(dir, '/\+', '/', 'g') "replace consecutive slashes
+  " Always end with separator.
+  return (dir[-1:] ==# '/') ? dir : dir.'/'
 endfunction
 
 function! s:parent_dir(dir) abort
-  if !isdirectory(a:dir)
+  if !isdirectory(s:sl(a:dir))
     echoerr 'not a directory:' a:dir
     return
   endif
@@ -74,7 +73,7 @@ function! s:shdo(l1, l2, cmd)
   augroup END
 
   for i in range(0, (a:l2-a:l1))
-    let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
+    let f = substitute(lines[i], '\V'.escape(s:sep,'\').'$', '', 'g') "trim slash
     let f = 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]  "relative
     let lines[i] = substitute(cmd, '\V{}', shellescape(f), 'g')
   endfor
@@ -192,6 +191,7 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
 
   let paths = getline(a:line1, a:line2)
   for path in paths
+    let path = s:sl(path)
     if !isdirectory(path) && !filereadable(path)
       call s:msg_error("invalid (or access denied): ".path)
       continue
@@ -278,7 +278,7 @@ function! s:bufwin_do(cmd, bname) abort
 endfunction
 
 function! s:buf_render(dir, lastpath) abort
-  let bname = bufname('%')
+  let bname = s:sl(bufname('%'))
   let isnew = empty(getline(1))
 
   if !isdirectory(bname)
@@ -348,17 +348,17 @@ function! s:do_open(d, reload) abort
   "If the directory is relative to CWD, :edit refuses to create a buffer
   "with the expanded name (it may be _relative_ instead); this will cause
   "problems when the user navigates. Use :file to force the expanded path.
-  if bnr_nonnormalized == bufnr('#') || bufname('%') !=# d._dir
-    if bufname('%') !=# d._dir
+  if bnr_nonnormalized == bufnr('#') || s:sl(bufname('%')) !=# d._dir
+    if s:sl(bufname('%')) !=# d._dir
       execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d._dir)
     endif
 
-    if bufnr('#') != bufnr('%') && isdirectory(bufname('#')) "Yes, (# == %) is possible.
+    if bufnr('#') != bufnr('%') && isdirectory(s:sl(bufname('#'))) "Yes, (# == %) is possible.
       bwipeout # "Kill it with fire, it is useless.
     endif
   endif
 
-  if bufname('%') !=# d._dir  "We have a bug or Vim has a regression.
+  if s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
     echoerr 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
     return
   endif
@@ -381,7 +381,7 @@ function! s:do_open(d, reload) abort
 endfunction
 
 function! s:buf_isvalid(bnr) abort
-  return bufexists(a:bnr) && !isdirectory(bufname(a:bnr))
+  return bufexists(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
 endfunction
 
 function! dirvish#open(...) range abort
@@ -396,10 +396,8 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  let d._dir = fnamemodify(expand(fnameescape(a:1), 1), ':p')
-  "                       ^      ^                      ^resolves to CWD if a:1 is empty
-  "                       |      `escape chars like '$' before expand()
-  "                       `expand() fixes slashes on Windows
+  let d._dir = fnamemodify(s:sl(a:1), ':p')
+  "                                       ^resolves to CWD if a:1 is empty
 
   if filereadable(d._dir) "chop off the filename
     let d._dir = fnamemodify(d._dir, ':p:h')
