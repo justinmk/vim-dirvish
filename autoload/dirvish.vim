@@ -107,7 +107,7 @@ function! s:buf_init() abort
 
   setlocal buftype=nofile noswapfile
 
-  command! -buffer -range -bar -nargs=* Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
+  command! -buffer -range -bar -nargs=* -complete=file Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
 endfunction
 
 function! s:on_bufenter() abort
