@@ -85,11 +85,6 @@ Dirvish provides these buffer-local mappings and commands.
 ==============================================================================
 OPTIONS                                                      *dirvish-options*
 
-g:dirvish_hijack_netrw = 1                            *g:dirvish_hijack_netrw*
-
-    0: ":edit /path/to/dir/" and "vim /path/to/dir/" will be handled by
-       |netrw| instead of Dirvish.
-
 g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
 
     1: Make paths in the Dirvish buffer relative to |getcwd()|.
