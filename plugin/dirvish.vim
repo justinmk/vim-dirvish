@@ -20,3 +20,7 @@ augroup dirvish_ftdetect
 augroup END
 
 highlight! link DirvishPathTail Directory
+
+if mapcheck('-', 'n') ==# ''
+  nnoremap <silent> - :<C-U>exe 'Dirvish %:p'.repeat(':h',v:count1)<cr>
+endif

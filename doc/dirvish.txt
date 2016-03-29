@@ -33,54 +33,58 @@ things instead of one augmented system. @tpope's plugins demonstrate this
 theme; more plugins should too.
 
 ==============================================================================
-API                                                              *dirvish-api*
+MAPPINGS                                                    *dirvish-mappings*
 
-:Dirvish                                                            *:Dirvish*
-    Open the |current-directory|.
+Global ~
+    -               Opens the current file directory. Works with [count].
+
+Buffer-local (for filetype=dirvish) ~
+    g?              Shows this help.
+    R               Reloads the current directory.
+    q               Quits; returns to the original file.
+    -               Opens the parent directory. Works with [count].
+    i
+    <CR>            Opens file at cursor.
+    {Visual}I
+    {Visual}<CR>    Opens selected files.
+    o               Opens in horizontal split.
+    {Visual}O       Opens selected files in horizontal splits.
+    a               Opens in vertical split.
+    {Visual}A       Opens selected files in vertical splits.
+    p               Opens file in previous window.
+    x               Pre-fills ":Shdo  {}" in the command-line. |dirvish-:Shdo|
+
+Buffer-local (for :Shdo) ~
+    Z!              (experimental) Saves and executes the shell-script.
+
+==============================================================================
+COMMANDS                                                    *dirvish-commands*
+
+:Dirvish                                                    *dirvish-:Dirvish*
+    Opens the |current-directory|.
 
 :Dirvish {path}
-    Open the directory at {path}, or its parent directory if {path} is a file.
+    Opens the directory at {path} (or its parent if {path} is a file).
     To open the directory of the current file: >
         :Dirvish %
 
-[range]dirvish#open({cmd}, {bg})
-    Perform {cmd} ("edit", "vsplit", "split", "tabedit") on the files in
-    [range]. {bg} must be 0 (open files in current window) or 1 (open files in
-    the "background").
 
-b:dirvish
-w:dirvish
+Buffer-local (for filetype=dirvish) ~
+
+:[range]Shdo {cmd} {}                                          *dirvish-:Shdo*
+    Generates a shell script where {cmd} is repeated for each of the files in
+    [range], with each filename inserted wherever {} appears in the :Shdo
+    command. For example, to rename a list of visual-selected files: >
+        :'<,'>Shdo mv {} {}-copy.txt
+<    Run the script with ":!%" (see |:!|).
 
 ==============================================================================
-MAPPINGS                                                    *dirvish-mappings*
+FUNCTIONS                                                  *dirvish-functions*
 
-Dirvish provides these buffer-local mappings and commands.
-
-    g?              Show this help.
-    R               Reload the current directory.
-    q               Quit Dirvish and return to the original file.
-    i
-    <CR>            Open file.
-    {Visual}I
-    {Visual}<CR>    Open selected files.
-    o               Open in horizontal split.
-    {Visual}O       Open selected files in horizontal splits.
-    a               Open in vertical split.
-    {Visual}A       Open selected files in vertical splits.
-    p               Open file in previous window.
-    [count]-        Open the [count]th parent directory.
-    x               Pre-fill command-line with ":Shdo  {}" and put cursor in
-                    the middle.
-    Z!              (experimental) |:write| and execute the shell script
-                    created by :Shdo.
-
-    :[range]Shdo {cmd} {}                                      *dirvish-:Shdo*
-                    Generates a shell script where {cmd} is repeated for each
-                    of the files in [range], with each filename inserted
-                    wherever {} appears in the :Shdo command.
-                    EXAMPLE: To rename a list of visual-selected files: >
-                        :'<,'>Shdo mv {} {}-copy.txt
-<                    Run the script with ":!%" (see |:!|).
+[range]dirvish#open({cmd}, {bg})
+    Performs {cmd} ("edit", "vsplit", "split", "tabedit") on the files in
+    [range]. {bg} must be 0 (open files in current window) or 1 (open files in
+    the "background").
 
 ==============================================================================
 OPTIONS                                                      *dirvish-options*
