@@ -68,7 +68,7 @@ Dirvish provides these buffer-local mappings and commands.
     a               Open in vertical split.
     {Visual}A       Open selected files in vertical splits.
     p               Open file in previous window.
-    -               Open the parent directory.
+    [count]-        Open the [count]th parent directory.
     x               Pre-fill command-line with ":Shdo  {}" and put cursor in
                     the middle.
     Z!              (experimental) |:write| and execute the shell script

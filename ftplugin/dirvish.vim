@@ -1,6 +1,6 @@
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
 execute 'nmap '    .s:nowait.'<buffer><silent> q    <Plug>(dirvish_quit)'
-nnoremap <buffer><silent> -   :Dirvish %:h:h<CR>
+execute 'nnoremap '.s:nowait.'<buffer><silent> -    :<C-U>exe "Dirvish %:h".repeat(":h",v:count1)<CR>'
 nnoremap <buffer><silent> p   yy<c-w>p:e <c-r>=fnameescape(getreg('"',1,1)[0])<cr><cr>
 
 execute 'nnoremap '.s:nowait.'<buffer><silent> i    :<C-U>.call dirvish#open("edit", 0)<CR>'
