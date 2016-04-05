@@ -278,10 +278,10 @@ function! s:bufwin_do(cmd, bname) abort
 endfunction
 
 function! s:buf_render(dir, lastpath) abort
-  let bname = s:sl(bufname('%'))
+  let bname = bufname('%')
   let isnew = empty(getline(1))
 
-  if !isdirectory(bname)
+  if !isdirectory(s:sl(bname))
     echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
     return
   endif
