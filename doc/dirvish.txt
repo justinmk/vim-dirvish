@@ -43,6 +43,7 @@ Buffer-local (for filetype=dirvish) ~
     R               Reloads the current directory.
     q               Quits; returns to the original file.
     -               Opens the parent directory. Works with [count].
+    <2-LeftMouse>
     i
     <CR>            Opens file at cursor.
     {Visual}I
