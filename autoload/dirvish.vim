@@ -373,11 +373,19 @@ function! s:do_open(d, reload) abort
 
   call s:buf_init()
   call s:win_init()
-  if a:reload || (empty(getline(1)) && 1 == line('$'))
+  if a:reload || s:should_reload()
     call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
   endif
 
   setlocal filetype=dirvish
+endfunction
+
+function! s:should_reload() abort
+  if line('$') < 1000 || '' ==# glob(getline('$'),1)
+    return 1
+  endif
+  redraw | echo 'dirvish: too many files, press "R" to reload'
+  return 0
 endfunction
 
 function! s:buf_isvalid(bnr) abort
