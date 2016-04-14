@@ -21,7 +21,8 @@ function! s:normalize_dir(dir) abort
       return ''
     endif
   endif
-  let dir = substitute(dir, '/\+', '/', 'g') "replace consecutive slashes
+  " Collapse slashes (except UNC-style \\foo\bar).
+  let dir = dir[0] . substitute(dir[1:], '/\+', '/', 'g')
   " Always end with separator.
   return (dir[-1:] ==# '/') ? dir : dir.'/'
 endfunction
