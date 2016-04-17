@@ -21,6 +21,8 @@ augroup END
 
 highlight! link DirvishPathTail Directory
 
-if mapcheck('-', 'n') ==# ''
-  nnoremap <silent> - :<C-U>exe 'Dirvish %:p'.repeat(':h',v:count1)<cr>
+nnoremap <silent> <Plug>(dirvish_up) :<C-U>exe 'Dirvish %:p'.repeat(':h',v:count1)<CR>
+
+if mapcheck('-', 'n') ==# '' && !hasmapto('<Plug>(dirvish_up)', 'n')
+  nmap - <Plug>(dirvish_up)
 endif

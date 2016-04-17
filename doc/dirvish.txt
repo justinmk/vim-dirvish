@@ -37,11 +37,13 @@ MAPPINGS                                                    *dirvish-mappings*
 
 Global ~
     -               Opens the current file directory. Works with [count].
+                    <Plug>(dirvish_up)
 
 Buffer-local (for filetype=dirvish) ~
     g?              Shows this help.
     R               Reloads the current directory.
     q               Quits; returns to the original file.
+                    <Plug>(dirvish_quit)
     -               Opens the parent directory. Works with [count].
     <2-LeftMouse>
     i
@@ -53,7 +55,7 @@ Buffer-local (for filetype=dirvish) ~
     a               Opens in vertical split.
     {Visual}A       Opens selected files in vertical splits.
     p               Opens file in previous window.
-    x               Pre-fills ":Shdo  {}" in the command-line. |dirvish-:Shdo|
+    x               Pre-fills "|:Shdo|  {}" in the command-line.
 
 Buffer-local (for :Shdo) ~
     Z!              (experimental) Saves and executes the shell-script.
