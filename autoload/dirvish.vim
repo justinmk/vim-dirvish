@@ -198,26 +198,16 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
       continue
     endif
 
-    try
-      if isdirectory(path)
-        exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
-      else
-        exe splitcmd fnameescape(path)
-      endif
+    if isdirectory(path)
+      exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
+    else
+      exe splitcmd fnameescape(path)
+    endif
 
-      " return to previous window after _each_ split, otherwise we get lost.
-      if a:bg && splitcmd =~# 'sp' && winnr('$') > wincount
-        wincmd p
-      endif
-    catch /E37:/
-      call s:msg_error("E37: No write since last change")
-      return
-    catch /E36:/
-      call s:msg_error(v:exception)
-      return
-    catch /E325:/
-      call s:msg_error("E325: swap file exists")
-    endtry
+    " return to previous window after _each_ split, otherwise we get lost.
+    if a:bg && splitcmd =~# 'sp' && winnr('$') > wincount
+      wincmd p
+    endif
   endfor
 
   if a:bg "return to dirvish buffer
@@ -335,16 +325,11 @@ function! s:do_open(d, reload) abort
     endif
   endfor
 
-  try
-    if -1 == bnr
-      execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d._dir)
-    else
-      execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
-    endif
-  catch /E37:/
-    call s:msg_error("E37: No write since last change")
-    return
-  endtry
+  if -1 == bnr
+    execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d._dir)
+  else
+    execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
+  endif
 
   "If the directory is relative to CWD, :edit refuses to create a buffer
   "with the expanded name (it may be _relative_ instead); this will cause
@@ -396,6 +381,10 @@ endfunction
 function! dirvish#open(...) range abort
   if &autochdir
     call s:msg_error("'autochdir' is not supported")
+    return
+  endif
+  if !&hidden && &modified
+    call s:msg_error("E37: No write since last change")
     return
   endif
 
