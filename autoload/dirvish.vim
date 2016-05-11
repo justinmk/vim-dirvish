@@ -28,11 +28,8 @@ function! s:normalize_dir(dir) abort
 endfunction
 
 function! s:parent_dir(dir) abort
-  if !isdirectory(s:sl(a:dir))
-    echoerr 'not a directory:' a:dir
-    return
-  endif
-  return s:normalize_dir(fnamemodify(a:dir, ":p:h:h"))
+  let mod = isdirectory(s:sl(a:dir)) ? ':p:h:h' : ':p:h'
+  return s:normalize_dir(fnamemodify(a:dir, mod))
 endfunction
 
 if v:version > 703
@@ -294,7 +291,7 @@ function! s:buf_render(dir, lastpath) abort
     call s:bufwin_do('call winrestview(w:dirvish["_view"])', bname)
   endif
 
-  if 1 == line('.') && !empty(a:lastpath)
+  if !empty(a:lastpath)
     keepjumps call search('\V\^'.escape(a:lastpath, '\').'\$', 'cw')
   endif
 endfunction
@@ -370,7 +367,7 @@ function! s:should_reload() abort
   if line('$') < 1000 || '' ==# glob(getline('$'),1)
     return 1
   endif
-  redraw | echo 'dirvish: too many files, press "R" to reload'
+  redraw | echo 'dirvish: too many files; showing cached listing'
   return 0
 endfunction
 
@@ -394,23 +391,22 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  let d._dir = fnamemodify(s:sl(a:1), ':p')
+  let from_path = fnamemodify(s:sl(bufname('%')), ':p')
+  let to_path   = fnamemodify(s:sl(a:1), ':p')
   "                                       ^resolves to CWD if a:1 is empty
 
-  if filereadable(d._dir) "chop off the filename
-    let d._dir = fnamemodify(d._dir, ':p:h')
-  endif
-
+  let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
   let d._dir = s:normalize_dir(d._dir)
   if '' ==# d._dir " s:normalize_dir() already showed error.
     return
   endif
 
-  let reloading = exists('b:dirvish') && d._dir ==# s:normalize_dir(b:dirvish._dir)
+  let reloading = exists('b:dirvish') && d._dir ==# b:dirvish._dir
 
-  " Save lastpath when navigating _up_.
-  if exists('b:dirvish') && d._dir ==# s:parent_dir(b:dirvish._dir)
-    let d.lastpath = b:dirvish._dir
+  if reloading
+    let d.lastpath = ''         " Do not place cursor when reloading.
+  elseif d._dir ==# s:parent_dir(from_path)
+    let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
 
   call s:save_state(d)
