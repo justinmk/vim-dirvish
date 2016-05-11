@@ -391,7 +391,7 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  let from_path = fnamemodify(s:sl(bufname('%')), ':p')
+  let from_path = fnamemodify(bufname('%'), ':p')
   let to_path   = fnamemodify(s:sl(a:1), ':p')
   "                                       ^resolves to CWD if a:1 is empty
 
