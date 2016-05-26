@@ -1,4 +1,4 @@
-let s:sep = (&shell =~? 'cmd.exe') ? '\' : '/'
+let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
 
