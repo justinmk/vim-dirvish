@@ -61,18 +61,12 @@ function! dirvish#shdo(l1, l2, cmd)
   let lines = filter(getline(a:l1, a:l2), '-1!=match(v:val,"\\S")') "find non-empty
   if empty(lines) | call s:msg_error('empty path') | return | endif
 
+  let dirvish_bufnr = bufnr('%')
   let cmd = a:cmd =~# '\V{}' ? a:cmd : (empty(a:cmd)?'{}':(a:cmd.' {}')) "DWIM
   "Paths coming from non-dirvish buffers may be jagged; assume CWD instead of narrowing.
   let should_narrow = exists('b:dirvish')
   let dir = should_narrow ? b:dirvish._dir : getcwd()
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
-
-  augroup dirvish_shcmd
-    autocmd! * <buffer>
-    " Refresh after executing the command.
-    exe 'autocmd ShellCmdPost * autocmd dirvish_shcmd BufEnter,WinEnter <buffer='.bufnr('%')
-          \ .'> Dirvish %|au! dirvish_shcmd * <buffer='.bufnr('%').'>'
-  augroup END
 
   for i in range(0, len(lines)-1)
     let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
@@ -90,6 +84,13 @@ function! dirvish#shdo(l1, l2, cmd)
   if executable('chmod')
     call system('chmod u+x '.tmpfile)
   endif
+
+  augroup dirvish_shcmd
+    autocmd! * <buffer>
+    " Refresh after executing the command.
+    exe 'autocmd ShellCmdPost <buffer> if bufexists('.dirvish_bufnr.')|buffer '.dirvish_bufnr
+          \ .'|silent! Dirvish %|buffer '.bufnr('%')
+  augroup END
 
   if exists(':terminal')
     nnoremap <buffer><silent> Z! :write<Bar>te %<CR>
