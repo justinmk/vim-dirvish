@@ -75,7 +75,7 @@ function! dirvish#shdo(l1, l2, cmd)
       continue
     endif
     let f = should_narrow && 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]
-    let lines[i] = substitute(cmd, '\V{}', shellescape(f), 'g')
+    let lines[i] = substitute(cmd, '\V{}', escape(shellescape(f),'\'), 'g')
   endfor
   execute 'split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
   setlocal nobuflisted
