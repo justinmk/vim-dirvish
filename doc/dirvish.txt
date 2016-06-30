@@ -75,11 +75,11 @@ COMMANDS                                                    *dirvish-commands*
 Buffer-local (for filetype=dirvish) ~
 
 :[range]Shdo {cmd} {}                                          *dirvish-:Shdo*
-    Generates a shell script where {cmd} is repeated for each of the files in
-    [range], with each filename inserted wherever {} appears in the :Shdo
-    command. For example, to rename a list of visual-selected files: >
+    Generates a shell script where {cmd} is applied to [range] with the
+    respective filepath inserted wherever {} appears in the :Shdo command.
+    For example, to rename a list of visual-selected files: >
         :'<,'>Shdo mv {} {}-copy.txt
-<    Run the script with ":!%" (see |:!|).
+<    Run the script with ":!%" (see |:!|) or "Z!".
 
 ==============================================================================
 FUNCTIONS                                                  *dirvish-functions*

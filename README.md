@@ -17,7 +17,7 @@ Features
 - meticulous, non-intrusive defaults
 - 2x faster than netrw (try a directory with 1000+ items)
 - visual selection opens multiple files
-- `:Shdo` performs any shell command on selected file(s)
+- `:Shdo` performs any shell command on selected files
 - less code, fewer bugs (96% smaller than netrw)
 - compatible with Vim 7.2+
 

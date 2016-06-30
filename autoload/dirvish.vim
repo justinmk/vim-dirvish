@@ -57,10 +57,14 @@ function! s:list_dir(dir) abort
   endif
 endfunction
 
-function! s:shdo(l1, l2, cmd)
+function! dirvish#shdo(l1, l2, cmd)
+  let lines = filter(getline(a:l1, a:l2), '-1!=match(v:val,"\\S")') "find non-empty
+  if empty(lines) | call s:msg_error('empty path') | return | endif
+
   let cmd = a:cmd =~# '\V{}' ? a:cmd : (empty(a:cmd)?'{}':(a:cmd.' {}')) "DWIM
-  let dir = b:dirvish._dir
-  let lines = getline(a:l1, a:l2)
+  "Paths coming from non-dirvish buffers may be jagged; assume CWD instead of narrowing.
+  let should_narrow = exists('b:dirvish')
+  let dir = should_narrow ? b:dirvish._dir : getcwd()
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
 
   augroup dirvish_shcmd
@@ -70,9 +74,13 @@ function! s:shdo(l1, l2, cmd)
           \ .'> Dirvish %|au! dirvish_shcmd * <buffer='.bufnr('%').'>'
   augroup END
 
-  for i in range(0, (a:l2-a:l1))
+  for i in range(0, len(lines)-1)
     let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
-    let f = 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]  "relative
+    if !filereadable(f) && !isdirectory(f)
+      let lines[i] = '#invalid path: '.shellescape(f)
+      continue
+    endif
+    let f = should_narrow && 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]
     let lines[i] = substitute(cmd, '\V{}', shellescape(f), 'g')
   endfor
   execute 'split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
@@ -104,8 +112,6 @@ function! s:buf_init() abort
   augroup END
 
   setlocal buftype=nofile noswapfile
-
-  command! -buffer -range -bar -nargs=* -complete=file Shdo call <SID>shdo(<line1>, <line2>, <q-args>)
 endfunction
 
 function! s:on_bufenter() abort
