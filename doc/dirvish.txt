@@ -39,7 +39,7 @@ Global ~
     -               Opens the current file directory. Works with [count].
                     <Plug>(dirvish_up)
 
-Buffer-local (for filetype=dirvish) ~
+Buffer-local (filetype=dirvish) ~
     g?              Shows this help.
     R               Reloads the current directory.
     q               Quits; returns to the original file.
@@ -57,7 +57,7 @@ Buffer-local (for filetype=dirvish) ~
     p               Opens file in previous window.
     x               Pre-fills "|:Shdo|  {}" in the command-line.
 
-Buffer-local (for :Shdo) ~
+Buffer-local (:Shdo) ~
     Z!              (experimental) Saves and executes the shell-script.
 
 ==============================================================================
@@ -70,10 +70,7 @@ COMMANDS                                                    *dirvish-commands*
     Opens the directory at {path} (or its parent if {path} is a file).
     To open the directory of the current file: >
         :Dirvish %
-
-
-Buffer-local (for filetype=dirvish) ~
-
+<
 :[range]Shdo {cmd} {}                                          *dirvish-:Shdo*
     Generates a shell script where {cmd} is applied to [range] with the
     respective filepath inserted wherever {} appears in the :Shdo command.
@@ -97,8 +94,8 @@ g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
     1: Make paths in the Dirvish buffer relative to |getcwd()|.
        Note: Recommended on Vim 7.3 (because it lacks |conceal|).
 
-The "dirvish" |FileType| event fires after Dirvish is initialized, so all
-mappings, options, and content can be overridden by handling this event.
+The dirvish |FileType| event fires after Dirvish is initialized, so all
+mappings, options, and content can be overridden by handling that event.
 Example: >
 
     augroup my_dirvish_events

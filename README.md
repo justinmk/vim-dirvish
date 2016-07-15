@@ -13,7 +13,7 @@ Features
 - _simple:_ each line is literally just a filepath
 - _flexible:_ mash up the buffer with `:g` and friends
 - _safe:_ never modifies the filesystem
-- original and _alternate_ buffers are preserved
+- original and alternate buffers are preserved
 - meticulous, non-intrusive defaults
 - 2x faster than netrw (try a directory with 1000+ items)
 - visual selection opens multiple files
@@ -21,11 +21,11 @@ Features
 - less code, fewer bugs (96% smaller than netrw)
 - compatible with Vim 7.2+
 
-Discussion
-----------
+Concepts
+--------
 
-Each line is an absolute filepath (hidden by Vim's
-[conceal](https://neovim.io/doc/user/syntax.html#conceal) feature).
+Each line is an absolute filepath (hidden by
+[conceal](https://neovim.io/doc/user/syntax.html#conceal)).
 
 - Use plain old `y` to yank the path under the cursor, then feed it to `:r` or
   `:e` or whatever.
