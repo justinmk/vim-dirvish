@@ -5,6 +5,8 @@ if !hasmapto('<Plug>(dirvish_quit)', 'n')
 endif
 
 nnoremap <buffer><silent> <Plug>(dirvish_up) :<C-U>exe "Dirvish %:h".repeat(":h",v:count1)<CR>
+nnoremap <buffer><silent> <Plug>(dirvish_split_up) :<C-U>exe 'split +Dirvish\ %:h'.repeat(':h',v:count1)<CR>
+nnoremap <buffer><silent> <Plug>(dirvish_vsplit_up) :<C-U>exe 'vsplit +Dirvish\ %:h'.repeat(':h',v:count1)<CR>
 if !hasmapto('<Plug>(dirvish_up)', 'n')
   execute 'nmap '.s:nowait.'<buffer> - <Plug>(dirvish_up)'
 endif
