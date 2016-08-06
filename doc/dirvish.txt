@@ -36,15 +36,20 @@ theme; more plugins should too.
 MAPPINGS                                                    *dirvish-mappings*
 
 Global ~
-    -               Opens the current file directory. Works with [count].
-                    <Plug>(dirvish_up)
+    <Plug>(dirvish_up)
+    -               Opens the current file directory or the [count]th parent.
 
 Buffer-local (filetype=dirvish) ~
     g?              Shows this help.
-    R               Reloads the current directory.
+    R               Reloads the current directory. (|:edit| works too.)
+    <Plug>(dirvish_quit)
     q               Quits; returns to the original file.
-                    <Plug>(dirvish_quit)
-    -               Opens the parent directory. Works with [count].
+    <Plug>(dirvish_up)
+    -               Opens the [count]th parent directory.
+    <Plug>(dirvish_split_up)
+                    Opens the [count]th parent in a split.
+    <Plug>(dirvish_vsplit_up)
+                    Opens the [count]th parent in a vertical split.
     <2-LeftMouse>
     i
     <CR>            Opens file at cursor.

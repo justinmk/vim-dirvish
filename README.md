@@ -48,4 +48,5 @@ Credits
 -------
 
 Dirvish was originally forked from
-[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle). Thanks to @jeetsukumaran.
+[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle) (and completely
+rewritten). Thanks to @jeetsukumaran.
