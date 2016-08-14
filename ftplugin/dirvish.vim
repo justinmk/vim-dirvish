@@ -30,6 +30,8 @@ nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 execute 'nnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 execute 'xnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 
+execute 'nnoremap '.s:nowait.'<buffer> <silent> gh :call dirvish#toggle_dotfiles()<CR>'
+
 " Buffer-local / and ? mappings to skip the concealed path fragment.
 nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
 nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>

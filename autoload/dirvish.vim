@@ -421,4 +421,31 @@ function! dirvish#open(...) range abort
   call s:do_open(d, reloading)
 endfunction
 
+function! dirvish#toggle_filter(varname, pattern) abort
+    let l:line = line('.')
+
+    " No buffer variable, cut the pattern to that
+    if len(getbufvar('%', a:varname)) == 0
+        let l:h = @h
+        let @h = ''
+        silent! execute ':g' . a:pattern . 'y H'
+		if @h == ''
+			return
+		endif
+        silent g//d _
+        call setbufvar('%', a:varname, split(@h, '\n'))
+        let @h = l:h
+        execute ':' . string(max([0, l:line - len(getbufvar('%', a:varname))]))
+    " buffer variable exists: restore
+    else
+        call append(0, getbufvar('%', a:varname))
+        execute ':' . (l:line + len(getbufvar('%', a:varname)))
+        execute 'unlet b:' . a:varname
+    endif
+endfunction
+
+fun! dirvish#toggle_dotfiles() abort
+    return dirvish#toggle_filter('dirvish_dotfiles', '@\v/\.[^\/]+/?$@')
+endfun
+
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
