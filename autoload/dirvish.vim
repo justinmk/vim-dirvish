@@ -353,7 +353,7 @@ function! s:do_open(d, reload) abort
     return
   endif
 
-  if &buflisted
+  if &buflisted && bufnr('$') > 1
     setlocal nobuflisted
   endif
 
