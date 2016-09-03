@@ -83,6 +83,7 @@ function! dirvish#shdo(l1, l2, cmd)
   write
   if executable('chmod')
     call system('chmod u+x '.tmpfile)
+    edit
   endif
 
   augroup dirvish_shcmd
