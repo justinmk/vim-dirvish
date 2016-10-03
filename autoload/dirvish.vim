@@ -77,26 +77,26 @@ function! dirvish#shdo(l1, l2, cmd)
     let f = should_narrow && 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]
     let lines[i] = substitute(cmd, '\V{}', escape(shellescape(f),'\'), 'g')
   endfor
-  execute 'split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
-  setlocal nobuflisted
+  execute 'silent split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
+  setlocal bufhidden=wipe
   silent keepmarks keepjumps call setline(1, lines)
-  write
+  silent write
   if executable('chmod')
     call system('chmod u+x '.tmpfile)
-    edit
+    silent edit
   endif
 
   augroup dirvish_shcmd
     autocmd! * <buffer>
     " Refresh after executing the command.
-    exe 'autocmd ShellCmdPost <buffer> if bufexists('.dirvish_bufnr.')|buffer '.dirvish_bufnr
-          \ .'|silent! Dirvish %|buffer '.bufnr('%')
+    exe 'autocmd ShellCmdPost <buffer> nested if bufexists('.dirvish_bufnr.')|buffer '.dirvish_bufnr
+          \ .'|silent! Dirvish %|endif|buffer '.bufnr('%').'|setlocal bufhidden=wipe'
   augroup END
 
   if exists(':terminal')
-    nnoremap <buffer><silent> Z! :write<Bar>te %<CR>
+    nnoremap <buffer><silent> Z! :silent write<Bar>te %<CR>
   else
-    nnoremap <buffer><silent> Z! :write<Bar>!%<CR>
+    nnoremap <buffer><silent> Z! :silent write<Bar>!%<CR>
   endif
 endfunction
 
