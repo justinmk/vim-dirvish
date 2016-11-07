@@ -89,8 +89,8 @@ function! dirvish#shdo(l1, l2, cmd)
   augroup dirvish_shcmd
     autocmd! * <buffer>
     " Refresh after executing the command.
-    exe 'autocmd ShellCmdPost <buffer> nested if bufexists('.dirvish_bufnr.')|buffer '.dirvish_bufnr
-          \ .'|silent! Dirvish %|endif|buffer '.bufnr('%').'|setlocal bufhidden=wipe'
+    exe 'autocmd ShellCmdPost <buffer> nested redraw!|if bufexists('.dirvish_bufnr.')|buffer '.dirvish_bufnr
+          \ .'|silent! Dirvish %|endif|close'
   augroup END
 
   if exists(':terminal')
