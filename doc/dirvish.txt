@@ -63,7 +63,8 @@ Buffer-local (filetype=dirvish) ~
     x               Pre-fills "|:Shdo|  {}" in the command-line.
 
 Buffer-local (:Shdo) ~
-    Z!              (experimental) Saves and executes the shell-script.
+    Z!              Saves and executes the shell-script. Closes the window if
+                    the shell did not return an error.
 
 ==============================================================================
 COMMANDS                                                    *dirvish-commands*
@@ -107,19 +108,19 @@ Example: >
       autocmd!
       " Map t to "open in new tab".
       autocmd FileType dirvish
-        \  nnoremap <buffer> t :call dirvish#open('tabedit', 0)<CR>
-        \ |xnoremap <buffer> t :call dirvish#open('tabedit', 0)<CR>
+        \  nnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
+        \ |xnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
 
       " Enable :Gstatus and friends.
       autocmd FileType dirvish call fugitive#detect(@%)
 
-      " Map CTRL-R to reload the Dirvish buffer.
-      autocmd FileType dirvish nnoremap <buffer> <C-R> :<C-U>Dirvish %<CR>
+      " Map `gr` to reload the Dirvish buffer.
+      autocmd FileType dirvish nnoremap <silent><buffer> gr :<C-U>Dirvish %<CR>
 
       " Map `gh` to hide dot-prefixed files.
       " To "toggle" this, just press `R` to reload.
-      autocmd FileType dirvish nnoremap <buffer>
-        \ gh :keeppatterns g@\v/\.[^\/]+/?$@d<cr>
+      autocmd FileType dirvish nnoremap <silent><buffer>
+        \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d<cr>
     augroup END
 <
 
@@ -146,7 +147,7 @@ Use :g to delete the lines with dot-prefixed files: >
 <To "toggle", just reload. |dirvish-mappings|
 
 To hide dotfiles by _default_, use this autocmd: >
-    autocmd FileType dirvish keeppatterns g@\v/\.[^\/]+/?$@d
+    autocmd FileType dirvish silent keeppatterns g@\v/\.[^\/]+/?$@d
 To un-hide, just undo |u|. To hide again, reload. |dirvish-mappings|
 
 Why does the "swap file" dialog appear if another Vim is viewing the same ~

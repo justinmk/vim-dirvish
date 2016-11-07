@@ -88,16 +88,13 @@ function! dirvish#shdo(l1, l2, cmd)
 
   augroup dirvish_shcmd
     autocmd! * <buffer>
-    " Refresh after executing the command.
-    exe 'autocmd ShellCmdPost <buffer> nested if bufexists('.dirvish_bufnr.')|buffer '.dirvish_bufnr
-          \ .'|silent! Dirvish %|endif|buffer '.bufnr('%').'|setlocal bufhidden=wipe'
+    " Refresh Dirvish after executing a shell command.
+    exe 'autocmd ShellCmdPost <buffer> nested if !v:shell_error && bufexists('.dirvish_bufnr.')'
+      \.'|setlocal bufhidden=hide|buffer '.dirvish_bufnr.'|silent! Dirvish %'
+      \.'|buffer '.bufnr('%').'|setlocal bufhidden=wipe|endif'
   augroup END
 
-  if exists(':terminal')
-    nnoremap <buffer><silent> Z! :silent write<Bar>te %<CR>
-  else
-    nnoremap <buffer><silent> Z! :silent write<Bar>!%<CR>
-  endif
+  nnoremap <buffer><silent> Z! :silent write<Bar>exe '!%'<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
 endfunction
 
 function! s:buf_init() abort
