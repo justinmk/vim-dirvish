@@ -224,6 +224,9 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
 endfunction
 
 function! s:set_altbuf(bnr) abort
+  if has('patch-7.4.605')
+    let @# = a:bnr
+  endif
   let curbuf = bufnr('%')
   call s:try_visit(a:bnr)
   let noau = bufloaded(curbuf) ? 'noau' : ''
