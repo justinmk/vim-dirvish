@@ -307,7 +307,7 @@ function! s:do_open(d, reload) abort
 
   let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
   let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
-   
+
   " Vim tends to name the buffer using its reduced path.
   " Examples (Win32 gvim 7.4.618):
   "     ~\AppData\Local\Temp\
@@ -349,6 +349,10 @@ function! s:do_open(d, reload) abort
   if s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
     echoerr 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
     return
+  endif
+
+  if -1 == bnr && exists("#BufNew") " Fire BufNew with the normalized file name.
+    exe 'doautocmd <nomodeline> BufNew' bufname('%')
   endif
 
   if &buflisted && bufnr('$') > 1

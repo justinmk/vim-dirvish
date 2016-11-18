@@ -100,9 +100,11 @@ g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
     1: Make paths in the Dirvish buffer relative to |getcwd()|.
        Note: Recommended on Vim 7.3 (because it lacks |conceal|).
 
-The dirvish |FileType| event fires after Dirvish is initialized, so all
-mappings, options, and content can be overridden by handling that event.
-Example: >
+|BufNew| fires the first time a directory is opened (and not yet loaded).
+Note: Use expand("<afile>") to get the new buffer name (not "%").
+
+|FileType| fires after Dirvish has loaded, so all mappings, options, and
+content can be overridden by handling that event. Example: >
 
     augroup my_dirvish_events
       autocmd!
