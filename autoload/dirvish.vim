@@ -223,20 +223,25 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
   endif
 endfunction
 
+function! s:is_valid_altbuf(bnr) abort
+  return a:bnr != bufnr('%') && bufexists(a:bnr) && empty(getbufvar(a:bnr, 'dirvish'))
+endfunction
+
 function! s:set_altbuf(bnr) abort
-  if has('patch-7.4.605')
-    let @# = a:bnr
-  endif
+  if !s:is_valid_altbuf(a:bnr) | return | endif
+
+  if has('patch-7.4.605') | let @# = a:bnr | return | endif
+
   let curbuf = bufnr('%')
-  call s:try_visit(a:bnr)
-  let noau = bufloaded(curbuf) ? 'noau' : ''
-  " Return to the current buffer.
-  execute 'silent keepjumps' noau s:noswapfile 'buffer' curbuf
+  if s:try_visit(a:bnr)
+    let noau = bufloaded(curbuf) ? 'noau' : ''
+    " Return to the current buffer.
+    execute 'silent keepjumps' noau s:noswapfile 'buffer' curbuf
+  endif
 endfunction
 
 function! s:try_visit(bnr) abort
-  if a:bnr != bufnr('%') && bufexists(a:bnr)
-        \ && empty(getbufvar(a:bnr, 'dirvish'))
+  if s:is_valid_altbuf(a:bnr)
     " If _previous_ buffer is _not_ loaded (because of 'nohidden'), we must
     " allow autocmds (else no syntax highlighting; #13).
     let noau = bufloaded(a:bnr) ? 'noau' : ''
