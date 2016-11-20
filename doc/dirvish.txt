@@ -66,6 +66,8 @@ Buffer-local (filetype=dirvish) ~
     {Visual}.       Adds selected files to the local |arglist|.
     da.             Starts a new empty local |arglist|.
     x               Inserts "|:Shdo|  {}" into the command-line.
+    P               Toggle preview mode: the file under the cursor gets
+                    opened in the preview window.
 
 Buffer-local (:Shdo) ~
                                                                   *dirvish-Z!*
