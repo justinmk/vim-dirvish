@@ -16,8 +16,8 @@ augroup dirvish_ftdetect
   " nuke netrw brain damage
   autocmd VimEnter * silent! au! FileExplorer *
   autocmd BufEnter * if !exists('b:dirvish') && <SID>isdir(expand('%'))
-    \ | redraw | echo ''
-    \ | exe 'Dirvish %' | endif
+    \ | redraw | echo '' | exe 'Dirvish %'
+    \ | elseif exists('b:dirvish') && &buflisted && bufnr('$') > 1 | setlocal nobuflisted | endif
 augroup END
 
 nnoremap <silent> <Plug>(dirvish_up) :<C-U>exe 'Dirvish %:p'.repeat(':h',v:count1)<CR>
