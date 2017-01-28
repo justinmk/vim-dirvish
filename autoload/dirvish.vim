@@ -94,7 +94,7 @@ function! dirvish#shdo(l1, l2, cmd)
       \.'|buffer '.bufnr('%').'|setlocal bufhidden=wipe|endif'
   augroup END
 
-  nnoremap <buffer><silent> Z! :silent write<Bar>exe '!%'<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
+  nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.shellescape(&shell).' '.shellescape('%')<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
 endfunction
 
 function! s:buf_init() abort
