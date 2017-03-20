@@ -13,8 +13,9 @@ endfunction
 
 augroup dirvish_ftdetect
   autocmd!
-  " nuke netrw brain damage
+  " Remove netrw and NERDTree directory handlers.
   autocmd VimEnter * silent! au! FileExplorer *
+  autocmd VimEnter * silent! au! NERDTreeHijackNetrw *
   autocmd BufEnter * if !exists('b:dirvish') && <SID>isdir(expand('%'))
     \ | redraw | echo '' | exe 'Dirvish %'
     \ | elseif exists('b:dirvish') && &buflisted && bufnr('$') > 1 | setlocal nobuflisted | endif
