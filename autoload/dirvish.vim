@@ -305,7 +305,9 @@ function! s:buf_render(dir, lastpath) abort
   endif
 
   if !empty(a:lastpath)
-    keepjumps call search('\V\^'.escape(a:lastpath, '\').'\$', 'cw')
+    let arg = '\V\^'.escape(a:lastpath, '\').'\$'
+    let target = g:dirvish_relative_paths ? fnamemodify(a:lastpath, ':.') : a:lastpath
+    keepjumps call search('\V\^'.escape(target, '\').'\$', 'cw')
   endif
 endfunction
 
