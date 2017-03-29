@@ -306,6 +306,10 @@ function! s:buf_render(dir, lastpath) abort
 
   if !empty(a:lastpath)
     let pat = get(g:, 'dirvish_relative_paths', 0) ? fnamemodify(a:lastpath, ':p:.') : a:lastpath
+    " when breaking out of pwd, pat will be '' and dirvish files will be absolute
+    if empty(pat)
+      let pat = a:lastpath
+    endif
     keepjumps call search('\V\^'.escape(pat, '\').'\$', 'cw')
   endif
 endfunction
