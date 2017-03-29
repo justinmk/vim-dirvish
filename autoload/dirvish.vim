@@ -306,6 +306,7 @@ function! s:buf_render(dir, lastpath) abort
 
   if !empty(a:lastpath)
     let pat = get(g:, 'dirvish_relative_paths', 0) ? fnamemodify(a:lastpath, ':p:.') : a:lastpath
+    let pat = empty(pat) ? a:lastpath : pat  " no longer in CWD
     keepjumps call search('\V\^'.escape(pat, '\').'\$', 'cw')
   endif
 endfunction
