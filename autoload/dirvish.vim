@@ -309,6 +309,8 @@ function! s:buf_render(dir, lastpath) abort
     let pat = empty(pat) ? a:lastpath : pat  " no longer in CWD
     keepjumps call search('\V\^'.escape(pat, '\').'\$', 'cw')
   endif
+  " Place cursor on the tail (last path segment).
+  keepjumps call search('\'.s:sep.'\zs[^\'.s:sep.']\+\'.s:sep.'\?$', 'c', line('.'))
 endfunction
 
 function! s:do_open(d, reload) abort
