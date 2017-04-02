@@ -6,6 +6,11 @@ function! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
 endfunction
 
+function! s:suf() abort
+  let m = get(g:, 'dirvish_mode', 1)
+  return type(m) == type(0) && m <= 1 ? 1 : 0
+endfunction
+
 " Normalize slashes for safe use of fnameescape(), isdirectory(). Vim bug #541.
 function! s:sl(path) abort
   return tr(a:path, '\', '/')
@@ -34,11 +39,11 @@ endfunction
 
 if v:version > 703
 function! s:globlist(pat) abort
-  return glob(a:pat, 1, 1)
+  return glob(a:pat, !s:suf(), 1)
 endfunction
 else "Vim 7.3 glob() cannot handle filenames containing newlines.
 function! s:globlist(pat) abort
-  return split(glob(a:pat, 1), "\n")
+  return split(glob(a:pat, !s:suf()), "\n")
 endfunction
 endif
 
@@ -51,9 +56,9 @@ function! s:list_dir(dir) abort
 
   if get(g:, 'dirvish_relative_paths', 0)
       \ && a:dir != s:parent_dir(getcwd()) "avoid blank CWD
-    return sort(map(paths, "fnamemodify(v:val, ':p:.')"))
+    return map(paths, "fnamemodify(v:val, ':p:.')")
   else
-    return sort(map(paths, "fnamemodify(v:val, ':p')"))
+    return map(paths, "fnamemodify(v:val, ':p')")
   endif
 endfunction
 
@@ -296,6 +301,9 @@ function! s:buf_render(dir, lastpath) abort
   endif
   silent keepmarks keepjumps %delete _
   silent keepmarks keepjumps call setline(1, s:list_dir(a:dir))
+  if type("") == type(get(g:, 'dirvish_mode'))  " Apply user's filter.
+    execute get(g:, 'dirvish_mode')
+  endif
   if v:version > 704 || v:version == 704 && has("patch73")
     setlocal undolevels<
   endif
@@ -307,10 +315,10 @@ function! s:buf_render(dir, lastpath) abort
   if !empty(a:lastpath)
     let pat = get(g:, 'dirvish_relative_paths', 0) ? fnamemodify(a:lastpath, ':p:.') : a:lastpath
     let pat = empty(pat) ? a:lastpath : pat  " no longer in CWD
-    keepjumps call search('\V\^'.escape(pat, '\').'\$', 'cw')
+    call search('\V\^'.escape(pat, '\').'\$', 'cw')
   endif
   " Place cursor on the tail (last path segment).
-  keepjumps call search('\'.s:sep.'\zs[^\'.s:sep.']\+\'.s:sep.'\?$', 'c', line('.'))
+  call search('\'.s:sep.'\zs[^\'.s:sep.']\+\'.s:sep.'\?$', 'c', line('.'))
 endfunction
 
 function! s:do_open(d, reload) abort

@@ -24,7 +24,7 @@ execute 'xnoremap '.s:nowait.'<buffer><silent> <CR> :call dirvish#open("edit", 0
 execute 'xnoremap '.s:nowait.'<buffer><silent> A    :call dirvish#open("vsplit", 1)<CR>'
 execute 'xnoremap '.s:nowait.'<buffer><silent> O    :call dirvish#open("split", 1)<CR>'
 
-nnoremap <buffer><silent> R :Dirvish %<CR>
+nnoremap <buffer><silent> R :<C-U><C-R>=v:count ? ':let g:dirvish_mode='.v:count : ''<CR><Bar>Dirvish %<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
 execute 'nnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'

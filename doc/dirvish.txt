@@ -41,7 +41,8 @@ Global ~
 
 Buffer-local (filetype=dirvish) ~
     g?              Shows this help.
-    R               Reloads the current directory. (|:edit| works too.)
+    [count]R        Reloads the current directory. (|:edit| works too.)
+                    Sets |g:dirvish_mode| to [count], if given.
     <Plug>(dirvish_quit)
     q               Quits; returns to the original file.
     <Plug>(dirvish_up)
@@ -63,8 +64,8 @@ Buffer-local (filetype=dirvish) ~
     x               Pre-fills "|:Shdo|  {}" in the command-line.
 
 Buffer-local (:Shdo) ~
-    Z!              Saves and executes the shell-script. Closes the window if
-                    the shell did not return an error.
+    Z!              Saves and executes a |:Shdo| shell-script. Closes the
+                    window if the shell did not return an error.
 
 ==============================================================================
 COMMANDS                                                    *dirvish-commands*
@@ -95,10 +96,16 @@ FUNCTIONS                                                  *dirvish-functions*
 ==============================================================================
 OPTIONS                                                      *dirvish-options*
 
-g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
+g:dirvish_mode = 1                                  *g:dirvish_mode*
+    Controls which files are listed and how they are presented.
+    1:           'suffixes' and 'wildignore' determine sorting and visibility.
+    2:           Shows all files, in the order returned by |glob()|.
+    ":{excmd}":  Ex command |:execute|d after listing files.
 
-    1: Make paths in the Dirvish buffer relative to |getcwd()|.
-       Note: Recommended on Vim 7.3 (because it lacks |conceal|).
+g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
+    0: Files in the Dirvish buffer are full (absolute) paths.
+    1: Paths are relative to the |current-directory|.
+       Note: Recommended on Vim 7.3, because it lacks |conceal|.
 
 |BufNew| fires the first time a directory is opened (and not yet loaded).
 Note: Use expand("<afile>") to get the new buffer name (not "%").
@@ -135,22 +142,26 @@ Set the Vim options 'splitbelow' and 'splitright'.
 How do I "group" (sort) directories/folders at the top? ~
 Sort folders at the top: >
     :sort r /[^\/]$/
-<
 Sort folders at the bottom: >
     :sort r /\/$/
-<
-How do I filter? ~
-Use :g to delete lines matching any filter: >
-    :g/foo/d
-<
-How do I hide "hidden" (dot-prefixed) files? ~
-Use :g to delete the lines with dot-prefixed files: >
-    :keeppatterns g@\v/\.[^\/]+/?$@d
-<To "toggle", just reload. |dirvish-mappings|
+To make this automatic, set |g:dirvish_mode|: >
+    let g:dirvish_mode = ':sort r /\/$/'
 
-To hide dotfiles by _default_, use this autocmd: >
+How do I filter? ~
+Use |:global| to delete lines matching any filter: >
+    :g/foo/d
+To make this automatic, set |g:dirvish_mode|: >
+    let g:dirvish_mode = ':silent keeppatterns g/foo/d'
+
+How do I hide "hidden" (dot-prefixed) files? ~
+Use |:global| to delete the paths with dot-prefixed files: >
+    :g@\v/\.[^\/]+/?$@d
+To "toggle", just reload.
+To make this automatic, set |g:dirvish_mode|: >
+    let g:dirvish_mode = ':silent keeppatterns g@\v/\.[^\/]+/?$@d'
+You could also use a FileType autocmd: >
     autocmd FileType dirvish silent keeppatterns g@\v/\.[^\/]+/?$@d
-To un-hide, just undo |u|. To hide again, reload. |dirvish-mappings|
+To un-hide, just undo. To hide again, reload.
 
 Why does the "swap file" dialog appear if another Vim is viewing the same ~
 directory? ~
@@ -174,4 +185,4 @@ backslashes "\") |fnamemodify()| may produce nonsense if 'isfname' does not
 contain the aforementioned unusual characters.
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=4:et:ft=help:norl:
