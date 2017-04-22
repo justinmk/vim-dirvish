@@ -348,9 +348,9 @@ function! s:do_open(d, reload) abort
   endfor
 
   if -1 == bnr
-    execute 'silent noau keepjumps' s:noswapfile 'edit' fnameescape(d._dir)
+    execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
   else
-    execute 'silent noau keepjumps' s:noswapfile 'buffer' bnr
+    execute 'silent noau ' s:noswapfile 'buffer' bnr
   endif
 
   "If the directory is relative to CWD, :edit refuses to create a buffer
