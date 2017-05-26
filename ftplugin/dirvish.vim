@@ -3,6 +3,10 @@ let s:nowait = (v:version > 703 ? '<nowait>' : '')
 if !hasmapto('<Plug>(dirvish_quit)', 'n')
   execute 'nmap '.s:nowait.'<buffer> q <Plug>(dirvish_quit)'
 endif
+if !hasmapto('<Plug>(dirvish_arg)', 'n')
+  execute 'nmap '.s:nowait.'<buffer> . <Plug>(dirvish_arg)'
+  execute 'xmap '.s:nowait.'<buffer> . <Plug>(dirvish_arg)'
+endif
 
 nnoremap <buffer><silent> <Plug>(dirvish_up) :<C-U>exe "Dirvish %:h".repeat(":h",v:count1)<CR>
 nnoremap <buffer><silent> <Plug>(dirvish_split_up) :<C-U>exe 'split +Dirvish\ %:h'.repeat(':h',v:count1)<CR>
@@ -18,6 +22,7 @@ execute 'nnoremap '.s:nowait.'<buffer><silent> <CR> :<C-U>.call dirvish#open("ed
 execute 'nnoremap '.s:nowait.'<buffer><silent> a    :<C-U>.call dirvish#open("vsplit", 1)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> o    :<C-U>.call dirvish#open("split", 1)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> <2-LeftMouse> :<C-U>.call dirvish#open("edit", 0)<CR>'
+execute 'nnoremap '.s:nowait.'<buffer><silent> da.  :<C-U>arglocal<Bar>silent! argdelete *<Bar>echo "arglist: cleared"<Bar>Dirvish %<CR>'
 
 execute 'xnoremap '.s:nowait.'<buffer><silent> I    :call dirvish#open("edit", 0)<CR>'
 execute 'xnoremap '.s:nowait.'<buffer><silent> <CR> :call dirvish#open("edit", 0)<CR>'

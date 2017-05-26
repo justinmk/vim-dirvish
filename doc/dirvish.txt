@@ -43,6 +43,7 @@ Buffer-local (filetype=dirvish) ~
     g?              Shows this help.
     [count]R        Reloads the current directory. (|:edit| works too.)
                     Sets |g:dirvish_mode| to [count], if given.
+                    Mnemonic: higher [count] => more files.
     <Plug>(dirvish_quit)
     q               Quits; returns to the original file.
     <Plug>(dirvish_up)
@@ -61,11 +62,15 @@ Buffer-local (filetype=dirvish) ~
     a               Opens in vertical split.
     {Visual}A       Opens selected files in vertical splits.
     p               Opens file in previous window.
-    x               Pre-fills "|:Shdo|  {}" in the command-line.
+    .               Adds file to the local |arglist|.
+    {Visual}.       Adds selected files to the local |arglist|.
+    da.             Starts a new empty local |arglist|.
+    x               Inserts "|:Shdo|  {}" into the command-line.
 
 Buffer-local (:Shdo) ~
+                                                                  *dirvish-Z!*
     Z!              Saves and executes a |:Shdo| shell-script. Closes the
-                    window if the shell did not return an error.
+                    window if the script succeeded.
 
 ==============================================================================
 COMMANDS                                                    *dirvish-commands*
@@ -78,12 +83,14 @@ COMMANDS                                                    *dirvish-commands*
     To open the directory of the current file: >
         :Dirvish %
 <
-:[range]Shdo {cmd} {}                                          *dirvish-:Shdo*
-    Generates a shell script where {cmd} is applied to [range] with the
-    respective filepath inserted wherever {} appears in the :Shdo command.
+:[range]Shdo[!] {cmd} {}                                       *dirvish-:Shdo*
+    Generates a shell script with {cmd} applied to [range] and the respective
+    filepath inserted where {} appears in the :Shdo command. If bang ! is
+    given the |arglist| is used instead of [range].
+
     For example, to rename a list of visual-selected files: >
         :'<,'>Shdo mv {} {}-copy.txt
-<    Run the script with ":!%" (see |:!|) or "Z!".
+<    Run the script with |Z!| or ":!%".
 
 ==============================================================================
 FUNCTIONS                                                  *dirvish-functions*
@@ -101,6 +108,8 @@ g:dirvish_mode = 1                                  *g:dirvish_mode*
     1:           'suffixes' and 'wildignore' determine sorting and visibility.
     2:           Shows all files, in the order returned by |glob()|.
     ":{excmd}":  Ex command |:execute|d after listing files.
+
+    Mnemonic: higher number => more files.
 
 g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
     0: Files in the Dirvish buffer are full (absolute) paths.

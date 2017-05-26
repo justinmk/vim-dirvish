@@ -1,3 +1,4 @@
+let s:srcdir = expand('<sfile>:h:h:p')
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
@@ -62,15 +63,32 @@ function! s:list_dir(dir) abort
   endif
 endfunction
 
-function! dirvish#shdo(l1, l2, cmd)
-  let lines = filter(getline(a:l1, a:l2), '-1!=match(v:val,"\\S")') "find non-empty
-  if empty(lines) | call s:msg_error('empty path') | return | endif
+function! s:set_args(args) abort
+  if arglistid() == 0
+    arglocal
+  endif
+  for f in a:args
+    if -1 == index(argv(), f)
+      exe '$argadd '.fnameescape(fnamemodify(f, ':p'))
+    endif
+  endfor
+  echo 'arglist: '.argc().' files'
+  " Force recalculation of DirvishArg syntax group.
+  unlet b:current_syntax
+  exe 'source '.fnameescape(s:srcdir.'/syntax/dirvish.vim')
+endfunction
+
+function! dirvish#shdo(paths, cmd)
+  " Remove empty/duplicate lines.
+  let lines = uniq(sort(filter(copy(a:paths), '-1!=match(v:val,"\\S")')))
+  let head = fnamemodify(get(lines, 0, '')[:-2], ':h')
+  let jagged = 0 != len(filter(copy(lines), 'head != fnamemodify(v:val[:-2], ":h")'))
+  if empty(lines) | call s:msg_error('Shdo: no files') | return | endif
 
   let dirvish_bufnr = bufnr('%')
   let cmd = a:cmd =~# '\V{}' ? a:cmd : (empty(a:cmd)?'{}':(a:cmd.' {}')) "DWIM
-  "Paths coming from non-dirvish buffers may be jagged; assume CWD instead of narrowing.
-  let should_narrow = exists('b:dirvish')
-  let dir = should_narrow ? b:dirvish._dir : getcwd()
+  " Paths from argv() or non-dirvish buffers may be jagged; assume CWD then.
+  let dir = jagged ? getcwd() : b:dirvish._dir
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
 
   for i in range(0, len(lines)-1)
@@ -79,7 +97,7 @@ function! dirvish#shdo(l1, l2, cmd)
       let lines[i] = '#invalid path: '.shellescape(f)
       continue
     endif
-    let f = should_narrow && 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]
+    let f = !jagged && 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]
     let lines[i] = substitute(cmd, '\V{}', escape(shellescape(f),'\'), 'g')
   endfor
   execute 'silent split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
@@ -127,7 +145,7 @@ function! s:on_bufenter() abort
     return
   endif
   if 0 == &l:cole
-    call <sid>win_init()
+    call s:win_init()
   endif
 endfunction
 
@@ -444,3 +462,5 @@ function! dirvish#open(...) range abort
 endfunction
 
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
+nnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args([getline('.')])<CR>
+xnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args(getline("'<", "'>"))<CR>

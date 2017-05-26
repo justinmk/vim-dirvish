@@ -15,7 +15,8 @@ Features
 - Non-intrusive defaults
 - 2x faster than netrw
 - Visual selection opens multiple files
-- `:Shdo` performs any shell command on selected files
+- `:Shdo` generates a shell script on selected files
+- `:Shdo!` generates a shell script on the Vim arglist
 - Less code, fewer bugs (96% smaller than netrw)
 - Compatible with Vim 7.2+
 
@@ -28,21 +29,20 @@ Each line is a filepath (hidden by
 - Use plain old `y` to yank the path under the cursor, then feed it to `:r` or
   `:e` or whatever.
 - Sort with `:sort`, filter with `:global`. Press `R` to reload.
-- Instead of special mark/move commands, you can
-  `:!mv <c-r><c-a> <c-r><c-a>foo`
-    - Or add lines to the quickfix list (`:'<,'>caddb`) and iterate them
-      (`:cdo`).
-- `:set ft=dirvish` on _any_ text to enable Dirvish features. Try this:
+- Instead of special "mark" commands, just add to the arglist, then `:Shdo!`.
+    - Or add lines to quickfix (`:'<,'>caddb`) and iterate them (`:cdo`).
+- `:set ft=dirvish` on any buffer to enable Dirvish features. Try this:
   ```
   git ls-files | vim +'setf dirvish' -
   ```
+- Built-in commands like `gf` and `CTRL-W f` work.
 
 Each Dirvish buffer name is the _actual directory name_, so commands and
 plugins that work with `@%` and `@#` do the Right Thing.
 
 - Create directories: `:!mkdir %foo`
 - Create files: `:e %foo.txt`
-- Enable fugitive: `autocmd FileType dirvish call fugitive#detect(@%)`
+- Enable fugitive (so `:Gstatus` works): `autocmd FileType dirvish call fugitive#detect(@%)`
 
 Credits
 -------
