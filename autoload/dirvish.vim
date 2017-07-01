@@ -98,7 +98,7 @@ function! dirvish#shdo(paths, cmd)
       continue
     endif
     let f = !jagged && 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]
-    let lines[i] = substitute(cmd, '\V{}', escape(shellescape(f),'\'), 'g')
+    let lines[i] = substitute(cmd, '\V{}', escape(shellescape(f),'&\'), 'g')
   endfor
   execute 'silent split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
   setlocal bufhidden=wipe
