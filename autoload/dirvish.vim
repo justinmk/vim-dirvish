@@ -117,7 +117,7 @@ function! dirvish#shdo(paths, cmd)
       \.'|buffer '.bufnr('%').'|setlocal bufhidden=wipe|endif'
   augroup END
 
-  nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.(has('win32')?'':shellescape(&shell).' %')<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
+  nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.(has('win32')?'':shellescape(&shell)).' %'<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
 endfunction
 
 function! s:buf_init() abort
