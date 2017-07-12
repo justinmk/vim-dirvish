@@ -51,9 +51,13 @@ endif
 function! s:list_dir(dir) abort
   " Escape for glob().
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
-  let paths = s:globlist(dir_esc.'*')
-  "Append dot-prefixed files. glob() cannot do both in 1 pass.
-  let paths = paths + s:globlist(dir_esc.'.[^.]*')
+  if a:dir =~ '^\w\+:\/\/'
+    let paths = map(systemlist('lynx -dump -nonumbers -listonly '.a:dir),'substitute(v:val,''.\{-}://'',"","")')
+  else
+    let paths = s:globlist(dir_esc.'*')
+    "Append dot-prefixed files. glob() cannot do both in 1 pass.
+    let paths = paths + s:globlist(dir_esc.'.[^.]*')
+  endif
 
   if get(g:, 'dirvish_relative_paths', 0)
       \ && a:dir != s:parent_dir(getcwd()) "avoid blank CWD
@@ -301,11 +305,11 @@ function! s:bufwin_do(cmd, bname) abort
   exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
 endfunction
 
-function! s:buf_render(dir, lastpath) abort
+function! s:buf_render(dir, lastpath,...) abort
   let bname = bufname('%')
   let isnew = empty(getline(1))
 
-  if !isdirectory(s:sl(bname))
+  if !a:0 && !isdirectory(s:sl(bname))
     echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
     return
   endif
@@ -342,6 +346,17 @@ endfunction
 function! s:do_open(d, reload) abort
   let d = a:d
   let bnr = bufnr('^' . d._dir . '$')
+
+  if has_key(d,'remote')
+    let buf = bufnr('remote',1)
+    execute 'silent noau ' s:noswapfile 'buffer' buf
+    let b:dirvish = get(b:,'dirvish',{})
+    call s:buf_init()
+    call s:win_init()
+    call s:buf_render(d._dir, '', 1)
+    setlocal filetype=dirvish
+    return
+  endif
 
   let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
   let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
@@ -439,19 +454,27 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
+  let trp       = s:sl(a:1)
+  if trp =~ '^\w\+:\/\/'
+    let d.remote = 1
+  endif
   let from_path = fnamemodify(bufname('%'), ':p')
-  let to_path   = fnamemodify(s:sl(a:1), ':p')
+  let to_path   = fnamemodify(trp, ':p')
   "                                       ^resolves to CWD if a:1 is empty
 
-  let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
-  let d._dir = s:normalize_dir(d._dir)
-  if '' ==# d._dir " s:normalize_dir() already showed error.
-    return
+  if has_key(d,'remote')
+    let d._dir = trp
+  else
+    let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
+    let d._dir = s:normalize_dir(d._dir)
+    if '' ==# d._dir " s:normalize_dir() already showed error.
+      return
+    endif
   endif
 
   let reloading = exists('b:dirvish') && d._dir ==# b:dirvish._dir
 
-  if reloading
+  if has_key(d,'remote') || reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
   elseif d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
