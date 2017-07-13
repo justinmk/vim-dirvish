@@ -48,6 +48,10 @@ function! s:globlist(pat) abort
 endfunction
 endif
 
+function! s:sortP(...)
+  return a:1 =~ '^\.' && a:2 =~ '^\.' ? 0 : match(a:2[0].' '.a:1[0],'\.') - 1
+endfunction
+
 function! s:list_dir(dir) abort
   " Escape for glob().
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
@@ -55,6 +59,7 @@ function! s:list_dir(dir) abort
     let paths = systemlist('curl -s '.a:dir.' -X MLSD')
     call filter(paths,'v:val =~? "^type=\\%(dir\\|file\\);"')
     call map(paths,'substitute(v:val,"\\S\\{-}\\s\\+","","").(v:val =~? "^type=dir" ? "/" : "")')
+    call sort(paths,'s:sortP')
   else
     let paths = s:globlist(dir_esc.'*')
     "Append dot-prefixed files. glob() cannot do both in 1 pass.
