@@ -52,7 +52,7 @@ function! s:list_dir(dir) abort
   " Escape for glob().
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
   if a:dir =~ '^\w\+:\/\/'
-    let paths = map(systemlist('lynx -dump -nonumbers -listonly '.a:dir),'substitute(v:val,''.\{-}://'',"","")')
+    let paths = systemlist('curl -s '.a:dir.' -X NLST')
   else
     let paths = s:globlist(dir_esc.'*')
     "Append dot-prefixed files. glob() cannot do both in 1 pass.
@@ -460,7 +460,7 @@ function! dirvish#open(...) range abort
   endif
   let from_path = fnamemodify(bufname('%'), ':p')
   let to_path   = fnamemodify(trp, ':p')
-  "                                       ^resolves to CWD if a:1 is empty
+  "                                 ^resolves to CWD if a:1 is empty
 
   if has_key(d,'remote')
     let d._dir = trp
