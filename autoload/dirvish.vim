@@ -348,7 +348,7 @@ function! s:do_open(d, reload) abort
   let bnr = bufnr('^' . d._dir . '$')
 
   if has_key(d,'remote')
-    let buf = bufnr('remote',1)
+    let buf = bufnr(d._dir,1)
     execute 'silent noau ' s:noswapfile 'buffer' buf
     let b:dirvish = get(b:,'dirvish',{})
     call s:buf_init()
