@@ -52,7 +52,9 @@ function! s:list_dir(dir) abort
   " Escape for glob().
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
   if a:dir =~ '^\w\+:\/\/'
-    let paths = systemlist('curl -s '.a:dir.' -X NLST')
+    let paths = systemlist('curl -s '.a:dir.' -X MLSD')
+    call filter(paths,'v:val =~? "^type=\\%(dir\\|file\\);"')
+    call map(paths,'substitute(v:val,"\\S\\{-}\\s\\+","","").(v:val =~? "^type=dir" ? "/" : "")')
   else
     let paths = s:globlist(dir_esc.'*')
     "Append dot-prefixed files. glob() cannot do both in 1 pass.
