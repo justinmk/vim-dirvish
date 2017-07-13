@@ -49,7 +49,7 @@ endfunction
 endif
 
 function! s:sortP(...)
-  return a:1 =~ '^\.' && a:2 =~ '^\.' ? 0 : match(a:2[0].' '.a:1[0],'\.') - 1
+  return a:1 =~ '^\.' && a:2 =~ '^\.' ? 0 : tr(match(a:2[0].' '.a:1[0],'\.') - 1,2,0)
 endfunction
 
 function! s:list_dir(dir) abort
