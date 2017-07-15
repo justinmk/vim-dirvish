@@ -57,7 +57,7 @@ function! s:list_dir(dir) abort
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
   if a:dir =~ '^\w\+:\/\/'
     let paths = systemlist('curl -s '.a:dir.' -X MLSD')
-    let cdir = substitute(filter(deepcopy(paths),'v:val =~? "^type=cdir;"')[0],'^\S*\s*','','')
+    let cdir = substitute(matchstr(paths,'\c^type=cdir;'),'^\S*\s*','','')
     call filter(paths,'v:val =~? "^type=\\%(dir\\|file\\);"')
     call map(paths,'substitute(v:val,"\\S\\{-}\\s\\+","","").(v:val =~? "^type=dir" ? "/" : "")')
     call sort(paths,'s:sortP')
