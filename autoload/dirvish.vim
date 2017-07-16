@@ -55,13 +55,20 @@ endfunction
 function! s:list_dir(dir) abort
   " Escape for glob().
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
-  if !empty(get(b:dirvish,'remote',''))
+  if has_key(b:dirvish,'remote')
+    " make a curl request
     let paths = systemlist('curl -s '.(b:dirvish.remote . a:dir).' -X MLSD')
+    " get %:p:h
     let cdir = substitute(matchstr(paths,'\c^type=cdir;'),'^\S*\s*','','')
+    " filter response
     call filter(paths,'v:val =~? "^type=\\%(dir\\|file\\);"')
-    call map(paths,'substitute(v:val,"\\S\\{-}\\s\\+","","").(v:val =~? "^type=dir" ? "/" : "")')
+    " obtain paths relative to server
+    call map(paths,'substitute(v:val,"^\\S*\\s*","","").(v:val =~? "^type=dir" ? "/" : "")')
+    " sort dotfiles lower
     call sort(paths,'s:sortP')
+    " make a full path using cdir
     call map(paths,string(cdir).".'/'.v:val")
+    " unsilent echom string(paths)
     return paths
   else
     let paths = s:globlist(dir_esc.'*')
@@ -355,12 +362,12 @@ endfunction
 
 function! s:do_open(d, reload) abort
   let d = a:d
-  let bnr = bufnr('^' . d._dir . '$')
 
   if has_key(d,'remote')
     let bnr = bufnr(d._dir,1)
-    let bnr_nonnormalized = bnr
+    let bnr_nonnormalized = '\'
   else
+    let bnr = bufnr('^' . d._dir . '$')
     let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
     let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
 
