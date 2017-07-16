@@ -489,7 +489,7 @@ function! dirvish#open(...) range abort
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
   elseif has_key(d,'remote')
-    if d._dir ==# substitute(from_path,'\/[^/]*','','')
+    if d._dir ==# substitute(from_path,'\/[^/]*$','','')
       let d.lastpath = from_path  " Save lastpath when navigating _up_.
     endif
   elseif d._dir ==# s:parent_dir(from_path)
