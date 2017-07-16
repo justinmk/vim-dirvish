@@ -463,7 +463,8 @@ function! dirvish#open(...) range abort
   let trp       = s:sl(a:1)
   if a:1 =~ '^\w\+:\/\/'
     let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]*\)\(.*\)')[1:]
-    let d._dir = d._dir is [] ? '/' : d._dir[0]
+    let d._dir = empty(filter(d._dir,'v:val isnot ""')) ? '/' : d._dir[0]
+    let from_path = fnamemodify(bufname('%'), ':p')
   else
     let from_path = fnamemodify(bufname('%'), ':p')
     let to_path   = fnamemodify(trp, ':p')
@@ -477,7 +478,7 @@ function! dirvish#open(...) range abort
 
   let reloading = exists('b:dirvish') && d._dir ==# b:dirvish._dir
 
-  if has_key(d,'remote') || reloading
+  if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
   elseif d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
