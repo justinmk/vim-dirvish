@@ -288,8 +288,10 @@ function! s:try_visit(bnr) abort
   if s:is_valid_altbuf(a:bnr)
     " If _previous_ buffer is _not_ loaded (because of 'nohidden'), we must
     " allow autocmds (else no syntax highlighting; #13).
-    let noau = bufloaded(a:bnr) ? 'noau' : ''
-    execute 'silent keepjumps' noau s:noswapfile 'buffer' a:bnr
+    execute 'silent keepjumps noau' s:noswapfile 'buffer' a:bnr
+    if !&hidden && !did_filetype()
+      doautocmd <nomodeline> filetype
+    endif
     return 1
   endif
   return 0
@@ -468,9 +470,8 @@ function! dirvish#open(...) range abort
   let d = {}
   let trp       = s:sl(a:1)
   if a:1 =~ '^\w\+:\/\/'
-    let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]*\)\(.*\)')[1:]
-    let d._dir = empty(filter(d._dir,'v:val isnot ""')) ? '/' : d._dir[0]
-    let d._dir = d.remote . d._dir
+    let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
+    let d._dir = d.remote .  '/' . matchstr(d._dir,'.')
     let from_path = fnamemodify(bufname('%'), ':p')
   else
     let from_path = fnamemodify(bufname('%'), ':p')
@@ -487,6 +488,10 @@ function! dirvish#open(...) range abort
 
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
+  elseif has_key(d,'remote')
+    if d._dir ==# substitute(from_path,'\/[^/]*','','')
+      let d.lastpath = from_path  " Save lastpath when navigating _up_.
+    endif
   elseif d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
