@@ -55,13 +55,14 @@ endfunction
 function! s:list_dir(dir) abort
   " Escape for glob().
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
-  if a:dir =~ '^\w\+:\/\/'
-    let paths = systemlist('curl -s '.a:dir.' -X MLSD')
+  if !empty(get(b:dirvish,'remote',''))
+    let paths = systemlist('curl -s '.(b:dirvish.remote . a:dir).' -X MLSD')
     let cdir = substitute(matchstr(paths,'\c^type=cdir;'),'^\S*\s*','','')
     call filter(paths,'v:val =~? "^type=\\%(dir\\|file\\);"')
     call map(paths,'substitute(v:val,"\\S\\{-}\\s\\+","","").(v:val =~? "^type=dir" ? "/" : "")')
     call sort(paths,'s:sortP')
     call map(paths,string(cdir).".'/'.v:val")
+    return paths
   else
     let paths = s:globlist(dir_esc.'*')
     "Append dot-prefixed files. glob() cannot do both in 1 pass.
@@ -357,37 +358,32 @@ function! s:do_open(d, reload) abort
   let bnr = bufnr('^' . d._dir . '$')
 
   if has_key(d,'remote')
-    let buf = bufnr(d._dir,1)
-    execute 'silent noau ' s:noswapfile 'buffer' buf
-    let b:dirvish = get(b:,'dirvish',{})
-    call s:buf_init()
-    call s:win_init()
-    call s:buf_render(d._dir, '', 1)
-    setlocal filetype=dirvish
-    return
+    let bnr = bufnr(d._dir,1)
+    let bnr_nonnormalized = bnr
+  else
+    let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
+    let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
+
+    " Vim tends to name the buffer using its reduced path.
+    " Examples (Win32 gvim 7.4.618):
+    "     ~\AppData\Local\Temp\
+    "     ~\AppData\Local\Temp
+    "     AppData\Local\Temp\
+    "     AppData\Local\Temp
+    " Try to find an existing normalized-path name before creating a new one.
+    for pat in [':~:.', ':~']
+      if -1 != bnr
+        break
+      endif
+      let modified_dirname = fnamemodify(d._dir, pat)
+      let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
+      let bnr = bufnr('^'.modified_dirname.'$')
+      if -1 == bnr_nonnormalized
+        let bnr_nonnormalized = bufnr('^'.modified_dirname_without_sep.'$')
+      endif
+    endfor
   endif
 
-  let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
-  let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
-
-  " Vim tends to name the buffer using its reduced path.
-  " Examples (Win32 gvim 7.4.618):
-  "     ~\AppData\Local\Temp\
-  "     ~\AppData\Local\Temp
-  "     AppData\Local\Temp\
-  "     AppData\Local\Temp
-  " Try to find an existing normalized-path name before creating a new one.
-  for pat in [':~:.', ':~']
-    if -1 != bnr
-      break
-    endif
-    let modified_dirname = fnamemodify(d._dir, pat)
-    let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
-    let bnr = bufnr('^'.modified_dirname.'$')
-    if -1 == bnr_nonnormalized
-      let bnr_nonnormalized = bufnr('^'.modified_dirname_without_sep.'$')
-    endif
-  endfor
 
   if -1 == bnr
     execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
@@ -428,7 +424,8 @@ function! s:do_open(d, reload) abort
   call s:buf_init()
   call s:win_init()
   if a:reload || s:should_reload()
-    call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
+    call call('s:buf_render',[b:dirvish._dir, get(b:dirvish, 'lastpath', '')]
+          \ + (has_key(b:dirvish,'remote') ? [1] : []))
   endif
 
   setlocal filetype=dirvish
@@ -464,16 +461,13 @@ function! dirvish#open(...) range abort
 
   let d = {}
   let trp       = s:sl(a:1)
-  if trp =~ '^\w\+:\/\/'
-    let d.remote = 1
-  endif
-  let from_path = fnamemodify(bufname('%'), ':p')
-  let to_path   = fnamemodify(trp, ':p')
-  "                                 ^resolves to CWD if a:1 is empty
-
-  if has_key(d,'remote')
-    let d._dir = trp
+  if a:1 =~ '^\w\+:\/\/'
+    let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]*\)\(.*\)')[1:]
+    let d._dir = d._dir is [] ? '/' : d._dir[0]
   else
+    let from_path = fnamemodify(bufname('%'), ':p')
+    let to_path   = fnamemodify(trp, ':p')
+    "                                 ^resolves to CWD if a:1 is empty
     let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
     let d._dir = s:normalize_dir(d._dir)
     if '' ==# d._dir " s:normalize_dir() already showed error.
