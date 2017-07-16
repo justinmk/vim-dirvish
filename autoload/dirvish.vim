@@ -53,11 +53,9 @@ function! s:sortP(...)
 endfunction
 
 function! s:list_dir(dir) abort
-  " Escape for glob().
-  let dir_esc = substitute(a:dir,'\V[','[[]','g')
   if has_key(b:dirvish,'remote')
     " make a curl request
-    let paths = systemlist('curl -s '.(b:dirvish.remote . a:dir).' -X MLSD')
+    let paths = systemlist('curl -s '.a:dir.' -X MLSD')
     " get %:p:h
     let cdir = substitute(matchstr(paths,'\c^type=cdir;'),'^\S*\s*','','')
     " filter response
@@ -70,11 +68,13 @@ function! s:list_dir(dir) abort
     call map(paths,string(cdir).".'/'.v:val")
     " unsilent echom string(paths)
     return paths
-  else
-    let paths = s:globlist(dir_esc.'*')
-    "Append dot-prefixed files. glob() cannot do both in 1 pass.
-    let paths = paths + s:globlist(dir_esc.'.[^.]*')
   endif
+
+  " Escape for glob().
+  let dir_esc = substitute(a:dir,'\V[','[[]','g')
+  let paths = s:globlist(dir_esc.'*')
+  "Append dot-prefixed files. glob() cannot do both in 1 pass.
+  let paths = paths + s:globlist(dir_esc.'.[^.]*')
 
   if get(g:, 'dirvish_relative_paths', 0)
       \ && a:dir != s:parent_dir(getcwd()) "avoid blank CWD
@@ -363,11 +363,10 @@ endfunction
 function! s:do_open(d, reload) abort
   let d = a:d
 
+  let bnr = bufnr('^' . d._dir . '$')
   if has_key(d,'remote')
-    let bnr = bufnr(d._dir,1)
     let bnr_nonnormalized = '\'
   else
-    let bnr = bufnr('^' . d._dir . '$')
     let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
     let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
 
@@ -471,6 +470,7 @@ function! dirvish#open(...) range abort
   if a:1 =~ '^\w\+:\/\/'
     let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]*\)\(.*\)')[1:]
     let d._dir = empty(filter(d._dir,'v:val isnot ""')) ? '/' : d._dir[0]
+    let d._dir = d.remote . d._dir
     let from_path = fnamemodify(bufname('%'), ':p')
   else
     let from_path = fnamemodify(bufname('%'), ':p')
