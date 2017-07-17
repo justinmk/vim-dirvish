@@ -65,7 +65,7 @@ function! s:list_dir(dir) abort
     " sort dotfiles lower
     call sort(paths,'s:sortP')
     " make a full path using cdir
-    call map(paths,string(cdir).".'/'.v:val")
+    call map(paths,string(a:dir.cdir).".'/'.v:val")
     " unsilent echom string(paths)
     return paths
   endif
@@ -111,10 +111,13 @@ function! dirvish#shdo(paths, cmd)
   " Paths from argv() or non-dirvish buffers may be jagged; assume CWD then.
   let dir = !jagged && exists('b:dirvish') ? b:dirvish._dir : getcwd()
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
+  let remote = has_key(get(b:, 'dirvish', {}), 'remote')
 
   for i in range(0, len(lines)-1)
     let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
-    if !filereadable(f) && !isdirectory(f)
+    if remote && lines[i] =~? '^\w\+:\/\/[^/]'
+      let [f, jagged] = [lines[i], 1]
+    elseif !filereadable(f) && !isdirectory(f)
       let lines[i] = '#invalid path: '.shellescape(f)
       continue
     endif
@@ -235,19 +238,25 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
   let curbuf = bufnr('%')
   let [curtab, curwin, wincount] = [tabpagenr(), winnr(), winnr('$')]
   let splitcmd = a:split_cmd
+  let remote = has_key(get(b:, 'dirvish', {}), 'remote')
 
   let paths = getline(a:line1, a:line2)
   for path in paths
     let path = s:sl(path)
-    if !isdirectory(path) && !filereadable(path)
+    let url = remote && path =~? '^\w\+:\/\/[^/]'
+    if !url && !isdirectory(path) && !filereadable(path)
       call s:msg_error("invalid (or access denied): ".path)
       continue
     endif
 
-    if isdirectory(path)
-      exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
-    else
+    if url && path[-1:] != '/' || !isdirectory(path)
+      if url
+        let [path, rpath] = [tempname(), path]
+        call system('curl ' . path . ' -o ' . rpath)
+      endif
       exe splitcmd fnameescape(path)
+    else
+      exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
     endif
 
     " return to previous window after _each_ split, otherwise we get lost.
@@ -470,7 +479,7 @@ function! dirvish#open(...) range abort
 
   let d = {}
   if a:1 =~ '^\w\+:\/\/'
-    let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
+    let [d.remote; d._dir] = matchlist(s:sl(a:1),'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
     let d._dir = d.remote .  '/' . matchstr(d._dir,'.')
     let from_path = fnamemodify(bufname('%'), ':p')
   else
