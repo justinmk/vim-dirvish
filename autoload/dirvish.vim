@@ -17,6 +17,10 @@ function! s:sl(path) abort
   return tr(a:path, '\', '/')
 endfunction
 
+function! s:url_encode(str)
+  return substitute(a:str,'#','%23','g')
+endfunction
+
 function! s:normalize_dir(dir) abort
   let dir = s:sl(a:dir)
   if !isdirectory(dir)
@@ -55,7 +59,7 @@ endfunction
 function! s:list_dir(dir) abort
   if has_key(b:dirvish,'remote')
     " make a curl request
-    let paths = systemlist('curl -g -s '.a:dir.' -X MLSD')
+    let paths = systemlist('curl -g -s '.s:url_encode(a:dir).' -X MLSD')
     " get %:p:h
     let cdir = substitute(matchstr(paths,'\c^type=cdir;'),'^\S*\s*','','')
     " filter response
@@ -252,7 +256,7 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
     if url && path[-1:] != '/' || !url && !isdirectory(path)
       if url
         let [path, rpath] = [tempname(), path]
-        call system('curl -g ' . rpath . ' -o ' . path)
+        call system('curl -g ' . s:url_encode(rpath) . ' -o ' . path)
       endif
       exe splitcmd fnameescape(path)
     else
