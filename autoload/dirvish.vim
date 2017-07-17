@@ -116,7 +116,7 @@ function! dirvish#shdo(paths, cmd)
   for i in range(0, len(lines)-1)
     let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
     if remote && lines[i] =~? '^\w\+:\/\/[^/]'
-      let [f, jagged, dir] = [lines[i], 1, '']
+      let [jagged, dir] = [1, '']
     elseif !filereadable(f) && !isdirectory(f)
       let lines[i] = '#invalid path: '.shellescape(f)
       continue
@@ -478,7 +478,7 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  if a:1 =~ '^\w\+:\/\/'
+  if a:1 =~ '^\w\+:\/\/[^\\/]'
     let [d.remote; d._dir] = matchlist(s:sl(a:1),'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
     let d._dir = d.remote .  '/' . matchstr(d._dir,'.')
     let from_path = fnamemodify(bufname('%'), ':p')
