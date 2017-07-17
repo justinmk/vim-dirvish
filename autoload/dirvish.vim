@@ -252,7 +252,7 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
     if url && path[-1:] != '/' || !url && !isdirectory(path)
       if url
         let [path, rpath] = [tempname(), path]
-        call system('curl ' . path . ' -o ' . rpath)
+        call system('curl ' . rpath . ' -o ' . path)
       endif
       exe splitcmd fnameescape(path)
     else
