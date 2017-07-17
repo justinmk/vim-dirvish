@@ -17,7 +17,7 @@ function! s:sl(path) abort
   return tr(a:path, '\', '/')
 endfunction
 
-function! s:url_encode(str)
+function! s:curl_encode(str)
   return substitute(a:str,'#','%23','g')
 endfunction
 
