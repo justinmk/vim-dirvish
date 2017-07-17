@@ -18,7 +18,7 @@ function! s:sl(path) abort
 endfunction
 
 function! s:curl_encode(str)
-  return substitute(a:str,'#','%23','g')
+  return join(split(join(split(a:str, '%'), '%25'), '#'), '%23')
 endfunction
 
 function! s:normalize_dir(dir) abort
