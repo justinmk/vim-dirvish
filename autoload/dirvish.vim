@@ -469,14 +469,13 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  let trp       = s:sl(a:1)
   if a:1 =~ '^\w\+:\/\/'
     let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
     let d._dir = d.remote .  '/' . matchstr(d._dir,'.')
     let from_path = fnamemodify(bufname('%'), ':p')
   else
     let from_path = fnamemodify(bufname('%'), ':p')
-    let to_path   = fnamemodify(trp, ':p')
+    let to_path   = fnamemodify(s:sl(a:1), ':p')
     "                                 ^resolves to CWD if a:1 is empty
     let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
     let d._dir = s:normalize_dir(d._dir)
