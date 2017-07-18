@@ -55,7 +55,7 @@ endfunction
 endif
 
 function! s:sortP(...)
-  return a:1 =~ '^\.' && a:2 =~ '^\.' ? 0 : tr(stridx(a:2[0].' '.a:1[0], '.') - 1,2,0)
+  return a:1[0] . a:2[0] == '..' ? 0 : tr(stridx(a:2[0].' '.a:1[0], '.') - 1, 2, 0)
 endfunction
 
 function! s:list_dir(dir) abort
@@ -64,11 +64,11 @@ function! s:list_dir(dir) abort
     let paths = systemlist('curl -g -s '.fnameescape(s:curl_encode(a:dir)).' -X MLSD')
     " filter response
     call filter(paths, 'v:val =~? "^type=\\%(dir\\|file\\);"')
-    " obtain paths relative to server
+    " obtain paths
     call map(paths, 'substitute(v:val, "^\\S*\\s*", "", "").(v:val =~? "^type=dir" ? "/" : "")')
     " sort dotfiles lower
     call sort(paths, 's:sortP')
-    " make a full path using cdir
+    " make a full path
     call map(paths,string(a:dir).".v:val")
     " unsilent echom string(paths)
     return paths
