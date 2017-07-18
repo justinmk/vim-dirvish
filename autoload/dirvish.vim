@@ -63,12 +63,13 @@ function! s:list_dir(dir) abort
     " obtain paths
     call map(paths, 'substitute(v:val, "^\\S*\\s*", "", "").(v:val =~? "^type=dir" ? "/" : "")')
     " sort dotfiles lower
-    let paths = sort(filter(copy(paths),'v:val[0] isnot "."'))
-          \   + sort(filter(copy(paths),'v:val[0] is "."'))
-    " make a full path
-    call map(paths,string(a:dir).".v:val")
-    " unsilent echom string(paths)
-    return paths
+    let [visi, dots] = [[], []]
+    for idx in range(len(paths))
+      call add(paths[idx][0] is '.' ? dots : visi, paths[idx])
+    endfor
+    let paths = sort(visi) + sort(dots)
+    " return a full path
+    return map(paths,string(a:dir).".v:val")
   endif
 
   " Escape for glob().
