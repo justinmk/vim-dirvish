@@ -19,7 +19,8 @@ endfunction
 
 " ripped from tpope/vim-unimpaired. For curl usage.
 function! s:curl_encode(str)
-  return substitute(a:str,"[][?#!$&'()*+,;=]",'\="%".printf("%02X",char2nr(submatch(0)))','g')
+  return substitute(a:str, "[][?#!$&'()*+,;=]"
+        \ , '\="%".printf("%02X",char2nr(submatch(0)))', 'g')
 endfunction
 
 function! s:normalize_dir(dir) abort
@@ -54,19 +55,19 @@ endfunction
 endif
 
 function! s:sortP(...)
-  return a:1 =~ '^\.' && a:2 =~ '^\.' ? 0 : tr(stridx(a:2[0].' '.a:1[0],'.') - 1,2,0)
+  return a:1 =~ '^\.' && a:2 =~ '^\.' ? 0 : tr(stridx(a:2[0].' '.a:1[0], '.') - 1,2,0)
 endfunction
 
 function! s:list_dir(dir) abort
-  if has_key(b:dirvish,'remote')
+  if has_key(b:dirvish, 'remote')
     " make a curl request
-    let paths = systemlist('curl -g -s '.s:curl_encode(a:dir).' -X MLSD')
+    let paths = systemlist('curl -g -s '.fnameescape(s:curl_encode(a:dir)).' -X MLSD')
     " filter response
-    call filter(paths,'v:val =~? "^type=\\%(dir\\|file\\);"')
+    call filter(paths, 'v:val =~? "^type=\\%(dir\\|file\\);"')
     " obtain paths relative to server
-    call map(paths,'substitute(v:val,"^\\S*\\s*","","").(v:val =~? "^type=dir" ? "/" : "")')
+    call map(paths, 'substitute(v:val, "^\\S*\\s*", "", "").(v:val =~? "^type=dir" ? "/" : "")')
     " sort dotfiles lower
-    call sort(paths,'s:sortP')
+    call sort(paths, 's:sortP')
     " make a full path using cdir
     call map(paths,string(a:dir).".v:val")
     " unsilent echom string(paths)
@@ -376,7 +377,7 @@ function! s:do_open(d, reload) abort
   let d = a:d
 
   let bnr = bufnr('^' . d._dir . '$')
-  if has_key(d,'remote')
+  if has_key(d, 'remote')
     let bnr_nonnormalized = ''
   else
     let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
@@ -442,8 +443,8 @@ function! s:do_open(d, reload) abort
   call s:buf_init()
   call s:win_init()
   if a:reload || s:should_reload()
-    call call('s:buf_render',[b:dirvish._dir, get(b:dirvish, 'lastpath', '')]
-          \ + (has_key(b:dirvish,'remote') ? [1] : []))
+    call call('s:buf_render', [b:dirvish._dir, get(b:dirvish, 'lastpath', '')]
+          \ + (has_key(b:dirvish, 'remote') ? [1] : []))
   endif
 
   setlocal filetype=dirvish
@@ -458,7 +459,7 @@ function! s:should_reload() abort
 endfunction
 
 function! s:buf_isvalid(bnr) abort
-  return !&hidden && a:bnr != -1 || bufexists(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
+  return !&hidden && -1 != a:bnr || bufexists(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
 endfunction
 
 function! dirvish#open(...) range abort
@@ -479,8 +480,8 @@ function! dirvish#open(...) range abort
 
   let d = {}
   if a:1 =~ '^\w\+:\/\/[^/]'
-    let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
-    let d._dir = substitute(d.remote .  '/' . matchstr(d._dir,'.'),'[^/]$','&/','')
+    let [d.remote; d._dir] = matchlist(a:1, '\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
+    let d._dir = substitute(d.remote . '/' . matchstr(d._dir, '.'), '[^/]$', '&/', '')
     let from_path = bufname('%')
   else
     let from_path = fnamemodify(bufname('%'), ':p')
@@ -497,9 +498,9 @@ function! dirvish#open(...) range abort
 
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
-  elseif has_key(d,'remote')
+  elseif has_key(d, 'remote')
     " unsilent echom substitute(from_path,'[^/]*\/\=$','','') . '  ' . d._dir
-    if d._dir ==# substitute(from_path,'[^/]*\/\=$','','')
+    if d._dir ==# substitute(from_path, '[^/]*\/\=$', '', '')
       let d.lastpath = from_path  " Save lastpath when navigating _up_.
     elseif from_path is ''
       let d.prevbuf = bufnr('')
