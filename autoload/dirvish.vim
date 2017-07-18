@@ -402,10 +402,6 @@ function! s:do_open(d, reload) abort
     endfor
   endif
 
-
-  if !&hidden && bnr == -1
-    let bnr = bufnr(d._dir,1)
-  endif
   if -1 == bnr 
     execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
   else
