@@ -58,18 +58,19 @@ function! s:list_dir(dir) abort
   if has_key(b:dirvish, 'remote')
     " make a curl request
     let paths = systemlist('curl -g -s '.fnameescape(s:curl_encode(a:dir)).' -X MLSD')
-    " filter response
-    call filter(paths, 'v:val =~? "^type=\\%(dir\\|file\\);"')
-    " obtain paths
-    call map(paths, 'substitute(v:val, "^\\S*\\s*", "", "").(v:val =~? "^type=dir" ? "/" : "")')
-    " sort dotfiles lower
+    " filter response & sort dotfiles lower
     let [visi, dots] = [[], []]
-    for idx in range(len(paths))
-      call add(paths[idx][0] is '.' ? dots : visi, paths[idx])
+    for line in paths
+      let [info; path] = split(line)
+      let [path, type] = [join(path), matchstr(info, '\c\<type=\zs\%(dir\|file\)\ze;')]
+      if type is ''
+        continue
+      endif
+      call add(path[0] == '.' ? dots : visi, a:dir . path . (type ==? 'dir' ? '/' : ''))
     endfor
     let paths = sort(visi) + sort(dots)
-    " return a full path
-    return map(paths,string(a:dir).".v:val")
+    " return listed directory
+    return paths
   endif
 
   " Escape for glob().
@@ -497,7 +498,6 @@ function! dirvish#open(...) range abort
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
   elseif has_key(d, 'remote')
-    " unsilent echom substitute(from_path,'[^/]*\/\=$','','') . '  ' . d._dir
     if d._dir ==# substitute(from_path, '[^/]*\/\=$', '', '')
       let d.lastpath = from_path  " Save lastpath when navigating _up_.
     elseif from_path is ''
