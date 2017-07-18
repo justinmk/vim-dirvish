@@ -257,7 +257,7 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
     if url && path[-1:] != '/' || !url && !isdirectory(path)
       if url
         let [path, rpath] = [tempname(), path]
-        call system('curl -g ' . s:curl_encode(rpath) . ' -o ' . path)
+        call system('curl -g ' . fnameescape(s:curl_encode(rpath)) . ' -o ' . path)
       endif
       exe splitcmd fnameescape(path)
     else
@@ -483,10 +483,10 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  if a:1 =~ '^\w\+:\/\/[^\\/]'
-    let [d.remote; d._dir] = matchlist(s:sl(a:1),'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
+  if a:1 =~ '^\w\+:\/\/[^/]'
+    let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
     let d._dir = d.remote .  '/' . matchstr(d._dir,'.')
-    let from_path = fnamemodify(bufname('%'), ':p')
+    let from_path = substitute(bufname('%'), '[^/]*$','','')
   else
     let from_path = fnamemodify(bufname('%'), ':p')
     let to_path   = fnamemodify(s:sl(a:1), ':p')
@@ -503,7 +503,7 @@ function! dirvish#open(...) range abort
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
   elseif has_key(d,'remote')
-    if d._dir ==# substitute(from_path,'\/[^/]*$','','')
+    if d._dir ==# substitute(from_path,'[^/]*\/\=$','','')
       let d.lastpath = from_path  " Save lastpath when navigating _up_.
     elseif from_path is ''
       let d.prevbuf = bufnr('')
