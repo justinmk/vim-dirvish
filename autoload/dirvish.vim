@@ -17,8 +17,9 @@ function! s:sl(path) abort
   return tr(a:path, '\', '/')
 endfunction
 
+" ripped from tpope/vim-unimpaired. For curl usage.
 function! s:curl_encode(str)
-  return substitute(a:str,'#','%23','g')
+  return substitute(a:str,"[][?#!$&'()*+,;=]",'\="%".printf("%02X",char2nr(submatch(0)))','g')
 endfunction
 
 function! s:normalize_dir(dir) abort
