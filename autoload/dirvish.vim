@@ -377,7 +377,7 @@ function! s:do_open(d, reload) abort
 
   let bnr = bufnr('^' . d._dir . '$')
   if has_key(d,'remote')
-    let bnr_nonnormalized = '\'
+    let bnr_nonnormalized = ''
   else
     let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
     let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
@@ -411,7 +411,7 @@ function! s:do_open(d, reload) abort
   "If the directory is relative to CWD, :edit refuses to create a buffer
   "with the expanded name (it may be _relative_ instead); this will cause
   "problems when the user navigates. Use :file to force the expanded path.
-  if bnr_nonnormalized == bufnr('#') || s:sl(bufname('%')) !=# d._dir
+  if bnr_nonnormalized is bufnr('#') || s:sl(bufname('%')) !=# d._dir
     if s:sl(bufname('%')) !=# d._dir
       execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d._dir)
     endif
@@ -421,7 +421,8 @@ function! s:do_open(d, reload) abort
     endif
   endif
 
-  if s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
+  if type(bnr_nonnormalized) == type(1)
+        \ && s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
     echoerr 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
     return
   endif
