@@ -54,10 +54,6 @@ function! s:globlist(pat) abort
 endfunction
 endif
 
-function! s:sortP(...)
-  return a:1[0] . a:2[0] == '..' ? 0 : tr(stridx(a:2[0].' '.a:1[0], '.') - 1, 2, 0)
-endfunction
-
 function! s:list_dir(dir) abort
   if has_key(b:dirvish, 'remote')
     " make a curl request
@@ -67,7 +63,8 @@ function! s:list_dir(dir) abort
     " obtain paths
     call map(paths, 'substitute(v:val, "^\\S*\\s*", "", "").(v:val =~? "^type=dir" ? "/" : "")')
     " sort dotfiles lower
-    call sort(paths, 's:sortP')
+    let paths = sort(filter(copy(paths),'v:val[0] isnot "."'))
+          \   + sort(filter(copy(paths),'v:val[0] is "."'))
     " make a full path
     call map(paths,string(a:dir).".v:val")
     " unsilent echom string(paths)
