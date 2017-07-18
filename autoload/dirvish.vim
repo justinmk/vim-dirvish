@@ -61,8 +61,6 @@ function! s:list_dir(dir) abort
   if has_key(b:dirvish,'remote')
     " make a curl request
     let paths = systemlist('curl -g -s '.s:curl_encode(a:dir).' -X MLSD')
-    " get %:p:h
-    let cdir = substitute(matchstr(paths,'\c^type=cdir;'),'^\S*\s*','','')
     " filter response
     call filter(paths,'v:val =~? "^type=\\%(dir\\|file\\);"')
     " obtain paths relative to server
@@ -70,7 +68,7 @@ function! s:list_dir(dir) abort
     " sort dotfiles lower
     call sort(paths,'s:sortP')
     " make a full path using cdir
-    call map(paths,string(a:dir.cdir).".'/'.v:val")
+    call map(paths,string(a:dir).".v:val")
     " unsilent echom string(paths)
     return paths
   endif
@@ -485,8 +483,8 @@ function! dirvish#open(...) range abort
   let d = {}
   if a:1 =~ '^\w\+:\/\/[^/]'
     let [d.remote; d._dir] = matchlist(a:1,'\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
-    let d._dir = d.remote .  '/' . matchstr(d._dir,'.')
-    let from_path = substitute(bufname('%'), '[^/]*$','','')
+    let d._dir = substitute(d.remote .  '/' . matchstr(d._dir,'.'),'[^/]$','&/','')
+    let from_path = bufname('%')
   else
     let from_path = fnamemodify(bufname('%'), ':p')
     let to_path   = fnamemodify(s:sl(a:1), ':p')
@@ -503,6 +501,7 @@ function! dirvish#open(...) range abort
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
   elseif has_key(d,'remote')
+    " unsilent echom substitute(from_path,'[^/]*\/\=$','','') . '  ' . d._dir
     if d._dir ==# substitute(from_path,'[^/]*\/\=$','','')
       let d.lastpath = from_path  " Save lastpath when navigating _up_.
     elseif from_path is ''
@@ -511,6 +510,7 @@ function! dirvish#open(...) range abort
   elseif d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
+
 
   call s:save_state(d)
   call s:do_open(d, reloading)
