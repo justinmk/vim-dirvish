@@ -425,8 +425,7 @@ function! s:do_open(d, reload) abort
     endif
   endif
 
-  if type(bnr_nonnormalized) == type(1)
-        \ && s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
+  if s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
     echoerr 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
     return
   endif
@@ -462,7 +461,7 @@ function! s:should_reload() abort
 endfunction
 
 function! s:buf_isvalid(bnr) abort
-  return buflisted(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
+  return bufexists(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
 endfunction
 
 function! dirvish#open(...) range abort
