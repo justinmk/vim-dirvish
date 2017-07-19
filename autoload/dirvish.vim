@@ -189,8 +189,8 @@ function! s:save_state(d) abort
   " Remember alternate buffer.
   let a:d.altbuf = s:buf_isvalid(bufnr('#')) || !exists('w:dirvish')
         \ ? 0+bufnr('#') : w:dirvish.altbuf
-  if a:d.altbuf == a:d.prevbuf || !s:buf_isvalid(a:d.altbuf)
-    let a:d.altbuf = exists('b:dirvish') ? b:dirvish.altbuf : a:d.prevbuf
+  if exists('b:dirvish') && (a:d.altbuf == a:d.prevbuf || !s:buf_isvalid(a:d.altbuf))
+    let a:d.altbuf = b:dirvish.altbuf
   endif
 
   " Save window-local settings.
@@ -402,7 +402,8 @@ function! s:do_open(d, reload) abort
     endfor
   endif
 
-  if -1 == bnr 
+  let bnr = s:buf_isvalid(bnr)? bnr : bufnr(d._dir, 1)
+  if -1 == bnr
     execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
   else
     execute 'silent noau ' s:noswapfile 'buffer' bnr
@@ -458,7 +459,7 @@ function! s:should_reload() abort
 endfunction
 
 function! s:buf_isvalid(bnr) abort
-  return !&hidden && -1 != a:bnr || bufexists(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
+  return buflisted(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
 endfunction
 
 function! dirvish#open(...) range abort
@@ -498,11 +499,8 @@ function! dirvish#open(...) range abort
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
   elseif has_key(d, 'remote')
-    if d._dir ==# substitute(from_path, '[^/]*\/\=$', '', '')
-      let d.lastpath = from_path  " Save lastpath when navigating _up_.
-    elseif from_path is ''
-      let d.prevbuf = bufnr('')
-    endif
+        \ && d._dir ==# substitute(from_path, '[^/]*\/\=$', '', '')
+    let d.lastpath = from_path  " Save lastpath when navigating _up_.
   elseif d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
