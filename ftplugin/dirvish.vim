@@ -51,12 +51,17 @@ try
     \ 'cursor_color': 'StatusLine',
     \ 'histtype': '/',
     \ 'on_change': function('<SID>on_change'),
+    \ 'on_enter': function('<SID>on_enter'),
     \ 'on_cancel': function('<SID>on_cancel'),
     \ })
   endfunction
 
   function! s:on_cancel(input)
     call setpos('.', s:pos)
+  endfunction
+
+  function! s:on_enter(input)
+    let @/ = join(a:input, '') . '\ze[^\/]*[\/]\=$'
   endfunction
 
   function! s:on_change(input)
