@@ -61,7 +61,7 @@ function! s:list_dir(dir) abort
     " filter response & sort dotfiles lower
     let [visi, dots] = [[], []]
     for line in paths
-      let [info; path] = split(line)
+      let [info; path] = split(line, ' ', 1)
       let [path, type] = [join(path), matchstr(info, '\c\<type=\zs\%(dir\|file\)\ze;')]
       if type is ''
         continue
@@ -506,7 +506,6 @@ function! dirvish#open(...) range abort
   elseif d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
-
 
   call s:save_state(d)
   call s:do_open(d, reloading)
