@@ -17,6 +17,12 @@ function! s:sl(path) abort
   return tr(a:path, '\', '/')
 endfunction
 
+" ripped from tpope/vim-unimpaired. For curl usage.
+function! s:curl_encode(str)
+  return substitute(a:str, "[][?#!$&'()*+,;=]"
+        \ , '\="%".printf("%02X",char2nr(submatch(0)))', 'g')
+endfunction
+
 function! s:normalize_dir(dir) abort
   let dir = s:sl(a:dir)
   if !isdirectory(dir)
@@ -49,6 +55,24 @@ endfunction
 endif
 
 function! s:list_dir(dir) abort
+  if has_key(b:dirvish, 'remote')
+    " make a curl request
+    let paths = systemlist('curl -g -s '.fnameescape(s:curl_encode(a:dir)).' -X MLSD')
+    " filter response & sort dotfiles lower
+    let [visi, dots] = [[], []]
+    for line in paths
+      let [info; path] = split(line, ' ', 1)
+      let [path, type] = [join(path), matchstr(info, '\c\<type=\zs\%(dir\|file\)\ze;')]
+      if type is ''
+        continue
+      endif
+      call add(path[0] == '.' ? dots : visi, a:dir . path . (type ==? 'dir' ? '/' : ''))
+    endfor
+    let paths = sort(visi) + sort(dots)
+    " return listed directory
+    return paths
+  endif
+
   " Escape for glob().
   let dir_esc = substitute(a:dir,'\V[','[[]','g')
   let paths = s:globlist(dir_esc.'*')
@@ -90,10 +114,13 @@ function! dirvish#shdo(paths, cmd)
   " Paths from argv() or non-dirvish buffers may be jagged; assume CWD then.
   let dir = !jagged && exists('b:dirvish') ? b:dirvish._dir : getcwd()
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'powershell'?'.ps1':'.sh'))
+  let remote = has_key(get(b:, 'dirvish', {}), 'remote')
 
   for i in range(0, len(lines)-1)
     let f = substitute(lines[i], escape(s:sep,'\').'$', '', 'g') "trim slash
-    if !filereadable(f) && !isdirectory(f)
+    if remote && lines[i] =~? '^\w\+:\/\/[^/]'
+      let [jagged, dir] = [1, '']
+    elseif !filereadable(f) && !isdirectory(f)
       let lines[i] = '#invalid path: '.shellescape(f)
       continue
     endif
@@ -214,19 +241,25 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
   let curbuf = bufnr('%')
   let [curtab, curwin, wincount] = [tabpagenr(), winnr(), winnr('$')]
   let splitcmd = a:split_cmd
+  let remote = has_key(get(b:, 'dirvish', {}), 'remote')
 
   let paths = getline(a:line1, a:line2)
   for path in paths
     let path = s:sl(path)
-    if !isdirectory(path) && !filereadable(path)
+    let url = remote && path =~? '^\w\+:\/\/[^/]'
+    if !url && !isdirectory(path) && !filereadable(path)
       call s:msg_error("invalid (or access denied): ".path)
       continue
     endif
 
-    if isdirectory(path)
-      exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
-    else
+    if url && path[-1:] != '/' || !url && !isdirectory(path)
+      if url
+        let [path, rpath] = [tempname(), path]
+        call system('curl -g ' . fnameescape(s:curl_encode(rpath)) . ' -o ' . path)
+      endif
       exe splitcmd fnameescape(path)
+    else
+      exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
     endif
 
     " return to previous window after _each_ split, otherwise we get lost.
@@ -301,11 +334,11 @@ function! s:bufwin_do(cmd, bname) abort
   exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
 endfunction
 
-function! s:buf_render(dir, lastpath) abort
+function! s:buf_render(dir, lastpath,...) abort
   let bname = bufname('%')
   let isnew = empty(getline(1))
 
-  if !isdirectory(s:sl(bname))
+  if !a:0 && !isdirectory(s:sl(bname))
     echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
     return
   endif
@@ -341,32 +374,40 @@ endfunction
 
 function! s:do_open(d, reload) abort
   let d = a:d
+
   let bnr = bufnr('^' . d._dir . '$')
+  if has_key(d, 'remote')
+    let bnr_nonnormalized = ''
+  else
+    let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
+    let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
 
-  let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
-  let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
-
-  " Vim tends to name the buffer using its reduced path.
-  " Examples (Win32 gvim 7.4.618):
-  "     ~\AppData\Local\Temp\
-  "     ~\AppData\Local\Temp
-  "     AppData\Local\Temp\
-  "     AppData\Local\Temp
-  " Try to find an existing normalized-path name before creating a new one.
-  for pat in [':~:.', ':~']
-    if -1 != bnr
-      break
-    endif
-    let modified_dirname = fnamemodify(d._dir, pat)
-    let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
-    let bnr = bufnr('^'.modified_dirname.'$')
-    if -1 == bnr_nonnormalized
-      let bnr_nonnormalized = bufnr('^'.modified_dirname_without_sep.'$')
-    endif
-  endfor
+    " Vim tends to name the buffer using its reduced path.
+    " Examples (Win32 gvim 7.4.618):
+    "     ~\AppData\Local\Temp\
+    "     ~\AppData\Local\Temp
+    "     AppData\Local\Temp\
+    "     AppData\Local\Temp
+    " Try to find an existing normalized-path name before creating a new one.
+    for pat in [':~:.', ':~']
+      if -1 != bnr
+        break
+      endif
+      let modified_dirname = fnamemodify(d._dir, pat)
+      let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
+      let bnr = bufnr('^'.modified_dirname.'$')
+      if -1 == bnr_nonnormalized
+        let bnr_nonnormalized = bufnr('^'.modified_dirname_without_sep.'$')
+      endif
+    endfor
+  endif
 
   if -1 == bnr
-    execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
+    if bufname('%') is ''
+      execute 'silent noau ' s:noswapfile 'buffer' bufnr(d._dir, 1)
+    else
+      execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
+    endif
   else
     execute 'silent noau ' s:noswapfile 'buffer' bnr
   endif
@@ -374,7 +415,7 @@ function! s:do_open(d, reload) abort
   "If the directory is relative to CWD, :edit refuses to create a buffer
   "with the expanded name (it may be _relative_ instead); this will cause
   "problems when the user navigates. Use :file to force the expanded path.
-  if bnr_nonnormalized == bufnr('#') || s:sl(bufname('%')) !=# d._dir
+  if bnr_nonnormalized is bufnr('#') || s:sl(bufname('%')) !=# d._dir
     if s:sl(bufname('%')) !=# d._dir
       execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d._dir)
     endif
@@ -404,7 +445,8 @@ function! s:do_open(d, reload) abort
   call s:buf_init()
   call s:win_init()
   if a:reload || s:should_reload()
-    call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
+    call call('s:buf_render', [b:dirvish._dir, get(b:dirvish, 'lastpath', '')]
+          \ + (has_key(b:dirvish, 'remote') ? [1] : []))
   endif
 
   setlocal filetype=dirvish
@@ -439,20 +481,28 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
-  let from_path = fnamemodify(bufname('%'), ':p')
-  let to_path   = fnamemodify(s:sl(a:1), ':p')
-  "                                       ^resolves to CWD if a:1 is empty
-
-  let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
-  let d._dir = s:normalize_dir(d._dir)
-  if '' ==# d._dir " s:normalize_dir() already showed error.
-    return
+  if a:1 =~ '^\w\+:\/\/[^/]'
+    let [d.remote; d._dir] = matchlist(a:1, '\(^\w\+:\/\/[^/]\+\)\/\=\(.*\)')[1:]
+    let d._dir = substitute(d.remote . '/' . matchstr(d._dir, '.'), '[^/]$', '&/', '')
+    let from_path = bufname('%')
+  else
+    let from_path = fnamemodify(bufname('%'), ':p')
+    let to_path   = fnamemodify(s:sl(a:1), ':p')
+    "                                 ^resolves to CWD if a:1 is empty
+    let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
+    let d._dir = s:normalize_dir(d._dir)
+    if '' ==# d._dir " s:normalize_dir() already showed error.
+      return
+    endif
   endif
 
   let reloading = exists('b:dirvish') && d._dir ==# b:dirvish._dir
 
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
+  elseif has_key(d, 'remote')
+        \ && d._dir ==# substitute(from_path, '[^/]*\/\=$', '', '')
+    let d.lastpath = from_path  " Save lastpath when navigating _up_.
   elseif d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
