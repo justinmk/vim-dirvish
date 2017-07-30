@@ -148,13 +148,13 @@ FAQ                                                              *dirvish-faq*
 How do I control where Dirvish opens splits? ~
 Set the Vim options 'splitbelow' and 'splitright'.
 
-How do I "group" (sort) directories/folders at the top? ~
+How do I group (sort) directories/folders? ~
 Sort folders at the top: >
-    :sort r /[^\/]$/
+    :sort ,^.*[\/],
 Sort folders at the bottom: >
-    :sort r /\/$/
+    :sort ,^.*[^\/],
 To make this automatic, set |g:dirvish_mode|: >
-    let g:dirvish_mode = ':sort r /\/$/'
+    let g:dirvish_mode = ':sort ,^.*[\/],'
 
 How do I filter? ~
 Use |:global| to delete lines matching any filter: >
