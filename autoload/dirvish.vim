@@ -464,3 +464,13 @@ endfunction
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
 nnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args([getline('.')])<CR>
 xnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args(getline("'<", "'>"))<CR>
+
+if !exists('g:dirvish_temp_util')
+  for g:dirvish_temp_util in keys(get(g:,'dirvish_strategy_utils',{}))
+    try
+      exe "delfunc s:".g:dirvish_temp_util
+      let s:{g:dirvish_temp_util} = g:dirvish_strategy_utils[g:dirvish_temp_util]
+    catch
+    endtry
+  endfor
+endif
