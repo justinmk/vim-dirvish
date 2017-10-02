@@ -194,4 +194,12 @@ backslashes "\") |fnamemodify()| may produce nonsense if 'isfname' does not
 contain the aforementioned unusual characters.
 
 ==============================================================================
+Strategy                                                    *dirvish-strategy*
+
+The experimental `strategy` feature allows for the functions `dirvish#open` &
+`dirvish#shdo` to be over-ridden with the `g:dirvish_strategy` variable, which
+should be set to a filename, sans extension, to a file within an |autoload|
+folder, containing the two function substitutes.
+
+==============================================================================
  vim:tw=78:ts=4:et:ft=help:norl:
