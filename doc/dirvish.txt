@@ -167,9 +167,9 @@ Use |:global| to delete the paths with dot-prefixed files: >
     :g@\v/\.[^\/]+/?$@d
 To "toggle", just reload.
 To make this automatic, set |g:dirvish_mode|: >
-    let g:dirvish_mode = ':silent keeppatterns g@\v/\.[^\/]+/?$@d'
+    let g:dirvish_mode = ':silent keeppatterns g@\v/\.[^\/]+/?$@d _'
 You could also use a FileType autocmd: >
-    autocmd FileType dirvish silent keeppatterns g@\v/\.[^\/]+/?$@d
+    autocmd FileType dirvish silent keeppatterns g@\v/\.[^\/]+/?$@d _
 To un-hide, just undo. To hide again, reload.
 
 Why does the "swap file" dialog appear if another Vim is viewing the same ~
