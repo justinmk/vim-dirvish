@@ -4,7 +4,7 @@ endif
 let g:loaded_dirvish = 1
 
 command! -bar -nargs=? -complete=dir Dirvish call dirvish#open(<q-args>)
-command! -bar -nargs=* -complete=file -range -bang Shdo call dirvish#shdo(<bang>0 ? argv() : getline(<line1>, <line2>), <q-args>)
+command! -nargs=* -complete=file -range -bang Shdo call dirvish#shdo(<bang>0 ? argv() : getline(<line1>, <line2>), <q-args>)
 
 function! s:isdir(dir)
   return !empty(a:dir) && (isdirectory(a:dir) ||
