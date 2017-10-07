@@ -64,7 +64,7 @@ function! s:list_dir(dir) abort
 endfunction
 
 function! s:set_args(args) abort
-  if arglistid() == 0
+  if exists('*arglistid') && arglistid() == 0
     arglocal
   endif
   for f in a:args
