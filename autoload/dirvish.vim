@@ -67,8 +67,9 @@ function! s:set_args(args) abort
   if exists('*arglistid') && arglistid() == 0
     arglocal
   endif
+  let normalized_argv = map(argv(), 'fnamemodify(v:val, ":p")')
   for f in a:args
-    if -1 == index(argv(), f)
+    if -1 == index(normalized_argv, f)
       exe '$argadd '.fnameescape(fnamemodify(f, ':p'))
     endif
   endfor
