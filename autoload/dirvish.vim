@@ -73,8 +73,8 @@ function! s:set_args(args) abort
     endif
   endfor
   echo 'arglist: '.argc().' files'
-  " Force recalculation of DirvishArg syntax group.
-  unlet b:current_syntax
+
+  " Define (again) DirvishArg syntax group.
   exe 'source '.fnameescape(s:srcdir.'/syntax/dirvish.vim')
 endfunction
 
