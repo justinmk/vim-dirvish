@@ -1,4 +1,4 @@
-if exists('g:loaded_dirvish') || &cp || version < 700 || &cpo =~# 'C'
+if exists('g:loaded_dirvish') || &cp || v:version < 700 || &cpo =~# 'C'
   finish
 endif
 let g:loaded_dirvish = 1
