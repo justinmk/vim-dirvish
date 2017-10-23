@@ -36,5 +36,40 @@ execute 'nnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 execute 'xnoremap '.s:nowait.'<buffer> x :Shdo  {}<Left><Left><Left>'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
-nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
-nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
+try
+  call prompter#ready()
+  nnoremap <buffer> / :<c-u>call <SID>search('/')<CR>
+  nnoremap <buffer> ? :<c-u>call <SID>search('?')<CR>
+
+  function! s:search(dir)
+    let s:dir = a:dir
+    let s:pos = getpos('.')
+    call prompter#input({
+    \ 'prompt': a:dir,
+    \ 'prompt_color': 'Normal',
+    \ 'cursor': '_',
+    \ 'cursor_color': 'StatusLine',
+    \ 'histtype': '/',
+    \ 'on_change': function('<SID>on_change'),
+    \ 'on_enter': function('<SID>on_enter'),
+    \ 'on_cancel': function('<SID>on_cancel'),
+    \ })
+  endfunction
+
+  function! s:on_cancel(input)
+    call setpos('.', s:pos)
+  endfunction
+
+  function! s:on_enter(input)
+    let @/ = join(a:input, '') . '\ze[^\/]*[\/]\=$'
+  endfunction
+
+  function! s:on_change(input)
+    call setpos('.', s:pos)
+    call search(join(a:input, '') . '\ze[^\/]*[\/]\=$', s:dir == '/' ? '' : 'bw')
+    normal! 0
+  endfunction
+catch
+  nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
+  nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
+endtry
