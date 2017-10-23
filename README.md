@@ -53,3 +53,10 @@ Credits
 Dirvish was originally forked from
 [filebeagle](https://github.com/jeetsukumaran/vim-filebeagle) (and completely
 rewritten). Thanks to @jeetsukumaran.
+
+Screenshots
+-------
+##### Using [Goyo](https://github.com/junegunn/goyo.vim)
+<a href="https://imgur.com/XctfyOF"><img src="https://i.imgur.com/XctfyOF.png" title="source: imgur.com" /></a>
+##### Normal
+<a href="https://imgur.com/VD9sVLK"><img src="https://i.imgur.com/VD9sVLK.png" title="source: imgur.com" /></a>
