@@ -23,8 +23,7 @@ Features
 Concepts
 --------
 
-Each line is a filepath (hidden by
-[conceal](https://neovim.io/doc/user/syntax.html#conceal)).
+Lines are filepaths (hidden by [conceal](https://neovim.io/doc/user/syntax.html#conceal)).
 
 - Use plain old `y` to yank the path under the cursor, then feed it to `:r` or
   `:e` or whatever.
@@ -37,12 +36,16 @@ Each line is a filepath (hidden by
   ```
 - Built-in commands like `gf` and `CTRL-W f` work.
 
-Each Dirvish buffer name is the _actual directory name_, so commands and
-plugins that work with `@%` and `@#` do the Right Thing.
+The buffer name is the _actual directory name_, so commands and plugins that
+work with `@%` and `@#` do the Right Thing.
 
 - Create directories: `:!mkdir %foo`
 - Create files: `:e %foo.txt`
 - Enable fugitive (so `:Gstatus` works): `autocmd FileType dirvish call fugitive#detect(@%)`
+
+Slice, dice, and smash Dirvish buffers, in the morning before breakfast. Use
+`:sort` or `:global` to re-arrange the view, delete lines with `d`, `:%Shdo`
+the result. Press `R` to start over.
 
 Credits
 -------

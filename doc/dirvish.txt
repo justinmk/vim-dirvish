@@ -4,10 +4,8 @@
 OVERVIEW                                                             *dirvish*
 
 Dirvish is a minimalist directory viewer. It basically dumps a list of paths
-into a Vim buffer and provides some mappings to work with those paths. By
-working with built-in Vim mechanisms instead of inventing peripheral
-imitations, users (and other plugins) can compose and build upon known Vim
-concepts.
+into a Vim buffer and provides some sugar to work with those paths. It works
+with built-in Vim mechanisms instead of inventing peripheral imitations.
 
 Because each Dirvish buffer-name is the literal directory path, you can |:cd|
 to the directory, >
@@ -19,18 +17,18 @@ create a new file, >
 and use complementary plugin commands like |]f|/|[f| (unimpaired.vim).
 
 Because each dirvish buffer is just a list of paths, you can use normal Vim
-commands to |y|ank, |:read|, |gf|, etc. All of the built-in CTRL-W mappings
-also work as expected.
+commands to |y|ank, |:read|, |gf|, etc. The built-in CTRL-W mappings also work
+as expected.
 
 It's totally fine to slice, dice, and smash any Dirvish buffer: it will never
 modify the filesystem. Just press `R` to reload the default listing.
 
-Re-use and composition of concepts multiplies the utility of those concepts;
-if a plugin does _not_ reuse a concept, both that concept _and_ the new,
-redundant mechanism are made mutually _less valuable_—the sum is less than the
-parts—because the user now must learn or choose from two slightly different
-things instead of one augmented system. @tpope's plugins demonstrate this
-theme; more plugins should too.
+Dirvish is designed to work with built-in Vim concepts where possible. Tim
+Pope's plugins demonstrate this theme; more plugins should too. Re-use of
+concepts multiplies the utility of those concepts; conversely if a plugin does
+not reuse a concept, both that concept and the new one are made mutually less
+valuable--the sum is less than the parts--because the user must learn or
+choose from two slightly different things instead of one augmented system.
 
 ==============================================================================
 MAPPINGS                                                    *dirvish-mappings*
@@ -79,7 +77,7 @@ COMMANDS                                                    *dirvish-commands*
     Opens the |current-directory|.
 
 :Dirvish {path}
-    Opens the directory at {path} (or its parent if {path} is a file).
+    Opens the directory at {path}, or its parent if {path} is a file.
     To open the directory of the current file: >
         :Dirvish %
 <
@@ -105,16 +103,16 @@ OPTIONS                                                      *dirvish-options*
 
 g:dirvish_mode = 1                                  *g:dirvish_mode*
     Controls which files are listed and how they are presented.
-    1:           'suffixes' and 'wildignore' determine sorting and visibility.
-    2:           Shows all files, in the order returned by |glob()|.
-    ":{excmd}":  Ex command |:execute|d after listing files.
+    1:        'suffixes' and 'wildignore' determine sorting and visibility.
+    2:        Shows all files, in the order returned by |glob()|.
+    ":{cmd}": Ex-command |:execute|d after listing files.
 
     Mnemonic: higher number => more files.
 
 g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
-    0: Files in the Dirvish buffer are full (absolute) paths.
-    1: Paths are relative to the |current-directory|.
-       Note: Recommended on Vim 7.3, because it lacks |conceal|.
+    0:        List full (absolute) paths in the Dirvish buffer.
+    1:        List paths relative to the |current-directory|.
+              (Recommended for Vim 7.3 because it lacks |conceal|).
 
 |BufNew| fires the first time a directory is opened (and not yet loaded).
 Note: Use expand("<afile>") to get the new buffer name (not "%").
@@ -124,21 +122,22 @@ content can be overridden by handling that event. Example: >
 
     augroup my_dirvish_events
       autocmd!
-      " Map t to "open in new tab".
+
+      " Map `t` to open in new tab.
       autocmd FileType dirvish
         \  nnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
         \ |xnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
 
-      " Enable :Gstatus and friends.
+      " Enable fugitive.vim in Dirvish buffers.
       autocmd FileType dirvish call fugitive#detect(@%)
 
-      " Map `gr` to reload the Dirvish buffer.
-      autocmd FileType dirvish nnoremap <silent><buffer> gr :<C-U>Dirvish %<CR>
-
-      " Map `gh` to hide dot-prefixed files.
-      " To "toggle" this, just press `R` to reload.
+      " Map `gr` to reload.
       autocmd FileType dirvish nnoremap <silent><buffer>
-        \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d<cr>
+        \ gr :<C-U>Dirvish %<CR>
+
+      " Map `gh` to hide dot-prefixed files.  Press `R` to "toggle" (reload).
+      autocmd FileType dirvish nnoremap <silent><buffer>
+        \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d _<cr>
     augroup END
 <
 
@@ -160,7 +159,7 @@ How do I filter? ~
 Use |:global| to delete lines matching any filter: >
     :g/foo/d
 To make this automatic, set |g:dirvish_mode|: >
-    let g:dirvish_mode = ':silent keeppatterns g/foo/d'
+    let g:dirvish_mode = ':silent keeppatterns g/foo/d _'
 
 How do I hide "hidden" (dot-prefixed) files? ~
 Use |:global| to delete the paths with dot-prefixed files: >
