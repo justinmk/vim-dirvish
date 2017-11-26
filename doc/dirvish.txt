@@ -128,9 +128,6 @@ content can be overridden by handling that event. Example: >
         \  nnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
         \ |xnoremap <silent><buffer> t :call dirvish#open('tabedit', 0)<CR>
 
-      " Enable fugitive.vim in Dirvish buffers.
-      autocmd FileType dirvish call fugitive#detect(@%)
-
       " Map `gr` to reload.
       autocmd FileType dirvish nnoremap <silent><buffer>
         \ gr :<C-U>Dirvish %<CR>

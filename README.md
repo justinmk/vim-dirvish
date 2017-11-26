@@ -41,7 +41,6 @@ work with `@%` and `@#` do the Right Thing.
 
 - Create directories: `:!mkdir %foo`
 - Create files: `:e %foo.txt`
-- Enable fugitive (so `:Gstatus` works): `autocmd FileType dirvish call fugitive#detect(@%)`
 
 Slice, dice, and smash Dirvish buffers, in the morning before breakfast. Use
 `:sort` or `:global` to re-arrange the view, delete lines with `d`, `:%Shdo`
