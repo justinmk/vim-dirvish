@@ -21,7 +21,8 @@ commands to |y|ank, |:read|, |gf|, etc. The built-in CTRL-W mappings also work
 as expected.
 
 It's totally fine to slice, dice, and smash any Dirvish buffer: it will never
-modify the filesystem. Just press `R` to reload the default listing.
+modify the filesystem. If you edit the buffer, Dirvish automatically disables
+|conceal| so you can see the full text.
 
 Dirvish is designed to work with built-in Vim concepts where possible. Tim
 Pope's plugins demonstrate this theme; more plugins should too. Re-use of

@@ -23,28 +23,32 @@ Features
 Concepts
 --------
 
-Lines are filepaths (hidden by [conceal](https://neovim.io/doc/user/syntax.html#conceal)).
+**Lines are filepaths** (hidden by [conceal](https://neovim.io/doc/user/syntax.html#conceal)).
 
-- Use plain old `y` to yank the path under the cursor, then feed it to `:r` or
-  `:e` or whatever.
-- Sort with `:sort`, filter with `:global`. Press `R` to reload.
-- Instead of special "mark" commands, just add to the arglist, then `:Shdo!`.
-    - Or add lines to quickfix (`:'<,'>caddb`) and iterate them (`:cdo`).
+- Use plain old `y` to yank a path, then feed it to `:r` or `:e` or whatever.
+- Sort with `:sort`, filter with `:global`. Hit `R` to reload.
+- For complex scripting, `:Shdo!` (with `!`) operates on the local arglist.
+- Add lines to quickfix (`:'<,'>caddb`) and iterate (`:cdo`).
 - `:set ft=dirvish` on any buffer to enable Dirvish features. Try this:
   ```
   git ls-files | vim +'setf dirvish' -
   ```
-- Built-in commands like `gf` and `CTRL-W f` work.
 
-The buffer name is the _actual directory name_, so commands and plugins that
-work with `@%` and `@#` do the Right Thing.
+**Buffer name is the directory name.**  So commands and plugins that work with
+`@%` and `@#` do the Right Thing.
 
 - Create directories: `:!mkdir %foo`
 - Create files: `:e %foo.txt`
 
-Slice, dice, and smash Dirvish buffers, in the morning before breakfast. Use
-`:sort` or `:global` to re-arrange the view, delete lines with `d`, `:%Shdo`
-the result. Press `R` to start over.
+**Edit Dirvish buffers** for any purpose. It's safe and reversible.
+
+- Pipe to `:!` to see inline results. Example:
+  ```
+  :'<,'>!xargs du -hs
+  ```
+- Use `:sort` or `:global` to re-arrange the view, delete lines with `d`, etc.
+  Then `:%Shdo` the result.
+- Type `u` to undo, or `R` to reload.
 
 Credits
 -------

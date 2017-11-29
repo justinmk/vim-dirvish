@@ -14,8 +14,8 @@ endfunction
 augroup dirvish_ftdetect
   autocmd!
   " Remove netrw and NERDTree directory handlers.
-  autocmd VimEnter * silent! au! FileExplorer *
-  autocmd VimEnter * silent! au! NERDTreeHijackNetrw *
+  autocmd VimEnter * if exists('#FileExplorer') | exe 'au! FileExplorer *' | endif
+  autocmd VimEnter * if exists('#NERDTreeHijackNetrw') | exe 'au! NERDTreeHijackNetrw *' | endif
   autocmd BufEnter * if !exists('b:dirvish') && <SID>isdir(expand('%'))
     \ | redraw | echo '' | exe 'Dirvish %'
     \ | elseif exists('b:dirvish') && &buflisted && bufnr('$') > 1 | setlocal nobuflisted | endif

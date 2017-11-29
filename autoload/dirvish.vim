@@ -125,6 +125,8 @@ function! s:buf_init() abort
   augroup dirvish_buflocal
     autocmd! * <buffer>
     autocmd BufEnter,WinEnter <buffer> call <SID>on_bufenter()
+    autocmd TextChanged,TextChangedI <buffer> if b:changedtick > get(b:dirvish, '_c', 0)
+          \&& has('conceal')|exe 'setlocal conceallevel=0'|endif
 
     " BufUnload is fired for :bwipeout/:bdelete/:bunload, _even_ if
     " 'nobuflisted'. BufDelete is _not_ fired if 'nobuflisted'.
@@ -402,12 +404,12 @@ function! s:do_open(d, reload) abort
 
   let b:dirvish = exists('b:dirvish') ? extend(b:dirvish, d, 'force') : d
 
-  call s:buf_init()
-  call s:win_init()
   if a:reload || s:should_reload()
     call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
+    let b:dirvish._c = b:changedtick  " Avoid TextChanged for our changes.
   endif
-
+  call s:buf_init()
+  call s:win_init()
   setlocal filetype=dirvish
 endfunction
 
