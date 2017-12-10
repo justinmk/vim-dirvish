@@ -121,11 +121,16 @@ function! dirvish#shdo(paths, cmd)
   nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.(has('win32')?'':shellescape(&shell)).' %'<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
 endfunction
 
+" Returns true if the buffer was modified by the user.
+function! s:buf_modified() abort
+  return b:changedtick > get(b:dirvish, '_c', b:changedtick)
+endfunction
+
 function! s:buf_init() abort
   augroup dirvish_buflocal
     autocmd! * <buffer>
     autocmd BufEnter,WinEnter <buffer> call <SID>on_bufenter()
-    autocmd TextChanged,TextChangedI <buffer> if b:changedtick > get(b:dirvish, '_c', 0)
+    autocmd TextChanged,TextChangedI <buffer> if <SID>buf_modified()
           \&& has('conceal')|exe 'setlocal conceallevel=0'|endif
 
     " BufUnload is fired for :bwipeout/:bdelete/:bunload, _even_ if
@@ -142,6 +147,10 @@ endfunction
 function! s:on_bufenter() abort
   " Ensure w:dirvish for window splits, `:b <nr>`, etc.
   let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
+
+  if s:buf_modified()  " User modified the buffer, don't re-init it.
+    return
+  endif
 
   if empty(getline(1)) && 1 == line('$')
     Dirvish %
@@ -406,7 +415,7 @@ function! s:do_open(d, reload) abort
 
   if a:reload || s:should_reload()
     call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
-    let b:dirvish._c = b:changedtick  " Avoid TextChanged for our changes.
+    let b:dirvish._c = b:changedtick
   endif
   call s:buf_init()
   call s:win_init()
@@ -415,7 +424,7 @@ endfunction
 
 function! s:should_reload() abort
   if line('$') < 1000 || '' ==# glob(getline('$'),1)
-    return 1
+    return !s:buf_modified()
   endif
   redraw | echo 'dirvish: too many files; showing cached listing'
   return 0
