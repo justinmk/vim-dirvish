@@ -148,10 +148,6 @@ function! s:on_bufenter() abort
   " Ensure w:dirvish for window splits, `:b <nr>`, etc.
   let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
 
-  if s:buf_modified()  " User modified the buffer, don't re-init it.
-    return
-  endif
-
   if empty(getline(1)) && 1 == line('$')
     Dirvish %
     return
