@@ -16,7 +16,7 @@ Features
 - 2x faster than netrw
 - Visual selection opens multiple files
 - `:Shdo` generates a shell script on selected files
-- `:Shdo!` generates a shell script on the Vim arglist
+- `:Shdo!` generates a shell script on the local [arglist](https://neovim.io/doc/user/editing.html#arglist)
 - Less code, fewer bugs (96% smaller than netrw)
 - Compatible with Vim 7.2+
 

@@ -150,9 +150,7 @@ function! s:on_bufenter() abort
 
   if empty(getline(1)) && 1 == line('$')
     Dirvish %
-    return
-  endif
-  if 0 == &l:cole
+  elseif 3 != &l:conceallevel && !s:buf_modified()
     call s:win_init()
   endif
 endfunction
@@ -393,8 +391,7 @@ function! s:do_open(d, reload) abort
   endif
 
   if s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
-    echoerr 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
-    return
+    throw 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
   endif
 
   if -1 == bnr && exists("#BufNew") " Fire BufNew with the normalized file name.
@@ -422,7 +419,7 @@ function! s:should_reload() abort
   if line('$') < 1000 || '' ==# glob(getline('$'),1)
     return !s:buf_modified()
   endif
-  redraw | echo 'dirvish: too many files; showing cached listing'
+  redraw | echo 'dirvish: showing cached listing ("R" to reload)'
   return 0
 endfunction
 
