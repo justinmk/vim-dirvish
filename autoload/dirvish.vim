@@ -216,10 +216,10 @@ function! s:restore_winlocal_settings() abort
   endif
 endfunction
 
-function! s:open_selected(split_cmd, bg, line1, line2) abort
+function! s:open_selected(splitcmd, bg, line1, line2) abort
   let curbuf = bufnr('%')
   let [curtab, curwin, wincount] = [tabpagenr(), winnr(), winnr('$')]
-  let splitcmd = a:split_cmd
+  let p = (a:splitcmd ==# 'p')  " Preview-mode
 
   let paths = getline(a:line1, a:line2)
   for path in paths
@@ -229,22 +229,26 @@ function! s:open_selected(split_cmd, bg, line1, line2) abort
       continue
     endif
 
-    if isdirectory(path)
-      exe (splitcmd ==# 'edit' ? '' : splitcmd.'|') 'Dirvish' fnameescape(path)
-    else
-      exe splitcmd fnameescape(path)
+    if p
+      exe (winnr('$') > 1 ? 'wincmd p' : 'vsplit')
     endif
 
-    " return to previous window after _each_ split, otherwise we get lost.
-    if a:bg && splitcmd =~# 'sp' && winnr('$') > wincount
+    if isdirectory(path)
+      exe (p || a:splitcmd ==# 'edit' ? '' : a:splitcmd.'|') 'Dirvish' fnameescape(path)
+    else
+      exe (p ? 'edit' : a:splitcmd) fnameescape(path)
+    endif
+
+    " Return to previous window after _each_ split, else we get lost.
+    if a:bg && (p || (a:splitcmd =~# 'sp' && winnr('$') > wincount))
       wincmd p
     endif
   endfor
 
   if a:bg "return to dirvish buffer
-    if a:split_cmd ==# 'tabedit'
+    if a:splitcmd ==# 'tabedit'
       exe 'tabnext' curtab '|' curwin.'wincmd w'
-    elseif a:split_cmd ==# 'edit'
+    elseif a:splitcmd ==# 'edit'
       execute 'silent keepalt keepjumps buffer' curbuf
     endif
   elseif !exists('b:dirvish') && exists('w:dirvish')

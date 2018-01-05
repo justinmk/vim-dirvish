@@ -37,8 +37,20 @@ Concepts
 **Buffer name is the directory name.**  So commands and plugins that work with
 `@%` and `@#` do the Right Thing.
 
-- Create directories: `:!mkdir %foo`
-- Create files: `:e %foo.txt`
+- Create directories:
+  ```
+  :!mkdir %foo
+  ```
+- Create files:
+  ```
+  :e %foo.txt
+  ```
+- Use `@#` to get the Dirvish buffer from a `:Shdo` buffer:
+  ```
+  :Shdo
+  mkdir <C-R>#.bk
+  Z!
+  ```
 
 **Edit Dirvish buffers** for any purpose. It's safe and reversible.
 

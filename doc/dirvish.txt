@@ -60,11 +60,16 @@ Buffer-local (filetype=dirvish) ~
     {Visual}O       Opens selected files in horizontal splits.
     a               Opens in vertical split.
     {Visual}A       Opens selected files in vertical splits.
-    p               Opens file in previous window.
-    .               Adds file to the local |arglist|.
-    {Visual}.       Adds selected files to the local |arglist|.
-    da.             Starts a new empty local |arglist|.
-    x               Inserts "|:Shdo|  {}" into the command-line.
+    p               Previews file at cursor.
+    CTRL-N          Previews the next file.
+    CTRL-P          Previews the previous file.
+    <Plug>(dirvish_arg)
+    x               Adds file to the local |arglist|.
+    {Visual}x       Adds selected files to the local |arglist|.
+    dax             Starts a new empty local |arglist|.
+    X               Inserts "|:Shdo|  {}" into the command-line.
+    !X              Inserts "|:Shdo|!  {}" into the command-line.
+    !.              New |:Shdo| window at the current Dirvish directory.
 
 Buffer-local (:Shdo) ~
                                                                   *dirvish-Z!*
@@ -82,10 +87,11 @@ COMMANDS                                                    *dirvish-commands*
     To open the directory of the current file: >
         :Dirvish %
 <
-:[range]Shdo[!] {cmd} {}                                       *dirvish-:Shdo*
+:[range]Shdo[!] {cmd}                                          *dirvish-:Shdo*
     Generates a shell script with {cmd} applied to [range] and the respective
-    filepath inserted where {} appears in the :Shdo command. If bang ! is
-    given the |arglist| is used instead of [range].
+    filepath inserted wherever {} appears in {cmd}. The window-local directory
+    is initialized to the current Dirvish directory. If bang ! is given the
+    |arglist| is used instead of [range].
 
     For example, to rename a list of visual-selected files: >
         :'<,'>Shdo mv {} {}-copy.txt
@@ -172,7 +178,7 @@ To un-hide, just undo. To hide again, reload.
 Why does the "swap file" dialog appear if another Vim is viewing the same ~
 directory? ~
 To avoid this, |:noswapfile| is required (Vim 7.4.213).
-https://github.com/vim/vim/commit/v7-4-213
+https://github.com/vim/vim/tree/v7.4.213
 
 How can I delete files, rename files, or perform other commands?~
 Since ":'<,'>call delete(getline('.'))" is a bit much to type, Dirvish

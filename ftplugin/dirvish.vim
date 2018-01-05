@@ -15,19 +15,21 @@ if !hasmapto('<Plug>(dirvish_up)', 'n')
   execute 'nmap '.s:nowait.'<buffer> - <Plug>(dirvish_up)'
 endif
 
-nnoremap <buffer><silent> p   yy<c-w>p:e <c-r>=fnameescape(getreg('"',1,1)[0])<cr><cr>
-
 execute 'nnoremap '.s:nowait.'<buffer><silent> i    :<C-U>.call dirvish#open("edit", 0)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> <CR> :<C-U>.call dirvish#open("edit", 0)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> a    :<C-U>.call dirvish#open("vsplit", 1)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> o    :<C-U>.call dirvish#open("split", 1)<CR>'
+execute 'nnoremap '.s:nowait.'<buffer><silent> p    :<C-U>.call dirvish#open("p", 1)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> <2-LeftMouse> :<C-U>.call dirvish#open("edit", 0)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> da.  :<C-U>arglocal<Bar>silent! argdelete *<Bar>echo "arglist: cleared"<Bar>Dirvish %<CR>'
+execute 'nnoremap '.s:nowait.'<buffer><silent> <C-n> <C-\><C-n>j:call feedkeys("p")<CR>'
+execute 'nnoremap '.s:nowait.'<buffer><silent> <C-p> <C-\><C-n>k:call feedkeys("p")<CR>'
 
 execute 'xnoremap '.s:nowait.'<buffer><silent> I    :call dirvish#open("edit", 0)<CR>'
 execute 'xnoremap '.s:nowait.'<buffer><silent> <CR> :call dirvish#open("edit", 0)<CR>'
 execute 'xnoremap '.s:nowait.'<buffer><silent> A    :call dirvish#open("vsplit", 1)<CR>'
 execute 'xnoremap '.s:nowait.'<buffer><silent> O    :call dirvish#open("split", 1)<CR>'
+execute 'xnoremap '.s:nowait.'<buffer><silent> P    :call dirvish#open("p", 1)<CR>'
 
 nnoremap <buffer><silent> R :<C-U><C-R>=v:count ? ':let g:dirvish_mode='.v:count.'<Bar>' : ''<CR>Dirvish %<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
