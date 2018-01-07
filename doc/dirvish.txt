@@ -124,10 +124,10 @@ g:dirvish_relative_paths = 0                        *g:dirvish_relative_paths*
 |BufNew| fires the first time a directory is opened (and not yet loaded).
 Note: Use expand("<afile>") to get the new buffer name (not "%").
 
-|FileType| fires after Dirvish has loaded, so all mappings, options, and
-content can be overridden by handling that event. Example: >
+|FileType| fires after Dirvish has loaded: all mappings, options, and content
+can be overridden by handling that event. Example: >
 
-    augroup my_dirvish_events
+    augroup dirvish_config
       autocmd!
 
       " Map `t` to open in new tab.
@@ -174,6 +174,18 @@ To make this automatic, set |g:dirvish_mode|: >
 You could also use a FileType autocmd: >
     autocmd FileType dirvish silent keeppatterns g@\v/\.[^\/]+/?$@d _
 To un-hide, just undo. To hide again, reload.
+
+How do I disable a Dirvish mapping? ~
+As noted in |dirvish-options|, the way to customize Dirvish is to handle its
+FileType event. For example if you have a global <C-p> mapping and you don't
+want Dirvish to "shadow" it, :unmap the Dirvish buffer-local mapping: >
+
+    augroup dirvish_config
+      autocmd!
+      autocmd FileType dirvish silent! unmap <buffer> <C-p>
+    augroup END
+
+You could use ":mapclear <buffer>" to delete ALL of the mappings.
 
 Why does the "swap file" dialog appear if another Vim is viewing the same ~
 directory? ~

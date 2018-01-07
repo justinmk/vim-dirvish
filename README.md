@@ -29,7 +29,7 @@ Concepts
 - Sort with `:sort`, filter with `:global`. Hit `R` to reload.
 - For complex scripting, `:Shdo!` (with `!`) operates on the local arglist.
 - Add lines to quickfix (`:'<,'>caddb`) and iterate (`:cdo`).
-- `:set ft=dirvish` on any buffer to enable Dirvish features. Try this:
+- `:set ft=dirvish` on any buffer to enable Dirvish features:
   ```
   git ls-files | vim +'setf dirvish' -
   ```
@@ -54,12 +54,12 @@ Concepts
 
 **Edit Dirvish buffers** for any purpose. It's safe and reversible.
 
-- Pipe to `:!` to see inline results. Example:
+- Use `:sort` or `:global` to re-arrange the view, delete lines with `d`, etc.
+  Then `:%Shdo` the result.
+- Pipe to `:!` to see inline results:
   ```
   :'<,'>!xargs du -hs
   ```
-- Use `:sort` or `:global` to re-arrange the view, delete lines with `d`, etc.
-  Then `:%Shdo` the result.
 - Type `u` to undo, or `R` to reload.
 
 Credits

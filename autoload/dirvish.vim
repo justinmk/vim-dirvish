@@ -414,6 +414,8 @@ function! s:do_open(d, reload) abort
   call s:win_init()
   if a:reload || s:should_reload()
     call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
+    " Set up Dirvish before any other `FileType dirvish` handler.
+    exe 'source '.fnameescape(s:srcdir.'/ftplugin/dirvish.vim')
     setlocal filetype=dirvish
     let b:dirvish._c = b:changedtick
   endif

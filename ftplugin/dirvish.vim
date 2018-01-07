@@ -1,3 +1,8 @@
+if exists("b:did_ftplugin")
+  finish
+endif
+let b:did_ftplugin = 1
+
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
 
 if !hasmapto('<Plug>(dirvish_quit)', 'n')
