@@ -72,7 +72,7 @@ Buffer-local (filetype=dirvish) ~
     !.              New |:Shdo| window at the current Dirvish directory.
 
 Buffer-local (:Shdo) ~
-                                                                  *dirvish-Z!*
+                                                    *Z!* *dirvish-Z!*
     Z!              Saves and executes a |:Shdo| shell-script. Closes the
                     window if the script succeeded.
 
@@ -87,7 +87,7 @@ COMMANDS                                                    *dirvish-commands*
     To open the directory of the current file: >
         :Dirvish %
 <
-:[range]Shdo[!] {cmd}                                          *dirvish-:Shdo*
+:[range]Shdo[!] {cmd}                               *:Shdo* *dirvish-:Shdo*
     Generates a shell script with {cmd} applied to [range] and the respective
     filepath inserted wherever {} appears in {cmd}. The window-local directory
     is initialized to the current Dirvish directory. If bang ! is given the
