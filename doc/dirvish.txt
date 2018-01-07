@@ -67,14 +67,14 @@ Buffer-local (filetype=dirvish) ~
     x               Adds file to the local |arglist|.
     {Visual}x       Adds selected files to the local |arglist|.
     dax             Starts a new empty local |arglist|.
-    X               Inserts "|:Shdo|  {}" into the command-line.
-    !X              Inserts "|:Shdo|!  {}" into the command-line.
-    !.              New |:Shdo| window at the current Dirvish directory.
+    X               Inserts ":Shdo  {}" into the command-line.
+    !X              Inserts ":Shdo!  {}" into the command-line.
+    !.              New |dirvish-:Shdo| window at the current Dirvish directory.
 
 Buffer-local (:Shdo) ~
                                                                   *dirvish-Z!*
-    Z!              Saves and executes a |:Shdo| shell-script. Closes the
-                    window if the script succeeded.
+    Z!              Saves and executes a |dirvish-:Shdo| shell-script.
+                    Closes the window if the script succeeded.
 
 ==============================================================================
 COMMANDS                                                    *dirvish-commands*
@@ -95,7 +95,7 @@ COMMANDS                                                    *dirvish-commands*
 
     For example, to rename a list of visual-selected files: >
         :'<,'>Shdo mv {} {}-copy.txt
-<    Run the script with |Z!| or ":!%".
+<    Run the script with |dirvish-Z!| or ":!%".
 
 ==============================================================================
 FUNCTIONS                                                  *dirvish-functions*
