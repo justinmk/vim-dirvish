@@ -377,10 +377,12 @@ function! s:open_dir(d, reload) abort
     execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
   else
     execute 'silent noau ' s:noswapfile 'buffer' bnr
+    " HACK: Avoid [Scratch] buffer name in some cases (":e ~/" on Windows).
+    silent file %
   endif
 
-  if s:normalize_dir(bufname('%')) !=# s:normalize_dir(d._dir)  " sanity check
-    throw 'expected buffer: "'.d._dir.'" (actual: "'.bufname('%').'")'
+  if !isdirectory(bufname('%'))  " sanity check
+    throw 'invalid directory: '.bufname('%')
   endif
 
   if -1 == bnr && exists("#BufNew") " Fire BufNew with the normalized file name.
