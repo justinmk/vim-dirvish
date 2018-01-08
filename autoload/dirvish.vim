@@ -355,29 +355,21 @@ function! s:buf_render(dir, lastpath) abort
   call search('\'.s:sep.'\zs[^\'.s:sep.']\+\'.s:sep.'\?$', 'c', line('.'))
 endfunction
 
-function! s:do_open(d, reload) abort
+function! s:open_dir(d, reload) abort
   let d = a:d
-  let bnr = bufnr('^' . d._dir . '$')
-
   let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
-  let bnr_nonnormalized = bufnr('^'.dirname_without_sep.'$')
 
-  " Vim tends to name the buffer using its reduced path.
-  " Examples (Win32 gvim 7.4.618):
+  " Vim tends to name the buffer using a reduced path. Examples (gvim 7.4.618):
   "     ~\AppData\Local\Temp\
   "     ~\AppData\Local\Temp
   "     AppData\Local\Temp\
   "     AppData\Local\Temp
-  " Try to find an existing normalized-path name before creating a new one.
-  for pat in [':~:.', ':~']
+  " Try to find an existing buffer before creating a new one.
+  let bnr = -1
+  for pat in ['', ':~:.', ':~']
+    let bnr = bufnr('^'.fnamemodify(d._dir, pat).'$')
     if -1 != bnr
       break
-    endif
-    let modified_dirname = fnamemodify(d._dir, pat)
-    let modified_dirname_without_sep = substitute(modified_dirname, '[\\/]\+$', '', 'g')
-    let bnr = bufnr('^'.modified_dirname.'$')
-    if -1 == bnr_nonnormalized
-      let bnr_nonnormalized = bufnr('^'.modified_dirname_without_sep.'$')
     endif
   endfor
 
@@ -387,21 +379,8 @@ function! s:do_open(d, reload) abort
     execute 'silent noau ' s:noswapfile 'buffer' bnr
   endif
 
-  "If the directory is relative to CWD, :edit refuses to create a buffer
-  "with the expanded name (it may be _relative_ instead); this will cause
-  "problems when the user navigates. Use :file to force the expanded path.
-  if bnr_nonnormalized == bufnr('#') || s:sl(bufname('%')) !=# d._dir
-    if s:sl(bufname('%')) !=# d._dir
-      execute 'silent noau keepjumps '.s:noswapfile.' file ' . fnameescape(d._dir)
-    endif
-
-    if bufnr('#') != bufnr('%') && isdirectory(s:sl(bufname('#'))) "Yes, (# == %) is possible.
-      bwipeout # "Kill it with fire, it is useless.
-    endif
-  endif
-
-  if s:sl(bufname('%')) !=# d._dir  "We have a bug or Vim has a regression.
-    throw 'expected buffer name: "'.d._dir.'" (actual: "'.bufname('%').'")'
+  if s:normalize_dir(bufname('%')) !=# s:normalize_dir(d._dir)  " sanity check
+    throw 'expected buffer: "'.d._dir.'" (actual: "'.bufname('%').'")'
   endif
 
   if -1 == bnr && exists("#BufNew") " Fire BufNew with the normalized file name.
@@ -475,7 +454,7 @@ function! dirvish#open(...) range abort
   endif
 
   call s:save_state(d)
-  call s:do_open(d, reloading)
+  call s:open_dir(d, reloading)
 endfunction
 
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
