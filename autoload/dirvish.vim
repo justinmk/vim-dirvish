@@ -359,11 +359,8 @@ function! s:open_dir(d, reload) abort
   let d = a:d
   let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
 
-  " Vim tends to name the buffer using a reduced path. Examples (gvim 7.4.618):
-  "     ~\AppData\Local\Temp\
-  "     ~\AppData\Local\Temp
-  "     AppData\Local\Temp\
-  "     AppData\Local\Temp
+  " Vim tends to 'simplify' buffer names. Examples (gvim 7.4.618):
+  "     ~\foo\, ~\foo, foo\, foo
   " Try to find an existing buffer before creating a new one.
   let bnr = -1
   for pat in ['', ':~:.', ':~']
@@ -374,11 +371,19 @@ function! s:open_dir(d, reload) abort
   endfor
 
   if -1 == bnr
-    execute 'silent noau ' s:noswapfile 'edit' fnameescape(d._dir)
+    execute 'silent noau' s:noswapfile 'edit' fnameescape(d._dir)
   else
-    execute 'silent noau ' s:noswapfile 'buffer' bnr
-    " HACK: Avoid [Scratch] buffer name in some cases (":e ~/" on Windows).
-    silent file %
+    execute 'silent noau' s:noswapfile 'buffer' bnr
+  endif
+
+  " Use :file to force a normalized path.
+  " - Avoids ".././..", ".", "./", etc. (breaks %:p, not updated on :cd).
+  " - Avoids [Scratch] in some cases (":e ~/" on Windows).
+  if s:sl(bufname('%')) !=# d._dir
+    execute 'silent '.s:noswapfile.' file ' . fnameescape(d._dir)
+    if bufnr('#') != bufnr('%') && isdirectory(s:sl(bufname('#'))) && bufexists(d.prevbuf) && bufnr('#') != d.prevbuf
+      bwipeout #  " Throw away the old name.
+    endif
   endif
 
   if !isdirectory(bufname('%'))  " sanity check
