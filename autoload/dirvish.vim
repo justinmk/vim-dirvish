@@ -381,9 +381,6 @@ function! s:open_dir(d, reload) abort
   " - Avoids [Scratch] in some cases (":e ~/" on Windows).
   if s:sl(bufname('%')) !=# d._dir
     execute 'silent '.s:noswapfile.' file ' . fnameescape(d._dir)
-    if bufnr('#') != bufnr('%') && isdirectory(s:sl(bufname('#'))) && bufexists(d.prevbuf) && bufnr('#') != d.prevbuf
-      bwipeout #  " Throw away the old name.
-    endif
   endif
 
   if !isdirectory(bufname('%'))  " sanity check
