@@ -128,13 +128,6 @@ endfunction
 
 function! s:buf_init() abort
   augroup dirvish_buflocal
-    autocmd! * <buffer>
-  augroup END
-
-  " Fire BufEnter with the normalized file name, before setting up handler.
-  if exists("#BufEnter") | exe 'doautocmd <nomodeline> BufEnter' bufname('%') | endif
-
-  augroup dirvish_buflocal
     autocmd BufEnter,WinEnter <buffer> call <SID>on_bufenter()
     autocmd TextChanged,TextChangedI <buffer> if <SID>buf_modified()
           \&& has('conceal')|exe 'setlocal conceallevel=0'|endif
@@ -371,9 +364,9 @@ function! s:open_dir(d, reload) abort
   endfor
 
   if -1 == bnr
-    execute 'silent noau' s:noswapfile 'edit' fnameescape(d._dir)
+    execute s:noswapfile 'edit' fnameescape(d._dir)
   else
-    execute 'silent noau' s:noswapfile 'buffer' bnr
+    execute s:noswapfile 'buffer' bnr
   endif
 
   " Use :file to force a normalized path.
@@ -385,10 +378,6 @@ function! s:open_dir(d, reload) abort
 
   if !isdirectory(bufname('%'))  " sanity check
     throw 'invalid directory: '.bufname('%')
-  endif
-
-  if -1 == bnr && exists("#BufNew") " Fire BufNew with the normalized file name.
-    exe 'doautocmd <nomodeline> BufNew' bufname('%')
   endif
 
   if &buflisted && bufnr('$') > 1
