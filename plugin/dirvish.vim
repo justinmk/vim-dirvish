@@ -17,7 +17,7 @@ augroup dirvish_ftdetect
   autocmd VimEnter * if exists('#FileExplorer') | exe 'au! FileExplorer *' | endif
   autocmd VimEnter * if exists('#NERDTreeHijackNetrw') | exe 'au! NERDTreeHijackNetrw *' | endif
   autocmd BufEnter * if !exists('b:dirvish') && <SID>isdir(expand('%'))
-    \ | redraw | echo '' | exe 'Dirvish %'
+    \ | exe 'Dirvish %'
     \ | elseif exists('b:dirvish') && &buflisted && bufnr('$') > 1 | setlocal nobuflisted | endif
   autocmd FileType dirvish if exists('#User#Fugitive') | call fugitive#detect(@%) | endif
 augroup END

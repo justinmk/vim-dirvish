@@ -364,9 +364,9 @@ function! s:open_dir(d, reload) abort
   endfor
 
   if -1 == bnr
-    execute s:noswapfile 'edit' fnameescape(d._dir)
+    execute 'silent' s:noswapfile 'edit' fnameescape(d._dir)
   else
-    execute s:noswapfile 'buffer' bnr
+    execute 'silent' s:noswapfile 'buffer' bnr
   endif
 
   " Use :file to force a normalized path.
