@@ -19,7 +19,7 @@ augroup dirvish_ftdetect
   autocmd BufEnter * if !exists('b:dirvish') && <SID>isdir(expand('%'))
     \ | exe 'Dirvish %'
     \ | elseif exists('b:dirvish') && &buflisted && bufnr('$') > 1 | setlocal nobuflisted | endif
-  autocmd FileType dirvish if exists('#User#Fugitive') | call fugitive#detect(@%) | endif
+  autocmd FileType dirvish if exists('#fugitive') | call fugitive#detect(@%) | endif
 augroup END
 
 nnoremap <silent> <Plug>(dirvish_up) :<C-U>exe 'Dirvish %:p'.repeat(':h',v:count1)<CR>
