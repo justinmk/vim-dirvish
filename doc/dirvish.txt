@@ -208,5 +208,13 @@ Check your 'isfname' setting. On Windows (where filepaths may contain
 backslashes "\") |fnamemodify()| may produce nonsense if 'isfname' does not
 contain the aforementioned unusual characters.
 
+How to override the netrw :Explore, :Sexplore, :Vexplore commands? ~
+Put this in your vimrc: >
+
+    let g:loaded_netrwPlugin = 1
+    command! -nargs=? -complete=dir Explore Dirvish <args>
+    command! -nargs=? -complete=dir Sexplore belowright split | silent Dirvish <args>
+    command! -nargs=? -complete=dir Vexplore leftabove vsplit | silent Dirvish <args>
+
 ==============================================================================
  vim:tw=78:ts=4:et:ft=help:norl:
