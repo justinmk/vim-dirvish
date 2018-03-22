@@ -128,6 +128,7 @@ endfunction
 
 function! s:buf_init() abort
   augroup dirvish_buflocal
+    autocmd! * <buffer>
     autocmd BufEnter,WinEnter <buffer> call <SID>on_bufenter()
     autocmd TextChanged,TextChangedI <buffer> if <SID>buf_modified()
           \&& has('conceal')|exe 'setlocal conceallevel=0'|endif
