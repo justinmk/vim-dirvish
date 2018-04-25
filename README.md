@@ -19,6 +19,7 @@ Features
 - `:Shdo!` generates a shell script on the local [arglist](https://neovim.io/doc/user/editing.html#arglist)
 - Less code, fewer bugs (96% smaller than netrw)
 - Compatible with Vim 7.2+
+- Git support with [vim-dirvish-git](https://github.com/kristijanhusak/vim-dirvish-git) plugin
 
 Concepts
 --------
