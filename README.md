@@ -62,6 +62,17 @@ Concepts
   ```
 - Type `u` to undo, or `R` to reload.
 
+
+Extensions
+----------
+
+Some people have created plugins that extend Dirvish.
+
+- [remote-viewer](https://github.com/bounceme/remote-viewer) - Browse `ssh://` and other remote paths
+- [vim-dirvish-git](https://github.com/kristijanhusak/vim-dirvish-git) - Show git status of each file
+- [vim-dirvinist](https://github.com/fsharpasharp/vim-dirvinist) - List files defined by projections
+
+
 Credits
 -------
 
