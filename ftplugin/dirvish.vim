@@ -12,9 +12,6 @@ if !hasmapto('<Plug>(dirvish_arg)', 'n')
   execute 'nmap '.s:nowait.'<buffer> x <Plug>(dirvish_arg)'
   execute 'xmap '.s:nowait.'<buffer> x <Plug>(dirvish_arg)'
 endif
-nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call dirvish#buf_close()<CR>
-nnoremap <silent> <Plug>(dirvish_arg) :<C-U>call dirvish#set_args([getline('.')])<CR>
-xnoremap <silent> <Plug>(dirvish_arg) :<C-U>call dirvish#set_args(getline("'<", "'>"))<CR>
 
 nnoremap <buffer><silent> <Plug>(dirvish_up) :<C-U>exe "Dirvish %:h".repeat(":h",v:count1)<CR>
 nnoremap <buffer><silent> <Plug>(dirvish_split_up) :<C-U>exe 'split +Dirvish\ %:h'.repeat(':h',v:count1)<CR>
@@ -50,3 +47,6 @@ execute 'nnoremap '.s:nowait.'<buffer> !. :Shdo<CR>"_dd:write<CR>'
 " Buffer-local / and ? mappings to skip the concealed path fragment.
 nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
 nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
+
+" Force autoload if `ft=dirvish`
+if !exists('*dirvish#open')|try|call dirvish#open()|catch|endtry|endif
