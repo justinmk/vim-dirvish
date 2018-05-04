@@ -63,7 +63,7 @@ function! s:list_dir(dir) abort
   endif
 endfunction
 
-function! s:set_args(args) abort
+function! dirvish#set_args(args) abort
   if exists('*arglistid') && arglistid() == 0
     arglocal
   endif
@@ -193,7 +193,7 @@ function! s:on_bufunload() abort
   call s:restore_winlocal_settings()
 endfunction
 
-function! s:buf_close() abort
+function! dirvish#buf_close() abort
   let d = get(w:, 'dirvish', {})
   if empty(d)
     return
@@ -450,7 +450,3 @@ function! dirvish#open(...) range abort
   call s:save_state(d)
   call s:open_dir(d, reloading)
 endfunction
-
-nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
-nnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args([getline('.')])<CR>
-xnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args(getline("'<", "'>"))<CR>
