@@ -47,3 +47,6 @@ execute 'nnoremap '.s:nowait.'<buffer> !. :Shdo<CR>"_dd:write<CR>'
 " Buffer-local / and ? mappings to skip the concealed path fragment.
 nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
 nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
+
+" Force autoload if `ft=dirvish`
+if !exists('*dirvish#open')|try|call dirvish#open()|catch|endtry|endif
