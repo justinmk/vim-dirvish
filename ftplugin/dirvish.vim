@@ -12,6 +12,10 @@ if !hasmapto('<Plug>(dirvish_arg)', 'n')
   execute 'nmap '.s:nowait.'<buffer> x <Plug>(dirvish_arg)'
   execute 'xmap '.s:nowait.'<buffer> x <Plug>(dirvish_arg)'
 endif
+if !hasmapto('<Plug>(dirvish_K)', 'n')
+  execute 'nmap '.s:nowait.'<buffer> K <Plug>(dirvish_K)'
+  execute 'xmap '.s:nowait.'<buffer> K <Plug>(dirvish_K)'
+endif
 
 nnoremap <buffer><silent> <Plug>(dirvish_up) :<C-U>exe "Dirvish %:h".repeat(":h",v:count1)<CR>
 nnoremap <buffer><silent> <Plug>(dirvish_split_up) :<C-U>exe 'split +Dirvish\ %:h'.repeat(':h',v:count1)<CR>

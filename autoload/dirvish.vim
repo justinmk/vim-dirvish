@@ -63,6 +63,14 @@ function! s:list_dir(dir) abort
   endif
 endfunction
 
+function! s:info(paths) abort
+  for f in a:paths
+    let fname = len(a:paths) < 2 ? '' : printf('%12.12s ',fnamemodify(substitute(f,'[\\/]\+$','',''),':t'))
+    echo (-1 == getfsize(f) ? '?' : (fname.(getftype(f)[0]).' '.getfperm(f)
+          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.getfsize(f)).('link'!=#getftype(f)?'':' ->'.pathshorten(resolve(f))))
+  endfor
+endfunction
+
 function! s:set_args(args) abort
   if exists('*arglistid') && arglistid() == 0
     arglocal
@@ -454,3 +462,5 @@ endfunction
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
 nnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args([getline('.')])<CR>
 xnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args(getline("'<", "'>"))<CR>
+nnoremap <silent> <Plug>(dirvish_K) :<C-U>call <SID>info([getline('.')])<CR>
+xnoremap <silent> <Plug>(dirvish_K) :<C-U>call <SID>info(getline("'<", "'>"))<CR>

@@ -60,6 +60,8 @@ Buffer-local (filetype=dirvish) ~
     {Visual}O       Opens selected files in horizontal splits.
     a               Opens in vertical split.
     {Visual}A       Opens selected files in vertical splits.
+    K               Shows file info.
+    {Visual}K       Shows info about selected files.
     p               Previews file at cursor.
     CTRL-N          Previews the next file.
     CTRL-P          Previews the previous file.
