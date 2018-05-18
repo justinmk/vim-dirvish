@@ -67,7 +67,7 @@ function! s:info(paths) abort
   for f in a:paths
     let fname = len(a:paths) < 2 ? '' : printf('%12.12s ',fnamemodify(substitute(f,'[\\/]\+$','',''),':t'))
     echo (-1 == getfsize(f) ? '?' : (fname.(getftype(f)[0]).' '.getfperm(f)
-          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.getfsize(f)).('link'!=#getftype(f)?'':' ->'.pathshorten(resolve(f))))
+          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.getfsize(f)).('link'!=#getftype(f)?'':' -> '.fnamemodify(resolve(f),':~:.')))
   endfor
 endfunction
 
