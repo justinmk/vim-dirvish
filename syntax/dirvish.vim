@@ -5,6 +5,9 @@ endif
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:escape = 'substitute(escape(v:val, ".$~"), "*", ".*", "g")'
 
+" Syntax rules for DirvishFullPath and DirvishArg must follow the other rules,
+" otherwise they may be overriden (see :h syn-priority).
+
 exe 'syntax match DirvishPathHead =\v.*\'.s:sep.'\ze[^\'.s:sep.']+\'.s:sep.'?$= conceal'
 exe 'syntax match DirvishPathTail =\v[^\'.s:sep.']+\'.s:sep.'$='
 exe 'syntax match DirvishSuffix   =[^\'.s:sep.']*\%('.join(map(split(&suffixes, ','), s:escape), '\|') . '\)$='
