@@ -10,9 +10,9 @@ exe 'syntax match DirvishPathTail =\v[^\'.s:sep.']+\'.s:sep.'$='
 exe 'syntax match DirvishSuffix   =[^\'.s:sep.']*\%('.join(map(split(&suffixes, ','), s:escape), '\|') . '\)$='
 
 " Define (again). Other windows may need the old definitions ...
-for p in argv()
-  let s:base = escape(fnamemodify(p[-1:] ==# s:sep ? p[:-2] : p, ":t"), "@*.^$~\\")
-  exe 'syntax match DirvishFullPath @^'.escape(p, "@*.^$~\\").'$@ contains=DirvishPathHead,DirvishArg'
+for s:p in argv()
+  let s:base = escape(fnamemodify(s:p[-1:] ==# s:sep ? s:p[:-2] : s:p, ":t"), "@*.^$~\\")
+  exe 'syntax match DirvishFullPath @^'.escape(s:p, "@*.^$~\\").'$@ contains=DirvishPathHead,DirvishArg'
   exe 'syntax match DirvishArg @'.s:base.s:sep.'\?$@ contained'
 endfor
 
