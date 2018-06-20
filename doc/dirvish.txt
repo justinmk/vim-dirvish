@@ -142,7 +142,7 @@ can be overridden by handling that event. Example: >
 
       " Map `gh` to hide dot-prefixed files.  Press `R` to "toggle" (reload).
       autocmd FileType dirvish nnoremap <silent><buffer>
-        \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d _<cr>
+        \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d _<cr>:setl cole=3<cr>
     augroup END
 <
 
