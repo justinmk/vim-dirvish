@@ -9,8 +9,8 @@ if !hasmapto('<Plug>(dirvish_quit)', 'n')
   execute 'nmap '.s:nowait.'<buffer> q <Plug>(dirvish_quit)'
 endif
 if !hasmapto('<Plug>(dirvish_arg)', 'n')
-  execute 'nmap '.s:nowait.'<buffer> X <Plug>(dirvish_arg)'
-  execute 'xmap '.s:nowait.'<buffer> X <Plug>(dirvish_arg)'
+  execute 'nmap '.s:nowait.'<buffer> x <Plug>(dirvish_arg)'
+  execute 'xmap '.s:nowait.'<buffer> x <Plug>(dirvish_arg)'
 endif
 if !hasmapto('<Plug>(dirvish_K)', 'n')
   execute 'nmap '.s:nowait.'<buffer> K <Plug>(dirvish_K)'
@@ -43,8 +43,8 @@ execute 'xnoremap '.s:nowait.'<buffer><silent> P    :call dirvish#open("p", 1)<C
 nnoremap <buffer><silent> R :<C-U><C-R>=v:count ? ':let g:dirvish_mode='.v:count.'<Bar>' : ''<CR>Dirvish %<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
-execute 'nnoremap <expr>'.s:nowait.'<buffer> x ":<C-u>Shdo".(v:count>0?"!":"")."  {}<Left><Left><Left>"'
-execute 'xnoremap <expr>'.s:nowait.'<buffer> x ":Shdo".(v:count>0?"!":"")."  {}<Left><Left><Left>"'
+execute 'nnoremap <expr>'.s:nowait.'<buffer> c ":<C-u>Shdo".(v:count>0?"!":"")."  {}<Left><Left><Left>"'
+execute 'xnoremap <expr>'.s:nowait.'<buffer> c ":Shdo".(v:count>0?"!":"")."  {}<Left><Left><Left>"'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
 nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>

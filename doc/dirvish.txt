@@ -48,29 +48,29 @@ Buffer-local (filetype=dirvish) ~
     <Plug>(dirvish_up)
     -               Opens the [count]th parent directory.
     <Plug>(dirvish_split_up)
-                    Opens the [count]th parent in a split.
+                    Opens the [count]th parent in a new window.
     <Plug>(dirvish_vsplit_up)
-                    Opens the [count]th parent in a vertical split.
+                    Opens the [count]th parent in a new, vertical window.
     <2-LeftMouse>
     i
     <CR>            Opens file at cursor.
     {Visual}I
     {Visual}<CR>    Opens selected files.
-    o               Opens in horizontal split.
-    {Visual}O       Opens selected files in horizontal splits.
-    a               Opens in vertical split.
-    {Visual}A       Opens selected files in vertical splits.
+    o               Opens file in a new window.
+    {Visual}O       Opens each selected file in a new window.
+    a               Opens file in a new, vertical window.
+    {Visual}A       Opens each selected file in a new, vertical window.
     K               Shows file info.
     {Visual}K       Shows info about selected files.
     p               Previews file at cursor.
     CTRL-N          Previews the next file.
     CTRL-P          Previews the previous file.
     <Plug>(dirvish_arg)
-    X               Adds file to the local |arglist|.
-    {Visual}X       Adds selected files to the local |arglist|.
+    x               Adds file to the local |arglist|.
+    {Visual}x       Adds selected files to the local |arglist|.
     dax             Starts a new empty local |arglist|.
-    x               Inserts "|:Shdo|  {}" into the command-line.
-    [count]x        Inserts "|:Shdo|!  {}" into the command-line.
+    c               Inserts "|:Shdo|  {}" into the command-line.
+    [count]c        Inserts "|:Shdo|!  {}" into the command-line.
 
 Buffer-local (:Shdo) ~
                                                     *Z!* *dirvish-Z!*
@@ -149,7 +149,7 @@ can be overridden by handling that event. Example: >
 ==============================================================================
 FAQ                                                              *dirvish-faq*
 
-How do I control where Dirvish opens splits? ~
+How do I control where Dirvish opens split windows? ~
 Set the Vim options 'splitbelow' and 'splitright'.
 
 How do I group (sort) directories/folders? ~
