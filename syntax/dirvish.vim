@@ -15,8 +15,9 @@ endif
 " Define (again). Other windows (different arglists) need the old definitions.
 " Do these last, else they may be overridden (see :h syn-priority).
 for s:p in argv()
-  let s:base = escape(fnamemodify(s:p[-1:] ==# s:sep ? s:p[:-2] : s:p, ':t'), '@*.^$~\')
-  exe 'syntax match DirvishArgFullPath @^'.escape(s:p, '@*.^$~\').'$@ contains=DirvishPathHead,DirvishArg'
+  let s:f = fnamemodify(s:p, ':p')  " Full path.
+  let s:base = escape(fnamemodify(s:f[-1:] ==# s:sep ? s:f[:-2] : s:f, ':t'), '@*.^$~\')
+  exe 'syntax match DirvishArgFullPath @^'.escape(s:f, '@*.^$~\').'$@ contains=DirvishPathHead,DirvishArg'
   exe 'syntax match DirvishArg @'.s:base.'\'.s:sep.'\?$@ contained'
 endfor
 
