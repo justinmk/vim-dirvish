@@ -5,16 +5,19 @@ endif
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:escape = 'substitute(escape(v:val, ".$~"), "*", ".*", "g")'
 
-" Define (again). Other windows may need the old definitions ...
-let s:pat = join(map(argv(), 'escape(fnamemodify(v:val[-1:]==#s:sep?v:val[:-2]:v:val, ":t"), "*.^$~\\")'), '\|')
-exe 'syntax match DirvishArg /\'.s:sep.'\@<=\%\('.s:pat.'\)\'.s:sep.'\?$/'
-
-if exists('b:current_syntax')
-  finish
+" Define once (per buffer).
+if !exists('b:current_syntax')
+  exe 'syntax match DirvishPathHead =\v.*\'.s:sep.'\ze[^\'.s:sep.']+\'.s:sep.'?$= conceal'
+  exe 'syntax match DirvishPathTail =\v[^\'.s:sep.']+\'.s:sep.'$='
+  exe 'syntax match DirvishSuffix   =[^\'.s:sep.']*\%('.join(map(split(&suffixes, ','), s:escape), '\|') . '\)$='
 endif
 
-exe 'syntax match DirvishPathHead =\v.*\'.s:sep.'\ze[^\'.s:sep.']+\'.s:sep.'?$= conceal'
-exe 'syntax match DirvishPathTail =\v[^\'.s:sep.']+\'.s:sep.'$='
-exe 'syntax match DirvishSuffix   =[^\'.s:sep.']*\%('.join(map(split(&suffixes, ','), s:escape), '\|') . '\)$='
+" Define (again). Other windows (different arglists) need the old definitions.
+" Do these last, else they may be overridden (see :h syn-priority).
+for s:p in argv()
+  let s:base = escape(fnamemodify(s:p[-1:] ==# s:sep ? s:p[:-2] : s:p, ':t'), '@*.^$~\')
+  exe 'syntax match DirvishArgFullPath @^'.escape(s:p, '@*.^$~\').'$@ contains=DirvishPathHead,DirvishArg'
+  exe 'syntax match DirvishArg @'.s:base.'\'.s:sep.'\?$@ contained'
+endfor
 
-let b:current_syntax = "dirvish"
+let b:current_syntax = 'dirvish'
