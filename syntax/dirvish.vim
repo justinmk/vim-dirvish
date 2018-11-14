@@ -7,8 +7,8 @@ let s:escape = 'substitute(escape(v:val, ".$~"), "*", ".*", "g")'
 
 " Define once (per buffer).
 if !exists('b:current_syntax')
-  exe 'syntax match DirvishPathHead =\v.*\'.s:sep.'\ze[^\'.s:sep.']+\'.s:sep.'?$= conceal'
-  exe 'syntax match DirvishPathTail =\v[^\'.s:sep.']+\'.s:sep.'$='
+  exe 'syntax match DirvishPathHead =.*\'.s:sep.'\ze[^\'.s:sep.']\+\'.s:sep.'\?$= conceal'
+  exe 'syntax match DirvishPathTail =[^\'.s:sep.']\+\'.s:sep.'$='
   exe 'syntax match DirvishSuffix   =[^\'.s:sep.']*\%('.join(map(split(&suffixes, ','), s:escape), '\|') . '\)$='
 endif
 
