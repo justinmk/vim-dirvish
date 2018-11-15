@@ -17,13 +17,15 @@ function! s:sl(path) abort
   return tr(a:path, '\', '/')
 endfunction
 
-function! s:normalize_dir(dir) abort
+function! s:normalize_dir(dir, silent) abort
   let dir = s:sl(a:dir)
   if !isdirectory(dir)
-    "cygwin/MSYS fallback for paths that lack a drive letter.
+    " Fallback for cygwin/MSYS paths lacking a drive letter.
     let dir = empty($SYSTEMDRIVE) ? dir : '/'.tolower($SYSTEMDRIVE[0]).(dir)
     if !isdirectory(dir)
-      call s:msg_error("invalid directory: '".a:dir."'")
+      if !a:silent
+        call s:msg_error("invalid directory: '".a:dir."'")
+      endif
       return ''
     endif
   endif
@@ -35,7 +37,7 @@ endfunction
 
 function! s:parent_dir(dir) abort
   let mod = isdirectory(s:sl(a:dir)) ? ':p:h:h' : ':p:h'
-  return s:normalize_dir(fnamemodify(a:dir, mod))
+  return s:normalize_dir(fnamemodify(a:dir, mod), 0)
 endfunction
 
 if v:version > 703
@@ -235,7 +237,7 @@ function! s:open_selected(splitcmd, bg, line1, line2) abort
   for path in paths
     let path = s:sl(path)
     if !isdirectory(path) && !filereadable(path)
-      call s:msg_error("invalid (or access denied): ".path)
+      call s:msg_error("invalid (access denied?): ".path)
       continue
     endif
 
@@ -439,13 +441,16 @@ function! dirvish#open(...) range abort
   endif
 
   let d = {}
+  let is_uri    = -1 != match(a:1, '^\w\+:[\/][\/]')
   let from_path = fnamemodify(bufname('%'), ':p')
   let to_path   = fnamemodify(s:sl(a:1), ':p')
   "                                       ^resolves to CWD if a:1 is empty
 
   let d._dir = filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path
-  let d._dir = s:normalize_dir(d._dir)
-  if '' ==# d._dir " s:normalize_dir() already showed error.
+  let d._dir = s:normalize_dir(d._dir, is_uri)
+  " Fallback to CWD for URIs. #127
+  let d._dir = empty(d._dir) && is_uri ? s:normalize_dir(getcwd(), is_uri) : d._dir
+  if empty(d._dir)  " s:normalize_dir() already showed error.
     return
   endif
 
@@ -453,7 +458,7 @@ function! dirvish#open(...) range abort
 
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
-  elseif d._dir ==# s:parent_dir(from_path)
+  elseif !is_uri && d._dir ==# s:parent_dir(from_path)
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
 
