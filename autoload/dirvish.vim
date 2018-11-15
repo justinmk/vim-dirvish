@@ -1,7 +1,14 @@
-let s:srcdir = expand('<sfile>:h:h:p')
-let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
+let s:srcdir     = expand('<sfile>:h:h:p')
+let s:sep        = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
+let s:columns    = [{
+      \ 'name': 'arg',
+      \ 'mark': '*',
+      \ 'priority': 1,
+      \ 'handler': 's:path_in_arglist',
+      \ 'hi_group': 'DirvishArg'
+      \ }]
 
 function! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
@@ -197,7 +204,7 @@ function! s:win_init() abort
   setlocal nowrap cursorline
 
   if has('conceal')
-    setlocal concealcursor=nvc conceallevel=3
+    setlocal concealcursor=nvc conceallevel=2
   endif
 endfunction
 
@@ -464,6 +471,24 @@ function! dirvish#open(...) range abort
 
   call s:save_state(d)
   call s:open_dir(d, reloading)
+endfunction
+
+function! dirvish#add_column(column) abort
+  for l:col in s:columns
+    if a:column.name ==? l:col.name
+      return
+    endif
+  endfor
+   call add(s:columns, a:column)
+  return sort(s:columns, 's:sort_columns')
+endfunction
+
+function! dirvish#get_columns() abort
+  return copy(s:columns)
+endfunction
+
+function! s:sort_columns(first, second) abort
+  return a:first.priority - a:second.priority
 endfunction
 
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>

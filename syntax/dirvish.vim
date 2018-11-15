@@ -10,12 +10,34 @@ if !exists('b:current_syntax')
   exe 'syntax match DirvishPathHead =.*\'.s:sep.'\ze[^\'.s:sep.']\+\'.s:sep.'\?$= conceal'
   exe 'syntax match DirvishPathTail =[^\'.s:sep.']\+\'.s:sep.'$='
   exe 'syntax match DirvishSuffix   =[^\'.s:sep.']*\%('.join(map(split(&suffixes, ','), s:escape), '\|') . '\)$='
+
+  function! s:path_in_arglist(path) abort
+    return len(filter(copy(argv()), 'fnamemodify(v:val, ":p") ==# a:path'))
+  endfunction
 endif
 
-" Define (again). Other windows (different arglists) need the old definitions.
-" Do these last, else they may be overridden (see :h syn-priority).
-for s:p in argv()
-  exe 'syntax match DirvishArg ,'.escape(fnamemodify(s:p,':p'),',*.^$~\').'$, contains=DirvishPathHead'
+silent! exe 'syntax clear DirvishColumnHead'
+silent! exe 'syntax clear DirvishColumnSlash'
+for s:column in dirvish#get_columns()
+  silent! exe 'syntax clear '.s:column.hi_group
+endfor
+
+for s:path in getline(1, '$')
+  let s:col = get(filter(dirvish#get_columns(), 'call(v:val.handler, [s:path])'), 0, {})
+  if empty(s:col)
+    continue
+  endif
+
+  let s:end = isdirectory(s:path) ? s:sep : ''
+  let s:modifier = isdirectory(s:path) ? ':p:h' : ':p'
+
+  let s:normalized_path = fnamemodify(s:path, s:modifier)
+  let s:head = escape(fnamemodify(s:normalized_path, ':h'), '/,*.^$~\')
+  let s:tail = escape(fnamemodify(s:normalized_path, ':t').s:end, '/,*.^$~\')
+
+  exe 'syntax match DirvishColumnHead =^'.s:head.'\ze\'.s:sep.s:tail.'$= conceal cchar='.s:col.mark
+  exe 'syntax match DirvishColumnSlash =^'.s:head.'\'.s:sep.'\ze'.s:tail.'$= conceal cchar= contains=DirvishColumnHead'
+  exe 'syntax match '.s:col.hi_group.' =^'.s:head.'\zs\'.s:sep.''.s:tail.'$='
 endfor
 
 let b:current_syntax = 'dirvish'
