@@ -32,12 +32,12 @@ for s:path in getline(1, '$')
   let s:modifier = isdirectory(s:path) ? ':p:h' : ':p'
 
   let s:normalized_path = fnamemodify(s:path, s:modifier)
-  let s:head = escape(fnamemodify(s:normalized_path, ':h'), '/,*.^$~\')
-  let s:tail = escape(fnamemodify(s:normalized_path, ':t').s:end, '/,*.^$~\')
+  let s:head = escape(fnamemodify(s:normalized_path, ':h'), ',*.^$~'.s:sep)
+  let s:tail = escape(fnamemodify(s:normalized_path, ':t').s:end, ',*.^$~'.s:sep)
 
-  exe 'syntax match DirvishColumnHead =^'.s:head.'\ze\'.s:sep.s:tail.'$= conceal cchar='.s:col.mark
-  exe 'syntax match DirvishColumnSlash =^'.s:head.'\'.s:sep.'\ze'.s:tail.'$= conceal cchar= contains=DirvishColumnHead'
-  exe 'syntax match '.s:col.hi_group.' =^'.s:head.'\zs\'.s:sep.''.s:tail.'$='
+  exe 'syntax match DirvishColumnHead "^'.s:head.'\(\'.s:sep.s:tail.'$\)\@=" conceal cchar='.s:col.mark
+  exe 'syntax match '.s:col.hi_group.' "\(^'.s:head.'\)\@<=\'.s:sep.s:tail.'$" contains=DirvishColumnSlash'
+  exe 'syntax match DirvishColumnSlash "\(^'.s:head.'\)\@<=\'.s:sep.'\('.s:tail.'$\)\@=" conceal cchar= contained'
 endfor
 
 let b:current_syntax = 'dirvish'
