@@ -4,6 +4,7 @@ endif
 
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:escape = 'substitute(escape(v:val, ".$~"), "*", ".*", "g")'
+let s:relative_paths = get(g:, 'dirvish_relative_paths', 0)
 
 " Define once (per buffer).
 if !exists('b:current_syntax')
@@ -23,6 +24,10 @@ for s:column in dirvish#get_columns()
 endfor
 
 for s:path in getline(1, '$')
+  if s:relative_paths
+    let s:path = expand('%:p').s:path
+  endif
+
   let s:col = get(filter(dirvish#get_columns(), 'call(v:val.handler, [s:path])'), 0, {})
   if empty(s:col)
     continue
@@ -34,6 +39,11 @@ for s:path in getline(1, '$')
   let s:normalized_path = fnamemodify(s:path, s:modifier)
   let s:head = escape(fnamemodify(s:normalized_path, ':h'), ',*.^$~'.s:sep)
   let s:tail = escape(fnamemodify(s:normalized_path, ':t').s:end, ',*.^$~'.s:sep)
+
+  if s:relative_paths
+    exe 'syntax match '.s:col.hi_group.' "^'.s:tail.'$"'
+    continue
+  endif
 
   exe 'syntax match DirvishColumnHead "^'.s:head.'\(\'.s:sep.s:tail.'$\)\@=" conceal cchar='.s:col.mark
   exe 'syntax match '.s:col.hi_group.' "\(^'.s:head.'\)\@<=\'.s:sep.s:tail.'$" contains=DirvishColumnSlash'
