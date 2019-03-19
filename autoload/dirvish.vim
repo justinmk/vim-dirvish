@@ -67,9 +67,11 @@ endfunction
 
 function! s:info(paths) abort
   for f in a:paths
+    " Slash decides how getftype() classifies directory symlinks. #138
+    let noslash = substitute(f, escape(s:sep,'\').'$', '', 'g')
     let fname = len(a:paths) < 2 ? '' : printf('%12.12s ',fnamemodify(substitute(f,'[\\/]\+$','',''),':t'))
-    echo (-1 == getfsize(f) ? '?' : (fname.(getftype(f)[0]).' '.getfperm(f)
-          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.getfsize(f)).('link'!=#getftype(f)?'':' -> '.fnamemodify(resolve(f),':~:.')))
+    echo (-1 == getfsize(f) ? '?' : (fname.(getftype(noslash)[0]).' '.getfperm(f)
+          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.getfsize(f)).('link'!=#getftype(noslash)?'':' -> '.fnamemodify(resolve(f),':~:.')))
   endfor
 endfunction
 
