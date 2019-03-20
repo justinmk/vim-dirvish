@@ -71,7 +71,7 @@ function! s:info(paths) abort
     let noslash = substitute(f, escape(s:sep,'\').'$', '', 'g')
     let fname = len(a:paths) < 2 ? '' : printf('%12.12s ',fnamemodify(substitute(f,'[\\/]\+$','',''),':t'))
     echo (-1 == getfsize(f) ? '?' : (fname.(getftype(noslash)[0]).' '.getfperm(f)
-          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.getfsize(f)).('link'!=#getftype(noslash)?'':' -> '.fnamemodify(resolve(f),':~:.')))
+          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.printf('%.2f',getfsize(f)/1000.0).'K').('link'!=#getftype(noslash)?'':' -> '.fnamemodify(resolve(f),':~:.')))
   endfor
 endfunction
 
