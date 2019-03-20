@@ -66,9 +66,9 @@ Buffer-local (filetype=dirvish) ~
     CTRL-N          Previews the next file.
     CTRL-P          Previews the previous file.
     <Plug>(dirvish_arg)
-    x               Adds file to the local |arglist|.
-    {Visual}x       Adds selected files to the local |arglist|.
-    dax             Starts a new empty local |arglist|.
+    x               Adds/removes file to/from the local |arglist|.
+    {Visual}x       Adds selected files to the local arglist.
+    dax             Starts a new empty local arglist.
     .               Inserts "|:Shdo|  {}" into the command-line.
     [count].        Inserts "|:Shdo|!  {}" into the command-line.
 

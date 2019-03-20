@@ -81,8 +81,12 @@ function! s:set_args(args) abort
   endif
   let normalized_argv = map(argv(), 'fnamemodify(v:val, ":p")')
   for f in a:args
-    if -1 == index(normalized_argv, f)
-      exe '$argadd '.fnameescape(fnamemodify(f, ':p'))
+    let i = index(normalized_argv, f)
+    if -1 == i
+      exe '$argadd '.fnameescape(fnamemodify(f, ':.'))
+    elseif 1 == len(a:args)
+      exe (i+1).'argdelete'
+      syntax clear DirvishArg
     endif
   endfor
   echo 'arglist: '.argc().' files'
