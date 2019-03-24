@@ -83,7 +83,7 @@ function! s:set_args(args) abort
   for f in a:args
     let i = index(normalized_argv, f)
     if -1 == i
-      exe '$argadd '.fnameescape(fnamemodify(f, ':.'))
+      exe '$argadd '.fnameescape(fnamemodify(f, ':p'))
     elseif 1 == len(a:args)
       exe (i+1).'argdelete'
       syntax clear DirvishArg
