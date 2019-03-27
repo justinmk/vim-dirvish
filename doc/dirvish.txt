@@ -60,8 +60,8 @@ Buffer-local (filetype=dirvish) ~
     {Visual}O       Opens each selected file in a new window.
     a               Opens file in a new, vertical window.
     {Visual}A       Opens each selected file in a new, vertical window.
-    K               Shows file info.
-    {Visual}K       Shows info about selected files.
+    K               Shows file info. [count] shows directory size.
+    {Visual}K       Shows info for selected files. [count] shows directory size.
     p               Previews file at cursor.
     CTRL-N          Previews the next file.
     CTRL-P          Previews the previous file.

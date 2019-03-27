@@ -65,13 +65,14 @@ function! s:list_dir(dir) abort
   endif
 endfunction
 
-function! s:info(paths) abort
+function! s:info(paths, dirsize) abort
   for f in a:paths
     " Slash decides how getftype() classifies directory symlinks. #138
     let noslash = substitute(f, escape(s:sep,'\').'$', '', 'g')
     let fname = len(a:paths) < 2 ? '' : printf('%12.12s ',fnamemodify(substitute(f,'[\\/]\+$','',''),':t'))
+    let size = (-1 != getfsize(f) && a:dirsize ? matchstr(system(['du','-hs',f]),'\S\+') : printf('%.2f',getfsize(f)/1000.0).'K')
     echo (-1 == getfsize(f) ? '?' : (fname.(getftype(noslash)[0]).' '.getfperm(f)
-          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.printf('%.2f',getfsize(f)/1000.0).'K').('link'!=#getftype(noslash)?'':' -> '.fnamemodify(resolve(f),':~:.')))
+          \.' '.strftime('%Y-%m-%d.%H:%M:%S',getftime(f)).' '.size).('link'!=#getftype(noslash)?'':' -> '.fnamemodify(resolve(f),':~:.')))
   endfor
 endfunction
 
@@ -475,5 +476,5 @@ endfunction
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>
 nnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args([getline('.')])<CR>
 xnoremap <silent> <Plug>(dirvish_arg) :<C-U>call <SID>set_args(getline("'<", "'>"))<CR>
-nnoremap <silent> <Plug>(dirvish_K) :<C-U>call <SID>info([getline('.')])<CR>
-xnoremap <silent> <Plug>(dirvish_K) :<C-U>call <SID>info(getline("'<", "'>"))<CR>
+nnoremap <silent> <Plug>(dirvish_K) :<C-U>call <SID>info([getline('.')],!!v:count)<CR>
+xnoremap <silent> <Plug>(dirvish_K) :<C-U>call <SID>info(getline("'<", "'>"),!!v:count)<CR>
