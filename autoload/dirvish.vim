@@ -2,6 +2,7 @@ let s:srcdir = expand('<sfile>:h:h:p')
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
+let s:cb_map = {}   " callback map
 
 function! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
@@ -204,7 +205,7 @@ function! s:win_init() abort
   setlocal nowrap cursorline
 
   if has('conceal')
-    setlocal concealcursor=nvc conceallevel=3
+    setlocal concealcursor=nvc conceallevel=2
   endif
 endfunction
 
@@ -368,6 +369,29 @@ function! s:buf_render(dir, lastpath) abort
   call search('\'.s:sep.'\zs[^\'.s:sep.']\+\'.s:sep.'\?$', 'c', line('.'))
 endfunction
 
+function! s:apply_icons() abort
+  if 0 == len(s:cb_map)
+    return
+  endif
+  highlight clear Conceal
+  for f in getline(1, '$')
+    let icon = ''
+    for id in sort(keys(s:cb_map))
+      let icon = s:cb_map[id](f)
+      if -1 != match(icon, '\S')
+        break
+      endif
+    endfor
+    if icon != ''
+      let isdir = (f[-1:] == '/')
+      let f = substitute(fnamemodify(f,':p'), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
+      let head_esc = escape(fnamemodify(f,':h').(fnamemodify(f,':h')==s:sep?'':s:sep), '[,*.^$~\')
+      let tail_esc = escape(fnamemodify(f, ':t').(isdir?(s:sep):''), '[,*.^$~\')
+      exe 'syntax match DirvishColumnHead =^'.head_esc.'\ze'.tail_esc.'$= conceal cchar='.icon
+    endif
+  endfor
+endfunction
+
 function! s:open_dir(d, reload) abort
   let d = a:d
   let dirname_without_sep = substitute(d._dir, '[\\/]\+$', '', 'g')
@@ -416,6 +440,7 @@ function! s:open_dir(d, reload) abort
     exe 'source '.fnameescape(s:srcdir.'/ftplugin/dirvish.vim')
     setlocal filetype=dirvish
     let b:dirvish._c = b:changedtick
+    call s:apply_icons()
   endif
 endfunction
 
@@ -471,6 +496,20 @@ function! dirvish#open(...) range abort
 
   call s:save_state(d)
   call s:open_dir(d, reloading)
+endfunction
+
+function! dirvish#add_icon_fn(fn) abort
+  if !exists('v:t_func') || type(a:fn) != v:t_func | throw 'argument must be a Funcref' | endif
+  let s:cb_map[string(a:fn)] = a:fn
+  return string(a:fn)
+endfunction
+
+function! dirvish#remove_icon_fn(fn_id) abort
+  if has_key(s:cb_map, a:fn_id)
+    call remove(s:cb_map, a:fn_id)
+    return 1
+  endif
+  return 0
 endfunction
 
 nnoremap <silent> <Plug>(dirvish_quit) :<C-U>call <SID>buf_close()<CR>

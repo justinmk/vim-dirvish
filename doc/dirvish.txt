@@ -101,10 +101,29 @@ COMMANDS                                                    *dirvish-commands*
 ==============================================================================
 FUNCTIONS                                                  *dirvish-functions*
 
+                                                              *dirvish#open()*
 [range]dirvish#open({cmd}, {bg})
     Performs {cmd} ("edit", "vsplit", "split", "tabedit") on the files in
     [range]. {bg} must be 0 (open files in current window) or 1 (open files in
     the "background").
+
+                                                       *dirvish#add_icon_fn()*
+dirvish#add_icon_fn(fn)
+    Registers a function {fn} to decide the "icon" for each path in a Dirvish
+    buffer. Returns id for use with |dirvish#remove_icon_fn()|. If multiple
+    functions are registered: the first function to return non-whitespace for
+    a given path, wins. Best practice: if you don't have anything meaningful
+    to show for a given path, return empty string (or whitespace).
+
+    {fn} is any |Funcref| that takes a path (string) and returns a single
+    character (the "icon"). Example: >
+        call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
+<
+
+                                                    *dirvish#remove_icon_fn()*
+dirvish#remove_icon_fn(fn_id)
+    Unregisters the function associated with {fn_id} returned from
+    |dirvish#add_icon_fn()|.
 
 ==============================================================================
 OPTIONS                                                      *dirvish-options*
