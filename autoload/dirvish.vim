@@ -165,7 +165,9 @@ function! s:buf_init() abort
 endfunction
 
 function! s:on_bufenter() abort
-  if !exists('b:dirvish') || (empty(getline(1)) && 1 == line('$'))
+  if bufname('%') is ''  " Something is very wrong. #136
+    return
+  elseif !exists('b:dirvish') || (empty(getline(1)) && 1 == line('$'))
     Dirvish %
   elseif 3 != &l:conceallevel && !s:buf_modified()
     call s:win_init()
