@@ -165,13 +165,13 @@ function! s:buf_init() abort
 endfunction
 
 function! s:on_bufenter() abort
-  " Ensure w:dirvish for window splits, `:b <nr>`, etc.
-  let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
-
-  if empty(getline(1)) && 1 == line('$')
+  if !exists('b:dirvish') || (empty(getline(1)) && 1 == line('$'))
     Dirvish %
   elseif 3 != &l:conceallevel && !s:buf_modified()
     call s:win_init()
+  else
+    " Ensure w:dirvish for window splits, `:b <nr>`, etc.
+    let w:dirvish = extend(get(w:, 'dirvish', {}), b:dirvish, 'keep')
   endif
 endfunction
 
