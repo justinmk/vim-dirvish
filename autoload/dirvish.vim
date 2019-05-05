@@ -251,8 +251,8 @@ function! s:open_selected(splitcmd, bg, line1, line2) abort
       continue
     endif
 
-    if p
-      exe (winnr('$') > 1 ? 'wincmd p' : 'vsplit')
+    if p  " Go to previous window.
+      exe (winnr('$') > 1 ? 'wincmd p|if winnr()=='.winnr().'|wincmd w|endif' : 'vsplit')
     endif
 
     if isdirectory(path)
