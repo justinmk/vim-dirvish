@@ -343,7 +343,7 @@ function! s:buf_render(dir, lastpath) abort
   endif
 
   if !isnew
-    call s:bufwin_do('let w:dirvish["_view"] = winsaveview()', bname)
+    call s:bufwin_do('let w:dirvish = get(w:,"dirvish",{}) | let w:dirvish["_view"] = winsaveview()', bname)
   endif
 
   if v:version > 704 || v:version == 704 && has("patch73")
