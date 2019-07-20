@@ -53,7 +53,7 @@ endif
 
 function! s:list_dir(dir) abort
   " Escape for glob().
-  let dir_esc = substitute(a:dir,'\V[','[[]','g')
+  let dir_esc = escape(substitute(a:dir,'\[','[[]','g'),'{}')
   let paths = s:globlist(dir_esc.'*')
   "Append dot-prefixed files. glob() cannot do both in 1 pass.
   let paths = paths + s:globlist(dir_esc.'.[^.]*')

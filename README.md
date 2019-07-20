@@ -86,6 +86,7 @@ Some people have created plugins that extend Dirvish:
 Credits
 -------
 
-Dirvish was originally forked from
-[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle) (and completely
-rewritten). Thanks to @jeetsukumaran.
+Dirvish was originally forked (and completely rewritten) from
+[filebeagle](https://github.com/jeetsukumaran/vim-filebeagle) by Jeet Sukumaran.
+
+Copyright 2015 Justin M. Keyes.
