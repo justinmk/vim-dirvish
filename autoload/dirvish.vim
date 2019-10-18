@@ -385,7 +385,7 @@ function! s:apply_icons() abort
       endif
     endfor
     if icon != ''
-      let isdir = (f[-1:] == '/')
+      let isdir = (f[-1:] == s:sep)
       let f = substitute(fnamemodify(f,':p'), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
       let head_esc = escape(fnamemodify(f,':h').(fnamemodify(f,':h')==s:sep?'':s:sep), '[,*.^$~\')
       let tail_esc = escape(fnamemodify(f, ':t').(isdir?(s:sep):''), '[,*.^$~\')
