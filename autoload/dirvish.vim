@@ -318,7 +318,7 @@ endfunction
 
 " Performs `cmd` in all windows showing `bname`.
 function! s:bufwin_do(cmd, bname) abort
-  let [curtab, curwin, curwinalt] = [tabpagenr(), winnr(), winnr('#')]
+  let [curtab, curwin, curwinalt, origheight] = [tabpagenr(), winnr(), winnr('#'), winheight(0)]
   for tnr in range(1, tabpagenr('$'))
     let [origwin, origwinalt] = [tabpagewinnr(tnr), tabpagewinnr(tnr, '#')]
     for bnr in tabpagebuflist(tnr)
@@ -331,6 +331,7 @@ function! s:bufwin_do(cmd, bname) abort
   endfor
   exe s:noau 'tabnext '.curtab
   exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
+  if &winminheight == 0 && (winheight(0) == origheight - 1) | exe s:noau 'resize +1' | endif
 endfunction
 
 function! s:buf_render(dir, lastpath) abort
