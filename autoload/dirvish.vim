@@ -323,7 +323,7 @@ else
   endfunction
 
   function! s:bufwin_do(cmd, bname) abort
-    let [curtab, curwin, curwinalt, curheight, curwidth, winrestcmd] = [tabpagenr(), winnr(), winnr('#'), winheight(0), winwidth(0), winrestcmd()]
+    let [curtab, curwin, curwinalt, curheight, curwidth, squashcmds] = [tabpagenr(), winnr(), winnr('#'), winheight(0), winwidth(0), filter(split(winrestcmd(), '|'), 'v:val =~# " 0$"')]
     for tnr in range(1, tabpagenr('$'))
       let [origwin, origwinalt] = [tabpagewinnr(tnr), tabpagewinnr(tnr, '#')]
       for bnr in tabpagebuflist(tnr)
@@ -337,7 +337,12 @@ else
     exe s:noau 'tabnext '.curtab
     exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
     if (&winminheight == 0 && curheight != winheight(0)) || (&winminwidth == 0 && curwidth != winwidth(0))
-      exe s:noau winrestcmd
+      for squashcmd in squashcmds
+        if squashcmd =~# '^\Cvert ' && winwidth(matchstr('\d\+', squashcmd)) != 0
+          \ || squashcmd =~# '^\d' && winheight(matchstr('\d\+', squashcmd)) != 0
+          exe s:noau squashcmd
+        endif
+      endfor
     endif
   endfunction
 endif
