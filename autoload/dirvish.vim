@@ -306,33 +306,46 @@ function! s:try_visit(bnr, noau) abort
   return 0
 endfunction
 
-function! s:tab_win_do(tnr, cmd, bname) abort
-  exe s:noau 'tabnext' a:tnr
-  for wnr in range(1, tabpagewinnr(a:tnr, '$'))
-    if a:bname ==# bufname(winbufnr(wnr))
-      exe s:noau wnr.'wincmd w'
-      exe a:cmd
-    endif
-  endfor
-endfunction
-
-" Performs `cmd` in all windows showing `bname`.
-function! s:bufwin_do(cmd, bname) abort
-  let [curtab, curwin, curwinalt, origheight] = [tabpagenr(), winnr(), winnr('#'), winheight(0)]
-  for tnr in range(1, tabpagenr('$'))
-    let [origwin, origwinalt] = [tabpagewinnr(tnr), tabpagewinnr(tnr, '#')]
-    for bnr in tabpagebuflist(tnr)
-      if a:bname ==# bufname(bnr) " tab has at least 1 matching window
-        call s:tab_win_do(tnr, a:cmd, a:bname)
-        exe s:noau origwinalt.'wincmd w|' s:noau origwin.'wincmd w'
-        break
+if exists('*win_execute')
+  " Performs `cmd` in all windows showing `bname`.
+  function! s:bufwin_do(cmd, bname) abort
+    call map(filter(getwininfo(), {_,v -> a:bname ==# bufname(v.bufnr)}), {_,v -> win_execute(v.winid, s:noau.' '.a:cmd)})
+  endfunction
+else
+  function! s:tab_win_do(tnr, cmd, bname) abort
+    exe s:noau 'tabnext' a:tnr
+    for wnr in range(1, tabpagewinnr(a:tnr, '$'))
+      if a:bname ==# bufname(winbufnr(wnr))
+        exe s:noau wnr.'wincmd w'
+        exe a:cmd
       endif
     endfor
-  endfor
-  exe s:noau 'tabnext '.curtab
-  exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
-  if &winminheight == 0 && (winheight(0) == origheight - 1) | exe s:noau 'resize +1' | endif
-endfunction
+  endfunction
+
+  function! s:bufwin_do(cmd, bname) abort
+    let [curtab, curwin, curwinalt, curheight, curwidth, squashcmds] = [tabpagenr(), winnr(), winnr('#'), winheight(0), winwidth(0), filter(split(winrestcmd(), '|'), 'v:val =~# " 0$"')]
+    for tnr in range(1, tabpagenr('$'))
+      let [origwin, origwinalt] = [tabpagewinnr(tnr), tabpagewinnr(tnr, '#')]
+      for bnr in tabpagebuflist(tnr)
+        if a:bname ==# bufname(bnr)
+          call s:tab_win_do(tnr, a:cmd, a:bname)
+          exe s:noau origwinalt.'wincmd w|' s:noau origwin.'wincmd w'
+          break
+        endif
+      endfor
+    endfor
+    exe s:noau 'tabnext '.curtab
+    exe s:noau curwinalt.'wincmd w|' s:noau curwin.'wincmd w'
+    if (&winminheight == 0 && curheight != winheight(0)) || (&winminwidth == 0 && curwidth != winwidth(0))
+      for squashcmd in squashcmds
+        if squashcmd =~# '^\Cvert ' && winwidth(matchstr('\d\+', squashcmd)) != 0
+          \ || squashcmd =~# '^\d' && winheight(matchstr('\d\+', squashcmd)) != 0
+          exe s:noau squashcmd
+        endif
+      endfor
+    endif
+  endfunction
+endif
 
 function! s:buf_render(dir, lastpath) abort
   let bname = bufname('%')
