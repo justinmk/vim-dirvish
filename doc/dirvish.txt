@@ -178,6 +178,8 @@ Sort folders at the bottom: >
     :sort ,^.*[^\/],
 To make this automatic, set |g:dirvish_mode|: >
     let g:dirvish_mode = ':sort ,^.*[\/],'
+If you use |g:dirvish_relative_paths|, try this: >
+    let g:dirvish_mode = ':sort ,^\v(.*[\/])|\ze,'
 
 How do I filter? ~
 Use |:global| to delete lines matching any filter: >
