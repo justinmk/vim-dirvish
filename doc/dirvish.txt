@@ -69,8 +69,10 @@ Buffer-local (filetype=dirvish) ~
     x               Adds/removes file to/from the local |arglist|.
     {Visual}x       Adds selected files to the local arglist.
     dax             Starts a new empty local arglist.
-    .               Inserts "|:Shdo|  {}" into the command-line.
-    [count].        Inserts "|:Shdo|!  {}" into the command-line.
+    .               Inserts "|:Shdo| {}" into the command-line when the local
+                    |arglist| is not empty or "! {current_line}" when the
+                    local |arglist| is empty.
+    [count].        Inserts "|:Shdo|! {}" into the command-line.
 
 Buffer-local (:Shdo) ~
                                                     *Z!* *dirvish-Z!*
