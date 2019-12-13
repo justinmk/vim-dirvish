@@ -45,15 +45,15 @@ nnoremap <buffer><silent> R :<C-U><C-R>=v:count ? ':let g:dirvish_mode='.v:count
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
 function! s:nmap_dot()
-  if argc() > 0
-    return ':Shdo'.(v:count > 0 ? '!' : '').' {}'
+  if argc() > 0 || v:count > 0
+    return 'Shdo'.(v:count > 0 ? '!' : '').' {}'
   else
-    return ':! '.getline('.')
+    return '! '.getline('.')
   endif
 endfunction
 " <Home><C-Right> are here because <Left> and friends are interpreted
 " literally when returned by nmap_dot
-execute 'nnoremap <expr>'.s:nowait.'<buffer> . <SID>nmap_dot()."<Home><C-Right>"'
+execute 'nnoremap <expr>'.s:nowait.'<buffer> . ":<C-u>".<SID>nmap_dot()."<Home><C-Right>"'
 execute 'xnoremap <expr>'.s:nowait.'<buffer> . ":Shdo".(v:count>0?"!":"")." {}<Left><Left><Left>"'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
