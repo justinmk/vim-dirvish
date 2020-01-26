@@ -44,7 +44,7 @@ execute 'xnoremap '.s:nowait.'<buffer><silent> P    :call dirvish#open("p", 1)<C
 nnoremap <buffer><silent> R :<C-U><C-R>=v:count ? ':let g:dirvish_mode='.v:count.'<Bar>' : ''<CR>Dirvish %<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
-execute 'nnoremap <expr>'.s:nowait.'<buffer> . ":<C-u>".(v:count ? "Shdo".(v:count?"!":"")." {}" : ("! ".getline(".")))."<Home><C-Right>"'
+execute 'nnoremap <expr>'.s:nowait.'<buffer> . ":<C-u>".(v:count ? "Shdo".(v:count?"!":"")." {}" : ("! ".shellescape(fnamemodify(getline("."),":."))))."<Home><C-Right>"'
 execute 'xnoremap <expr>'.s:nowait.'<buffer> . ":Shdo".(v:count?"!":" ")." {}<Left><Left><Left>"'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
