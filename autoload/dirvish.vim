@@ -417,7 +417,9 @@ function! s:open_dir(d, reload) abort
   " Try to find an existing buffer before creating a new one.
   let bnr = -1
   for pat in ['', ':~:.', ':~']
-    let bnr = bufnr('^'.fnamemodify(d._dir, pat).'$')
+    let dir = fnamemodify(d._dir, pat)
+    if dir == '' | continue | endif
+    let bnr = bufnr('^'.dir.'$')
     if -1 != bnr
       break
     endif
