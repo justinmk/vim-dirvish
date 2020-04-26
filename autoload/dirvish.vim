@@ -463,11 +463,7 @@ function! s:open_dir(d, reload) abort
 endfunction
 
 function! s:should_reload() abort
-  if line('$') < 1000 || '' ==# glob(getline('$'),1)
-    return !s:buf_modified() || (empty(getline(1)) && 1 == line('$'))
-  endif
-  redraw | echo 'dirvish: showing cached listing ("R" to reload)'
-  return 0
+  return !s:buf_modified() || (empty(getline(1)) && 1 == line('$'))
 endfunction
 
 function! s:buf_isvalid(bnr) abort
