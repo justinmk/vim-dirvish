@@ -456,7 +456,9 @@ function! s:open_dir(d, reload) abort
     call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
     " Set up Dirvish before any other `FileType dirvish` handler.
     exe 'source '.fnameescape(s:srcdir.'/ftplugin/dirvish.vim')
+    let curwin = winnr()
     setlocal filetype=dirvish
+    if curwin != winnr() | throw 'FileType autocmd changed the window' | endif
     let b:dirvish._c = b:changedtick
     call s:apply_icons()
   endif
