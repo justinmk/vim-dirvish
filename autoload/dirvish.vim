@@ -15,7 +15,7 @@ endfunction
 
 " Normalize slashes for safe use of fnameescape(), isdirectory(). Vim bug #541.
 function! s:sl(path) abort
-  return tr(a:path, '\', '/')
+  return has('win32') ? tr(a:path, '\', '/') : a:path
 endfunction
 
 function! s:normalize_dir(dir, silent) abort
