@@ -172,6 +172,11 @@ func! dirvish#shdo(paths, cmd) abort
   augroup END
 
   nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.(has('win32')?fnameescape(escape(expand('%:p:gs?\\?/?'), '&\')):join(map(split(&shell), 'shellescape(v:val)')).' %')<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
+  let b:dirvish_dir = escape(shellescape(head),'&\')
+
+  if exists("#User#DirvishShdo")
+    doautocmd <nomodeline> User DirvishShdo
+  endif
 endf
 
 " Returns true if the buffer was modified by the user.
