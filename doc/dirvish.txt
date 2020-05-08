@@ -127,6 +127,28 @@ dirvish#remove_icon_fn(fn_id)
     |dirvish#add_icon_fn()|.
 
 ==============================================================================
+AUTOCOMMANDS                                            *dirvish-autocommands*
+
+DirvishShdoCreated                                   *User_DirvishShdoCreated*
+    A |User| |autocommand| invoked after creating a |:Shdo| buffer.
+    b:dirvish_dir is set to the previous Dirvish buffer's path.
+
+    To ensure scripts always cd to the current dirvish directory, you could
+    add this to your vimrc: >
+
+    autocmd User DirvishShdoCreated call OnShdoCreated()
+    function! OnShdoCreated() abort
+        if has('win32')
+            " work across hard drives
+            let chdir = 'pushd '
+        else
+            let chdir = 'cd '
+        endif
+        call append(0, [chdir .. b:dirvish_dir, ''])
+    endf
+<
+
+==============================================================================
 OPTIONS                                                      *dirvish-options*
 
 g:dirvish_mode = 1                                  *g:dirvish_mode*
