@@ -239,5 +239,18 @@ Put this in your vimrc: >
     command! -nargs=? -complete=dir Sexplore belowright split | silent Dirvish <args>
     command! -nargs=? -complete=dir Vexplore leftabove vsplit | silent Dirvish <args>
 
+How to expand a directory inline (like a tree-style view)? ~
+There is a hacky solution. Put this in your vimrc and hit "t" on a directory: >
+
+    augroup dirvish_config
+      autocmd!
+      autocmd FileType dirvish
+                  \ nnoremap <silent><buffer> t ddO<Esc>:let @"=substitute(@", '\n', '', 'g')<CR>:r ! find "<C-R>"" -maxdepth 1 -print0 \| xargs -0 ls -Fd<CR>:silent! keeppatterns %s/\/\//\//g<CR>:silent! keeppatterns %s/[^a-zA-Z0-9\/]$//g<CR>:silent! keeppatterns g/^$/d<CR>:noh<CR>
+    augroup END
+
+Note:
+- Expects unix-style filepaths.
+- Will overwrite your " register.
+
 ==============================================================================
  vim:tw=78:ts=4:et:ft=help:norl:
