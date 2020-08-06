@@ -64,6 +64,44 @@ For any purpose. It's safe and reversible.
   ```
 - Type `u` to undo, or `R` to reload.
 
+### Deleting, moving, copying files
+
+Because every line is a filepath, you can take advantage of this by passing it as an argument to commands the manipulate the file. Example commands for deleting and creating a file:
+
+```vim
+function! CreateFile()
+  " Prompt for new filename
+  let filename = input('File name: ')
+  if trim(filename) == ''
+    return
+  endif
+  " Append filename to the path of the current buffer
+  let filepath = expand("%") . filename
+  " Create the file
+  silent execute(printf(':!touch "%s"', filepath))
+  " Reload the buffer
+  normal R
+endf
+
+function! DeleteItemUnderCursor()
+  " Grab the line under the cursor. Each line is a filepath
+  let target = trim(getline('.'))
+  " Feed the filepath to a delete command like, rm or trash
+  silent execute(printf(':!trash %s', target))
+  " Reload the buffer
+  normal R
+endfunction
+
+augroup dirvish_confif
+  autocmd!
+
+  " 'I' will create a new file
+  autocmd FileType dirvish nnoremap <silent><buffer> I :call CreateFile()<CR>
+  " 'dd' will delete file under the cursor
+  autocmd FileType dirvish nnoremap <silent><buffer> dd :call DeleteItemUnderCursor()<CR>
+augroup END
+```
+
 ### Work with the :args list
 
 The [arglist](https://neovim.io/doc/user/editing.html#arglist) is an ad-hoc list of filepaths.
