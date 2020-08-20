@@ -4,7 +4,6 @@ endif
 let b:did_ftplugin = 1
 
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
-
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 
 if !hasmapto('<Plug>(dirvish_quit)', 'n')
