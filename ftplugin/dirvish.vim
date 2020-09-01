@@ -4,6 +4,7 @@ endif
 let b:did_ftplugin = 1
 
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
+let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 
 if !hasmapto('<Plug>(dirvish_quit)', 'n')
   execute 'nmap '.s:nowait.'<buffer> q :echohl WarningMsg<Bar>echo "q is deprecated, use gq instead"<Bar>echohl NONE<cr>'
@@ -48,8 +49,13 @@ execute 'nnoremap <expr>'.s:nowait.'<buffer> . ":<C-u>".(v:count ? "Shdo".(v:cou
 execute 'xnoremap <expr>'.s:nowait.'<buffer> . ":Shdo".(v:count?"!":" ")." {}<Left><Left><Left>"'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
-nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
-nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
+if s:sep == '\'
+  nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
+  nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
+else
+  nnoremap <buffer> / /\ze[^/]*[/]\=$<Home>
+  nnoremap <buffer> ? ?\ze[^/]*[/]\=$<Home>
+endif
 
 " Force autoload if `ft=dirvish`
 if !exists('*dirvish#open')|try|call dirvish#open()|catch|endtry|endif
