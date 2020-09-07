@@ -5,6 +5,8 @@ Path navigator designed to work with Vim's built-in mechanisms and
 [complementary](https://github.com/tpope/vim-eunuch)
 [plugins](https://github.com/tpope/vim-unimpaired).
 
+<img src="./dirvish.png" alt="dirvish" width="400"/>
+
 Features
 --------
 
@@ -16,8 +18,6 @@ Features
 - _Intuitive:_ Visual selection opens multiple files
 - _Powerful:_ `:Shdo[!]` generates shell script
 - _Reliable:_ Less code, fewer bugs (96% smaller than netrw). Supports Vim 7.2+
-
-![](./dirvish.png)
 
 Concepts
 --------
