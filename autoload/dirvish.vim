@@ -426,7 +426,7 @@ function! s:open_dir(d, reload) abort
   endfor
 
   if -1 == bnr
-    execute 'silent' s:noswapfile 'edit' fnameescape(d._dir)
+    execute 'silent' s:noswapfile 'keepalt edit' fnameescape(d._dir)
   else
     execute 'silent' s:noswapfile 'buffer' bnr
   endif
