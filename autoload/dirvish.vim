@@ -222,7 +222,7 @@ function! s:buf_close() abort
   endif
 
   let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
-  let found_alt = s:try_visit(altbuf, 1)
+  let found_alt = s:try_visit(altbuf, 0)
   if !s:try_visit(prevbuf, 0) && !found_alt
       \ && (1 == bufnr('%') || (prevbuf != bufnr('%') && altbuf != bufnr('%')))
     bdelete
