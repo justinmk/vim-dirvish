@@ -72,6 +72,9 @@ Buffer-local (filetype=dirvish) ~
     .               Inserts ":! {path}" into the command-line.
     {Visual}.       Inserts "|:Shdo|  {}" into the command-line.
     [count].        Inserts "|:Shdo|! {}" into the command-line.
+    ~               Opens your home directory.
+    cd              Sets the local |current-directory|. |:lcd|
+    [count]cd       Sets the global |current-directory|. |:cd|
 
 Buffer-local (:Shdo) ~
                                                     *Z!* *dirvish-Z!*

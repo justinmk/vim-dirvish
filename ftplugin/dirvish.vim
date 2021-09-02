@@ -26,6 +26,7 @@ if !hasmapto('<Plug>(dirvish_up)', 'n')
   execute 'nmap '.s:nowait.'<buffer> - <Plug>(dirvish_up)'
 endif
 
+execute 'nnoremap '.s:nowait.'<buffer><silent> ~    :<C-U>Dirvish ~/<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> i    :<C-U>.call dirvish#open("edit", 0)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> <CR> :<C-U>.call dirvish#open("edit", 0)<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> a    :<C-U>.call dirvish#open("vsplit", 1)<CR>'
@@ -47,6 +48,7 @@ nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
 execute 'nnoremap <expr>'.s:nowait.'<buffer> . ":<C-u>".(v:count ? "Shdo".(v:count?"!":"")." {}" : ("! ".shellescape(fnamemodify(getline("."),":."))))."<Home><C-Right>"'
 execute 'xnoremap <expr>'.s:nowait.'<buffer> . ":Shdo".(v:count?"!":" ")." {}<Left><Left><Left>"'
+execute 'nnoremap <expr>'.s:nowait.'<buffer> cd ":<C-u>".(v:count ? "cd" : "lcd")." %<Bar>pwd<CR>"'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
 if s:sep == '\'
