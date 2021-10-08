@@ -7,7 +7,6 @@ let s:nowait = (v:version > 703 ? '<nowait>' : '')
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 
 if !hasmapto('<Plug>(dirvish_quit)', 'n')
-  execute 'nmap '.s:nowait.'<buffer> q :echohl WarningMsg<Bar>echo "q is deprecated, use gq instead"<Bar>echohl NONE<cr>'
   execute 'nmap '.s:nowait.'<buffer> gq <Plug>(dirvish_quit)'
 endif
 if !hasmapto('<Plug>(dirvish_arg)', 'n')
