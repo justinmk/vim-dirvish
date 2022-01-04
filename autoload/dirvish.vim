@@ -136,7 +136,7 @@ function! dirvish#shdo(paths, cmd) abort
       \.'|buffer '.bufnr('%').'|setlocal bufhidden=wipe|endif'
   augroup END
 
-  nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.(has('win32')?fnameescape(escape(expand('%:p:gs?\\?/?'), '&\')):shellescape(&shell).' %')<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
+  nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.(has('win32')?fnameescape(escape(expand('%:p:gs?\\?/?'), '&\')):join(map(split(&shell), 'shellescape(v:val)')).' %')<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
 endfunction
 
 " Returns true if the buffer was modified by the user.
@@ -426,7 +426,7 @@ function! s:open_dir(d, reload) abort
   endfor
 
   if -1 == bnr
-    execute 'silent' s:noswapfile 'edit' fnameescape(d._dir)
+    execute 'silent' s:noswapfile 'keepalt edit' fnameescape(d._dir)
   else
     execute 'silent' s:noswapfile 'buffer' bnr
   endif
