@@ -41,11 +41,11 @@ function! s:parent_dir(dir) abort
   return s:normalize_dir(fnamemodify(a:dir, mod), 0)
 endfunction
 
-if v:version > 703
+if v:version > 704 || v:version == 704 && has('patch279')
 function! s:globlist(dir_esc, pat) abort
   return globpath(a:dir_esc, a:pat, !s:suf(), 1)
 endfunction
-else "Vim 7.3 glob() cannot handle filenames containing newlines.
+else " Older versions cannot handle filenames containing newlines.
 function! s:globlist(dir_esc, pat) abort
   return split(globpath(a:dir_esc, a:pat, !s:suf()), "\n")
 endfunction
