@@ -477,9 +477,9 @@ function! dirvish#open(...) range abort
     call s:msg_error("'autochdir' is not supported")
     return
   endif
-  if !&autowriteall && !&hidden && &modified
+  if (&bufhidden =~# '\vunload|delete|wipe' || (!&autowriteall && !&hidden && &modified))
       \ && (!exists("*win_findbuf") || len(win_findbuf(winbufnr(0))) == 1)
-    call s:msg_error("E37: No write since last change")
+    call s:msg_error(&modified ? 'E37: No write since last change' : 'E37: Buffer would be deleted')
     return
   endif
 
