@@ -3,6 +3,8 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
+let g:dirvish_remap_search_pattern = get(g:, 'dirvish_remap_search_pattern', 1)
+
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 
@@ -50,12 +52,14 @@ execute 'xnoremap <expr>'.s:nowait.'<buffer> . ":Shdo".(v:count?"!":" ")." {}<Le
 execute 'nnoremap <expr>'.s:nowait.'<buffer> cd ":<C-u>".(v:count ? "cd" : "lcd")." %<Bar>pwd<CR>"'
 
 " Buffer-local / and ? mappings to skip the concealed path fragment.
-if s:sep == '\'
-  nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
-  nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
-else
-  nnoremap <buffer> / /\ze[^/]*[/]\=$<Home>
-  nnoremap <buffer> ? ?\ze[^/]*[/]\=$<Home>
+if g:dirvish_remap_search_pattern
+  if s:sep == '\'
+    nnoremap <buffer> / /\ze[^\/]*[\/]\=$<Home>
+    nnoremap <buffer> ? ?\ze[^\/]*[\/]\=$<Home>
+  else
+    nnoremap <buffer> / /\ze[^/]*[/]\=$<Home>
+    nnoremap <buffer> ? ?\ze[^/]*[/]\=$<Home>
+  endif
 endif
 
 " Force autoload if `ft=dirvish`

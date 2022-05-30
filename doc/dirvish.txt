@@ -251,6 +251,10 @@ There is a hacky solution. Put this in your vimrc and hit "t" on a directory: >
                   \ nnoremap <silent><buffer> t ddO<Esc>:let @"=substitute(@", '\n', '', 'g')<CR>:r ! find "<C-R>"" -maxdepth 1 -print0 \| xargs -0 ls -Fd<CR>:silent! keeppatterns %s/\/\//\//g<CR>:silent! keeppatterns %s/[^a-zA-Z0-9\/]$//g<CR>:silent! keeppatterns g/^$/d<CR>:noh<CR>
     augroup END
 
+How to disable default mappings for '/' and '?' ?~
+Set g:dirvish_remap_search_pattern to 0, put this in your vimrc: >
+    let g:dirvish_remap_search_pattern = 0
+
 Note:
 - Expects unix-style filepaths.
 - Will overwrite your " register.
