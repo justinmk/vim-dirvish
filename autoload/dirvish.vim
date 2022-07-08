@@ -4,6 +4,20 @@ let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
 let s:cb_map = {}   " callback map
 
+" Debug:
+"     echo '' > dirvish.log ; tail -F dirvish.log
+"     nvim +"let g:dirvish_dbg=1" -- b1 b2
+"     :bnext
+"     -
+if get(g:, 'dirvish_dbg')
+  func! s:log(msg, ...) abort
+    call writefile([a:msg], expand('~/dirvish.log'), 'as')
+  endf
+else
+  func! s:log(msg, ...) abort
+  endf
+endif
+
 func! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
 endf
@@ -179,27 +193,28 @@ endf
 
 func! s:save_state(d) abort
   " Remember previous ('original') buffer.
-  let a:d.prevbuf = s:buf_isvalid(bufnr('%')) || !exists('w:dirvish')
-        \ ? 0+bufnr('%') : w:dirvish.prevbuf
-  if !s:buf_isvalid(a:d.prevbuf)
+  let p = s:buf_valid(bufnr('%')) || !exists('w:dirvish') ? 0+bufnr('%') : w:dirvish.prevbuf
+  if !s:buf_valid(p)
     "If reached via :edit/:buffer/etc. we cannot get the (former) altbuf.
-    let a:d.prevbuf = exists('b:dirvish') && s:buf_isvalid(b:dirvish.prevbuf)
-        \ ? b:dirvish.prevbuf : bufnr('#')
+    let p = exists('b:dirvish') && s:buf_valid(b:dirvish.prevbuf) ? b:dirvish.prevbuf : bufnr('#')
   endif
 
   " Remember alternate buffer.
-  let a:d.altbuf = s:buf_isvalid(bufnr('#')) || !exists('w:dirvish')
-        \ ? 0+bufnr('#') : w:dirvish.altbuf
-  if exists('b:dirvish') && (a:d.altbuf == a:d.prevbuf || !s:buf_isvalid(a:d.altbuf))
-    let a:d.altbuf = b:dirvish.altbuf
+  let a = (p != bufnr('#') && s:buf_valid(bufnr('#'))) || !exists('w:dirvish') ? 0+bufnr('#') : w:dirvish.altbuf
+  if !s:buf_valid(a) || a == p
+    let a = exists('b:dirvish') && s:buf_valid(b:dirvish.altbuf) ? b:dirvish.altbuf : -1
   endif
 
   " Save window-local settings.
+  let a:d.altbuf = a
+  let a:d.prevbuf = p
   let w:dirvish = extend(get(w:, 'dirvish', {}), a:d, 'force')
   let [w:dirvish._w_wrap, w:dirvish._w_cul] = [&l:wrap, &l:cul]
   if has('conceal') && !exists('b:dirvish')
     let [w:dirvish._w_cocu, w:dirvish._w_cole] = [&l:concealcursor, &l:conceallevel]
   endif
+
+  call s:log(printf('save_state: bufnr=%d altbuf=%d prevbuf=%d', bufnr(''), a:d.altbuf, a:d.prevbuf))
 endf
 
 func! s:win_init() abort
@@ -222,6 +237,7 @@ func! s:buf_close() abort
   endif
 
   let [altbuf, prevbuf] = [get(d, 'altbuf', 0), get(d, 'prevbuf', 0)]
+  call s:log(printf('buf_close: bufnr=%d altbuf=%d prevbuf=%d', bufnr(''), altbuf, prevbuf))
   let found_alt = s:try_visit(altbuf, 0)
   if !s:try_visit(prevbuf, 0) && !found_alt
       \ && (1 == bufnr('%') || (prevbuf != bufnr('%') && altbuf != bufnr('%')))
@@ -278,12 +294,8 @@ func! s:open_selected(splitcmd, bg, line1, line2) abort
   endif
 endf
 
-func! s:is_valid_altbuf(bnr) abort
-  return a:bnr != bufnr('%') && bufexists(a:bnr) && empty(getbufvar(a:bnr, 'dirvish'))
-endf
-
 func! s:set_altbuf(bnr) abort
-  if !s:is_valid_altbuf(a:bnr) | return | endif
+  if !s:buf_valid(a:bnr) | return | endif
 
   if has('patch-7.4.605') | let @# = a:bnr | return | endif
 
@@ -296,7 +308,7 @@ func! s:set_altbuf(bnr) abort
 endf
 
 func! s:try_visit(bnr, noau) abort
-  if s:is_valid_altbuf(a:bnr)
+  if s:buf_valid(a:bnr)
     " If _previous_ buffer is _not_ loaded (because of 'nohidden'), we must
     " allow autocmds (else no syntax highlighting; #13).
     let noau = a:noau && bufloaded(a:bnr) ? 'noau' : ''
@@ -468,7 +480,7 @@ func! s:should_reload() abort
   return !s:buf_modified() || (empty(getline(1)) && 1 == line('$'))
 endf
 
-func! s:buf_isvalid(bnr) abort
+func! s:buf_valid(bnr) abort
   return bufexists(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
 endf
 
