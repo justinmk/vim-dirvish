@@ -323,28 +323,28 @@ func! s:try_visit(bnr, noau) abort
 endf
 
 if exists('*win_execute')
-  " Performs `cmd` in all windows showing `bname`.
-  func! s:bufwin_do(cmd, bname) abort
-    call map(filter(getwininfo(), {_,v -> a:bname ==# bufname(v.bufnr)}), {_,v -> win_execute(v.winid, s:noau.' '.a:cmd)})
+  " Performs `cmd` in all windows showing `bnr`.
+  func! s:bufwin_do(cmd, bnr) abort
+    call map(filter(getwininfo(), {_,v -> a:bnr ==# v.bufnr}), {_,v -> win_execute(v.winid, s:noau.' '.a:cmd)})
   endf
 else
-  func! s:tab_win_do(tnr, cmd, bname) abort
+  func! s:tab_win_do(tnr, cmd, bnr) abort
     exe s:noau 'tabnext' a:tnr
     for wnr in range(1, tabpagewinnr(a:tnr, '$'))
-      if a:bname ==# bufname(winbufnr(wnr))
+      if a:bnr ==# winbufnr(wnr)
         exe s:noau wnr.'wincmd w'
         exe a:cmd
       endif
     endfor
   endf
 
-  func! s:bufwin_do(cmd, bname) abort
+  func! s:bufwin_do(cmd, bnr) abort
     let [curtab, curwin, curwinalt, curheight, curwidth, squashcmds] = [tabpagenr(), winnr(), winnr('#'), winheight(0), winwidth(0), filter(split(winrestcmd(), '|'), 'v:val =~# " 0$"')]
     for tnr in range(1, tabpagenr('$'))
       let [origwin, origwinalt] = [tabpagewinnr(tnr), tabpagewinnr(tnr, '#')]
       for bnr in tabpagebuflist(tnr)
-        if a:bname ==# bufname(bnr)
-          call s:tab_win_do(tnr, a:cmd, a:bname)
+        if a:bnr == bnr
+          call s:tab_win_do(tnr, a:cmd, a:bnr)
           exe s:noau origwinalt.'wincmd w|' s:noau origwin.'wincmd w'
           break
         endif
@@ -364,16 +364,16 @@ else
 endif
 
 func! s:buf_render(dir, lastpath) abort
-  let bname = bufname('%')
+  let bnr = bufnr('%')
   let isnew = empty(getline(1))
 
-  if !isdirectory(s:sl(bname))
+  if !isdirectory(s:sl(bufname('%')))
     echoerr 'dirvish: fatal: buffer name is not a directory:' bufname('%')
     return
   endif
 
   if !isnew
-    call s:bufwin_do('let w:dirvish["_view"] = winsaveview()', bname)
+    call s:bufwin_do('let w:dirvish["_view"] = winsaveview()', bnr)
   endif
 
   if v:version > 704 || v:version == 704 && has("patch73")
@@ -389,7 +389,7 @@ func! s:buf_render(dir, lastpath) abort
   endif
 
   if !isnew
-    call s:bufwin_do('call winrestview(w:dirvish["_view"])', bname)
+    call s:bufwin_do('call winrestview(w:dirvish["_view"])', bnr)
   endif
 
   if !empty(a:lastpath)
