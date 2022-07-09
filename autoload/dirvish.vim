@@ -3,6 +3,7 @@ let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
 let s:cb_map = {}   " callback map
+let s:rel = get(g:, 'dirvish_relative_paths', 0)
 
 " Debug:
 "     echo '' > dirvish.log ; tail -F dirvish.log
@@ -20,6 +21,10 @@ endif
 
 func! s:msg_error(msg) abort
   redraw | echohl ErrorMsg | echomsg 'dirvish:' a:msg | echohl None
+endf
+
+func! s:eq(dir1, dir2) abort
+  return fnamemodify(a:dir1, ':p') ==# fnamemodify(a:dir2, ':p')
 endf
 
 func! s:suf() abort
@@ -72,9 +77,8 @@ func! s:list_dir(dir) abort
   "Append dot-prefixed files. globpath() cannot do both in 1 pass.
   let paths = paths + s:globlist(dir_esc, '.[^.]*')
 
-  if get(g:, 'dirvish_relative_paths', 0)
-      \ && a:dir != s:parent_dir(getcwd()) "avoid blank CWD
-    return map(paths, "fnamemodify(v:val, ':p:.')")
+  if s:rel && !s:eq(a:dir, s:parent_dir(getcwd()))
+    return map(paths, "fnamemodify(v:val, ':p:.')")  " Avoid blank CWD.
   else
     return map(paths, "fnamemodify(v:val, ':p')")
   endif
@@ -389,7 +393,7 @@ func! s:buf_render(dir, lastpath) abort
   endif
 
   if !empty(a:lastpath)
-    let pat = get(g:, 'dirvish_relative_paths', 0) ? fnamemodify(a:lastpath, ':p:.') : a:lastpath
+    let pat = s:rel ? fnamemodify(a:lastpath, ':p:.') : a:lastpath
     let pat = empty(pat) ? a:lastpath : pat  " no longer in CWD
     call search('\V\^'.escape(pat, '\').'\$', 'cw')
   endif
@@ -446,7 +450,7 @@ func! s:open_dir(d, reload) abort
   " Use :file to force a normalized path.
   " - Avoids ".././..", ".", "./", etc. (breaks %:p, not updated on :cd).
   " - Avoids [Scratch] in some cases (":e ~/" on Windows).
-  if s:sl(bufname('%')) !=# d._dir
+  if !s:rel && s:sl(bufname('%')) !=# d._dir
     execute 'silent '.s:noswapfile.' file ' . fnameescape(d._dir)
   endif
 
@@ -500,6 +504,7 @@ func! dirvish#open(...) range abort
     return
   endif
 
+  let s:rel = get(g:, 'dirvish_relative_paths', 0)
   let d = {}
   let is_uri    = -1 != match(a:1, '^\w\+:[\/][\/]')
   let from_path = fnamemodify(bufname('%'), ':p')
@@ -518,7 +523,7 @@ func! dirvish#open(...) range abort
 
   if reloading
     let d.lastpath = ''         " Do not place cursor when reloading.
-  elseif !is_uri && d._dir ==# s:parent_dir(from_path)
+  elseif !is_uri && s:eq(d._dir, s:parent_dir(from_path))
     let d.lastpath = from_path  " Save lastpath when navigating _up_.
   endif
 
