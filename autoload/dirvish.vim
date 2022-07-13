@@ -157,7 +157,7 @@ func! dirvish#shdo(paths, cmd) abort
     autocmd! * <buffer>
     " Refresh Dirvish after executing a shell command.
     exe 'autocmd ShellCmdPost <buffer> nested if !v:shell_error && bufexists('.dirvish_bufnr.')'
-      \.'|setlocal bufhidden=hide|buffer '.dirvish_bufnr.'|silent! Dirvish %'
+      \.'|setlocal bufhidden=hide|buffer '.dirvish_bufnr.'|silent! Dirvish'
       \.'|buffer '.bufnr('%').'|setlocal bufhidden=wipe|endif'
   augroup END
 
@@ -193,7 +193,7 @@ func! s:on_bufenter() abort
   if bufname('%') is ''  " Something is very wrong. #136
     return
   elseif !exists('b:dirvish') || (empty(getline(1)) && 1 == line('$'))
-    Dirvish %
+    Dirvish
   elseif 3 != &l:conceallevel && !s:buf_modified()
     call s:win_init()
   else
@@ -529,8 +529,7 @@ func! dirvish#open(...) range abort
   let d = {}
   let is_uri    = -1 != match(a:1, '^\w\+:[\/][\/]')
   let from_path = s:sl(fnamemodify(bufname('%'), ':p'))
-  let to_path   = s:sl(fnamemodify(a:1, ':p'))
-  "                                       ^resolves to CWD if a:1 is empty
+  let to_path   = s:sl(fnamemodify(!empty(a:1) || empty(@%) ? a:1 : @%, ':p'))
 
   let d._dir = s:fix_dir(filereadable(to_path) ? fnamemodify(to_path, ':p:h') : to_path, is_uri)
   " Fallback to CWD for URIs. #127
