@@ -23,9 +23,9 @@ augroup dirvish
   autocmd ShellCmdPost * if exists('b:dirvish') | exe 'Dirvish %' | endif
 augroup END
 
-nnoremap <silent> <Plug>(dirvish_up) :<C-U>exe 'Dirvish %:p'.repeat(':h',v:count1)<CR>
-nnoremap <silent> <Plug>(dirvish_split_up) :<C-U>exe 'split +Dirvish\ %:p'.repeat(':h',v:count1)<CR>
-nnoremap <silent> <Plug>(dirvish_vsplit_up) :<C-U>exe 'vsplit +Dirvish\ %:p'.repeat(':h',v:count1)<CR>
+nnoremap <silent> <Plug>(dirvish_up) :<C-U>exe 'Dirvish' fnameescape(fnamemodify(@%, ':p'.(@%[-1:]=~'[\\/]'?':h':'').repeat(':h',v:count1)))<CR>
+nnoremap <silent> <Plug>(dirvish_split_up) :<C-U>split<bar>exe 'Dirvish' fnameescape(fnamemodify(@%, ':p'.(@%[-1:]=~'[\\/]'?':h':'').repeat(':h',v:count1)))<CR>
+nnoremap <silent> <Plug>(dirvish_vsplit_up) :<C-U>vsplit<bar>exe 'Dirvish' fnameescape(fnamemodify(@%, ':p'.(@%[-1:]=~'[\\/]'?':h':'').repeat(':h',v:count1)))<CR>
 
 highlight default link DirvishSuffix   SpecialKey
 highlight default link DirvishPathTail Directory
