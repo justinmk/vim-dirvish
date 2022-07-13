@@ -42,7 +42,7 @@ func! s:sl(f) abort
   " Collapse slashes (except UNC-style \\foo\bar).
   let f = f[0] . substitute(f[1:], '/\+', '/', 'g')
   " End with separator.
-  return empty(f) ? './' : (isdirectory(f) && (f[-1:] !=# '/') ? f.'/' : f)
+  return empty(f) ? './' : (f[-1:] !=# '/' && isdirectory(f) ? f.'/' : f)
 endf
 
 " Workaround for platform quirks, and shows an error if dir is invalid.
@@ -404,7 +404,7 @@ func! s:buf_render(dir, lastpath) abort
   if !empty(a:lastpath)
     let pat = s:rel ? fnamemodify(a:lastpath, ':p:.') : a:lastpath
     let pat = empty(pat) ? a:lastpath : pat  " no longer in CWD
-    let pat = tr(s:sl(pat), '/', s:sep)  " platform slashes
+    let pat = tr(pat, '/', s:sep)  " platform slashes
     call search('\V\^'.escape(pat, '\').'\$', 'cw')
   endif
   " Place cursor on the tail (last path segment).
@@ -507,7 +507,7 @@ func! s:should_reload() abort
 endf
 
 func! s:buf_valid(bnr) abort
-  return bufexists(a:bnr) && !isdirectory(s:sl(bufname(a:bnr)))
+  return bufexists(a:bnr) && (empty(bufname(a:bnr)) || !isdirectory(s:sl(bufname(a:bnr))))
 endf
 
 func! dirvish#open(...) range abort
