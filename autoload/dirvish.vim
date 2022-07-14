@@ -27,6 +27,13 @@ func! s:eq(dir1, dir2) abort
   return fnamemodify(a:dir1, ':p') ==# fnamemodify(a:dir2, ':p')
 endf
 
+" Gets full path, or relative if g:dirvish_relative_paths=1.
+func! s:f(f) abort
+  let f = fnamemodify(a:f, s:rel ? ':p:.' : ':p')
+  " Special case: ":p:." yields empty for CWD.
+  return !empty(f) ? f : fnamemodify(a:f, ':p')
+endf
+
 func! s:suf() abort
   let m = get(g:, 'dirvish_mode', 1)
   return type(m) == type(0) && m <= 1 ? 1 : 0
@@ -402,9 +409,7 @@ func! s:buf_render(dir, lastpath) abort
   endif
 
   if !empty(a:lastpath)
-    let pat = s:rel ? fnamemodify(a:lastpath, ':p:.') : a:lastpath
-    let pat = empty(pat) ? a:lastpath : pat  " no longer in CWD
-    let pat = tr(pat, '/', s:sep)  " platform slashes
+    let pat = tr(s:f(a:lastpath), '/', s:sep)  " platform slashes
     call search('\V\^'.escape(pat, '\').'\$', 'cw')
   endif
   " Place cursor on the tail (last path segment).
@@ -426,10 +431,9 @@ func! s:apply_icons() abort
     endfor
     if icon != ''
       let isdir = (f[-1:] == s:sep)
-      let f = substitute(fnamemodify(f,':p'), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
-      let head_esc = escape(fnamemodify(f,':h').(fnamemodify(f,':h')==s:sep?'':s:sep), '[,*.^$~\')
-      let tail_esc = escape(fnamemodify(f, ':t').(isdir?(s:sep):''), '[,*.^$~\')
-      exe 'syntax match DirvishColumnHead =^'.head_esc.'\ze'.tail_esc.'$= conceal cchar='.icon
+      let f = substitute(s:f(f), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
+      let tail_esc = escape(fnamemodify(f,':t').(isdir?(s:sep):''), '[,*.^$~\')
+      exe 'syntax match DirvishColumnHead =^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
     endif
   endfor
 endf
