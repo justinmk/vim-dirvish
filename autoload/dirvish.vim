@@ -132,7 +132,7 @@ func! dirvish#shdo(paths, cmd) abort
   let dirvish_bufnr = bufnr('%')
   let cmd = a:cmd =~# '\V{}' ? a:cmd : (empty(a:cmd)?'{}':(a:cmd.' {}')) "DWIM
   " Paths from argv() or non-dirvish buffers may be jagged; assume CWD then.
-  let dir = !jagged && exists('b:dirvish') ? b:dirvish._dir : getcwd()
+  let dir = jagged ? getcwd() : head
   let tmpfile = tempname().(&sh=~?'cmd.exe'?'.bat':(&sh=~'\(powershell\|pwsh\)'?'.ps1':'.sh'))
 
   for i in range(0, len(lines)-1)
