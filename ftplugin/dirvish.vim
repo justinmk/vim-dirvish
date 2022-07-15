@@ -17,6 +17,9 @@ if !hasmapto('<Plug>(dirvish_K)', 'n')
   execute 'nmap '.s:nowait.'<buffer> K <Plug>(dirvish_K)'
   execute 'xmap '.s:nowait.'<buffer> K <Plug>(dirvish_K)'
 endif
+if !hasmapto('<Plug>(dirvish_up)', 'n')
+  execute 'nmap '.s:nowait.'<buffer> - <Plug>(dirvish_up)'
+endif
 
 execute 'nnoremap '.s:nowait.'<buffer><silent> ~    :<C-U>Dirvish ~/<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> i    :<C-U>.call dirvish#open("edit", 0)<CR>'
