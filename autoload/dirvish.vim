@@ -495,7 +495,7 @@ func! s:open_dir(d, reload) abort
   if a:reload || s:should_reload()
     call s:buf_render(b:dirvish._dir, get(b:dirvish, 'lastpath', ''))
     " Set up Dirvish before any other `FileType dirvish` handler.
-    exe 'source '.fnameescape(s:srcdir.'/ftplugin/dirvish.vim')
+    runtime! ftplugin/dirvish.{vim,lua}
     let curwin = winnr()
     setlocal filetype=dirvish
     if curwin != winnr() | throw 'FileType autocmd changed the window' | endif
