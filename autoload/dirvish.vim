@@ -56,6 +56,10 @@ endf
 func! s:fix_dir(dir, silent) abort
   let dir = s:sl(a:dir)
   if !isdirectory(dir)
+    " UNC-style: top-level dir may not exist, while sub dir exists.
+    if has('win32') && match(dir, '\v^//[^/]+$') >= 0
+      return ''
+    endif
     " Fallback for cygwin/MSYS paths lacking a drive letter.
     let dir = empty($SYSTEMDRIVE) ? dir : '/'.tolower($SYSTEMDRIVE[0]).(dir)
     if !isdirectory(dir)
@@ -86,7 +90,12 @@ endif
 func! s:list_dir(dir) abort
   let s:rel = get(g:, 'dirvish_relative_paths', 0)
   " Escape for globpath().
-  let dir_esc = escape(substitute(a:dir,'\[','[[]','g'), ',;*?{}^$\')
+  let char_esc = ',;*?{}^\'
+  if !has('win32')
+    " '$' is valid in win32 UNC path; and does not require escape in win32 globpath().
+    let char_esc .= '$'
+  endif
+  let dir_esc = escape(substitute(a:dir,'\[','[[]','g'), char_esc)
   let paths = s:globlist(dir_esc, '*')
   "Append dot-prefixed files. globpath() cannot do both in 1 pass.
   let paths = paths + s:globlist(dir_esc, '.[^.]*')
