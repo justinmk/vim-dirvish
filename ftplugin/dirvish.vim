@@ -18,22 +18,36 @@ if !hasmapto('<Plug>(dirvish_K)', 'n')
   execute 'xmap '.s:nowait.'<buffer> K <Plug>(dirvish_K)'
 endif
 
-execute 'nnoremap '.s:nowait.'<buffer><silent> ~    :<C-U>Dirvish ~/<CR>'
-execute 'nnoremap '.s:nowait.'<buffer><silent> i    :<C-U>.call dirvish#open("edit", 0)<CR>'
-execute 'nnoremap '.s:nowait.'<buffer><silent> <CR> :<C-U>.call dirvish#open("edit", 0)<CR>'
-execute 'nnoremap '.s:nowait.'<buffer><silent> a    :<C-U>.call dirvish#open("vsplit", 1)<CR>'
-execute 'nnoremap '.s:nowait.'<buffer><silent> o    :<C-U>.call dirvish#open("split", 1)<CR>'
-execute 'nnoremap '.s:nowait.'<buffer><silent> p    :<C-U>.call dirvish#open("p", 1)<CR>'
-execute 'nnoremap '.s:nowait.'<buffer><silent> <2-LeftMouse> :<C-U>.call dirvish#open("edit", 0)<CR>'
+" The patch 8.2.1978 adds '<cmd>' to Vim.
+if has('patch-8.2.1978')
+  let s:command_prefix = '<cmd>'
+  let s:call_prefix = '<cmd>'
+  let s:command_suffix = ''
+else
+  let s:command_prefix = ':<C-U>'
+  let s:call_prefix = ':<C-U>.'
+  let s:command_suffix = ":echon ''<CR>"
+endif
+execute 'nnoremap '.s:nowait.'<buffer> ~    '.s:command_prefix.'Dirvish ~/<CR>'.s:command_suffix
+execute 'nnoremap '.s:nowait.'<buffer> i    '.s:call_prefix.'call dirvish#open("edit", 0)<CR>'.s:command_suffix
+execute 'nnoremap '.s:nowait.'<buffer> <CR> '.s:call_prefix.'call dirvish#open("edit", 0)<CR>'.s:command_suffix
+execute 'nnoremap '.s:nowait.'<buffer> a    '.s:call_prefix.'call dirvish#open("vsplit", 1)<CR>'.s:command_suffix
+execute 'nnoremap '.s:nowait.'<buffer> o    '.s:call_prefix.'call dirvish#open("split", 1)<CR>'.s:command_suffix
+execute 'nnoremap '.s:nowait.'<buffer> p    '.s:call_prefix.'call dirvish#open("p", 1)<CR>'.s:command_suffix
+execute 'nnoremap '.s:nowait.'<buffer> <2-LeftMouse> '.s:call_prefix.'call dirvish#open("edit", 0)<CR>'.s:command_suffix
 execute 'nnoremap '.s:nowait.'<buffer><silent> dax  :<C-U>arglocal<Bar>silent! argdelete *<Bar>echo "arglist: cleared"<Bar>Dirvish<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> <C-n> <C-\><C-n>j:call feedkeys("p")<CR>'
 execute 'nnoremap '.s:nowait.'<buffer><silent> <C-p> <C-\><C-n>k:call feedkeys("p")<CR>'
 
-execute 'xnoremap '.s:nowait.'<buffer><silent> I    :call dirvish#open("edit", 0)<CR>'
-execute 'xnoremap '.s:nowait.'<buffer><silent> <CR> :call dirvish#open("edit", 0)<CR>'
-execute 'xnoremap '.s:nowait.'<buffer><silent> A    :call dirvish#open("vsplit", 1)<CR>'
-execute 'xnoremap '.s:nowait.'<buffer><silent> O    :call dirvish#open("split", 1)<CR>'
-execute 'xnoremap '.s:nowait.'<buffer><silent> P    :call dirvish#open("p", 1)<CR>'
+" The patch 8.2.1978 adds '<cmd>' to Vim.
+if !has('patch-8.2.1978')
+  let s:call_prefix = ':'
+endif
+execute 'xnoremap '.s:nowait.'<buffer> I    '.s:call_prefix.'call dirvish#open("edit", 0)<CR>'.s:command_suffix
+execute 'xnoremap '.s:nowait.'<buffer> <CR> '.s:call_prefix.'call dirvish#open("edit", 0)<CR>'.s:command_suffix
+execute 'xnoremap '.s:nowait.'<buffer> A    '.s:call_prefix.'call dirvish#open("vsplit", 1)<CR>'.s:command_suffix
+execute 'xnoremap '.s:nowait.'<buffer> O    '.s:call_prefix.'call dirvish#open("split", 1)<CR>'.s:command_suffix
+execute 'xnoremap '.s:nowait.'<buffer> P    '.s:call_prefix.'call dirvish#open("p", 1)<CR>'.s:command_suffix
 
 nnoremap <buffer><silent> R :<C-U><C-R>=v:count ? ':let g:dirvish_mode='.v:count.'<Bar>' : ''<CR>Dirvish<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
