@@ -521,7 +521,7 @@ func! dirvish#open(...) range abort
   endif
   if (&bufhidden =~# '\vunload|delete|wipe' || (!&autowriteall && !&hidden && &modified))
       \ && (!exists("*win_findbuf") || len(win_findbuf(winbufnr(0))) == 1)
-    call s:msg_error(&modified ? 'E37: No write since last change' : 'E37: Buffer would be deleted')
+    call s:msg_error(&modified ? 'E37: No write since last change' : 'E37: Buffer would be deleted: '.bufnr('%'))
     return
   endif
 
