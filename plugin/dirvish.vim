@@ -7,6 +7,9 @@ command! -bar -nargs=? -complete=dir Dirvish call dirvish#open(<q-args>)
 command! -nargs=* -complete=file -range -bang Shdo call dirvish#shdo(<bang>0 ? argv() : getline(<line1>, <line2>), <q-args>)
 
 func! s:isdir(dir)
+  if &l:bufhidden =~# '\vunload|delete|wipe'
+    return 0 " In a temporary special buffer (likely from a plugin).
+  endif
   return !empty(a:dir) && (isdirectory(a:dir) ||
     \ (!empty($SYSTEMDRIVE) && isdirectory('/'.tolower($SYSTEMDRIVE[0]).a:dir)))
 endf
