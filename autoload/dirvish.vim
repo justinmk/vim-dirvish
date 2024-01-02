@@ -421,7 +421,9 @@ func! s:apply_icons() abort
     return
   endif
   highlight clear Conceal
+  let i = 0
   for f in getline(1, '$')
+    let i += 1
     let icon = ''
     for id in sort(keys(s:cb_map))
       let icon = s:cb_map[id](f)
@@ -433,7 +435,7 @@ func! s:apply_icons() abort
       let isdir = (f[-1:] == s:sep)
       let f = substitute(s:f(f), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
       let tail_esc = escape(fnamemodify(f,':t').(isdir?(s:sep):''), '[,*.^$~\')
-      exe 'syntax match DirvishColumnHead =^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
+      exe 'syntax match DirvishColumnHead =\%' . i . 'l^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
     endif
   endfor
 endf
