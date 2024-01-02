@@ -435,7 +435,7 @@ func! s:apply_icons() abort
       let isdir = (f[-1:] == s:sep)
       let f = substitute(s:f(f), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
       let tail_esc = escape(fnamemodify(f,':t').(isdir?(s:sep):''), '[,*.^$~\')
-      exe 'syntax match DirvishColumnHead =\%' . i . 'l^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
+      exe 'syntax match DirvishColumnHead =\%'.i.'l^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
     endif
   endfor
 endf
