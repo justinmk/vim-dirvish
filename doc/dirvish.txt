@@ -48,7 +48,8 @@ Buffer-local (filetype=dirvish) ~
                     Sets |g:dirvish_mode| to [count], if given.
                     Mnemonic: higher [count] => more files.
     <Plug>(dirvish_quit)
-    gq              Quits and returns to the original file.
+    q               Quits and returns to the original file.
+    gq              Alias to "q". May be removed in the future.
     <2-LeftMouse>
     i
     <CR>            Opens file at cursor.

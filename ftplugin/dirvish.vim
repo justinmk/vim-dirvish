@@ -7,6 +7,7 @@ let s:nowait = (v:version > 703 ? '<nowait>' : '')
 let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
 
 if !hasmapto('<Plug>(dirvish_quit)', 'n')
+  execute 'nmap '.s:nowait.'<buffer> q <Plug>(dirvish_quit)'
   execute 'nmap '.s:nowait.'<buffer> gq <Plug>(dirvish_quit)'
 endif
 if !hasmapto('<Plug>(dirvish_arg)', 'n')
