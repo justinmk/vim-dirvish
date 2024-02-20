@@ -414,6 +414,12 @@ func! s:buf_render(dir, lastpath) abort
   endif
   " Place cursor on the tail (last path segment).
   call search('\'.s:sep.'\zs[^\'.s:sep.']\+\'.s:sep.'\?$', 'c', line('.'))
+
+  " TRICK: From :help getfperm(): "If the directory cannot be read, empty string is returned."
+  " This misses the "--x" case (no "r" access), but it's the best we have.
+  if empty(getline(1)) && '' ==# getfperm(a:dir . '/.')
+    call s:msg_error(printf('cannot list directory (permissions: %s): %s', getfperm(a:dir), a:dir))
+  endif
 endf
 
 func! s:apply_icons() abort
