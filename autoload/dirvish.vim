@@ -151,6 +151,11 @@ func! dirvish#shdo(paths, cmd) abort
     let f = !jagged && 2==exists(':lcd') ? fnamemodify(f, ':t') : lines[i]
     let lines[i] = substitute(cmd, '\V{}', escape(shellescape(f),'&\'), 'g')
   endfor
+
+  if !empty(g:dirvish_shdo_before)
+    let lines = [substitute(g:dirvish_shdo_before, '\V{}', escape(shellescape(head),'&\'), 'g'), ''] + lines
+  endif
+  
   execute 'silent split' tmpfile '|' (2==exists(':lcd')?('lcd '.dir):'')
   setlocal bufhidden=wipe
   silent keepmarks keepjumps call setline(1, lines)
