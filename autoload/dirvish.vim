@@ -534,7 +534,9 @@ func! dirvish#open(...) range abort
   endif
 
   if a:0 > 1
-    call s:open_selected(a:1, a:2, a:firstline, a:lastline)
+    " Detect whether a <Cmd> mapping or the legacy fallback is being used
+    let l:visual_lines = mode(0) == 'n' ? [a:firstline, a:lastline] : [line('v'), line('.')]
+    call s:open_selected(a:1, a:2, min(l:visual_lines), max(l:visual_lines))
     return
   endif
 
