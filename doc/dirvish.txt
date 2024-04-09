@@ -163,6 +163,20 @@ can be overridden by handling that event. Example: >
         \ gh :silent keeppatterns g@\v/\.[^\/]+/?$@d _<cr>:setl cole=3<cr>
     augroup END
 <
+g:dirvish_shdo_before = ''                          *g:dirvish_shdo_before*
+    Inserts this text at the beginning of shell scripts generated with
+    |:Shdo|. The current dirvish directory is inserted wherever {} appears in
+    |g:dirvish_shdo_before|.
+    To ensure scripts always cd to the current dirvish directory, you could
+    add this to your vimrc: >
+
+    if has('win32')
+      " work across hard drives
+      let g:dirvish_shdo_before = 'pushd {}'
+    else
+      let g:dirvish_shdo_before = 'cd {}'
+    endif
+<
 
 ==============================================================================
 FAQ                                                              *dirvish-faq*
