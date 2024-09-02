@@ -51,7 +51,7 @@ execute 'xnoremap '.s:nowait.'<buffer> P    '.s:call_prefix.'call dirvish#open("
 nnoremap <buffer><silent> R :<C-U><C-R>=v:count ? ':let g:dirvish_mode='.v:count.'<Bar>' : ''<CR>Dirvish<CR>
 nnoremap <buffer><silent>   g?    :help dirvish-mappings<CR>
 
-execute 'nnoremap <expr>'.s:nowait.'<buffer> . ":<C-u>".(v:count ? "Shdo".(v:count?"!":"")." {}" : ("! ".shellescape(empty(fnamemodify(getline("."),":.")) ? "." : fnamemodify(getline("."),":."))))."<Home><C-Right>"'
+execute 'nnoremap <expr>'.s:nowait.'<buffer> . ":<C-u>".(v:count ? "Shdo".(v:count?"!":"")." {}" : ("! ".shellescape(empty(fnamemodify(getline("."),":.")) ? "." : fnamemodify(getline("."),":."), 1)))."<Home><C-Right>"'
 execute 'xnoremap <expr>'.s:nowait.'<buffer> . ":Shdo".(v:count?"!":" ")." {}<Left><Left><Left>"'
 execute 'nnoremap <expr>'.s:nowait.'<buffer> cd ":<C-u>".(v:count ? "cd" : "lcd")." %<Bar>pwd<CR>"'
 
