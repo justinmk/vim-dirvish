@@ -422,7 +422,7 @@ func! s:buf_render(dir, lastpath) abort
   endif
 endf
 
-func! s:apply_icons() abort
+func! dirvish#apply_icons() abort
   if 0 == len(s:cb_map)
     return
   endif
@@ -508,7 +508,7 @@ func! s:open_dir(d, reload) abort
     setlocal filetype=dirvish
     if curwin != winnr() | throw 'FileType autocmd changed the window' | endif
     let b:dirvish._c = b:changedtick
-    call s:apply_icons()
+    call dirvish#apply_icons()
   endif
   let s:recursive = ''
   call s:log(printf('open_dir EXIT : %d %s', bufnr('%'), a:d._dir))
