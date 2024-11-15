@@ -81,7 +81,7 @@ Extensions
 Some people have created plugins that extend Dirvish:
 
 - [remote-viewer](https://github.com/bounceme/remote-viewer) - Browse `ssh://` and other remote paths
-- [vim-dirvish-git](https://github.com/kristijanhusak/vim-dirvish-git) - Show git status of each file
+- [vim-dirvish-git](https://github.com/kristijanhusak/vim-dirvish-git) and [vim-dirvish-git.lua](https://github.com/brianhuster/vim-dirvish-git.lua) - Show git status of each file
 - [vim-dirvinist](https://github.com/fsharpasharp/vim-dirvinist) - List files defined by projections
 - [vim-dirvish-dovish](https://github.com/roginfarrer/vim-dirvish-dovish) - Add vim-style file manipulation commands
 
