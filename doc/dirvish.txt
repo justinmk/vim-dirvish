@@ -119,6 +119,10 @@ dirvish#add_icon_fn(fn)
         call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
 <
 
+dirvish#apply_icons() 							       *dirvish#apply_icons()*
+	Reapply the icons returned by the functions registered with
+	|dirvish#add_icon_fn()|.
+
                                                     *dirvish#remove_icon_fn()*
 dirvish#remove_icon_fn(fn_id)
     Unregisters the function associated with {fn_id} returned from
