@@ -11,7 +11,7 @@ Because each Dirvish buffer-name is the literal directory path, you can |:cd|
 to the directory, >
   :cd %
 create a new file, >
-  :edit %/foo.txt
+  :edit %foo.txt
 |expand()| the directory path, >
   :let &titlestring = expand('%', 1)
 and use complementary plugin commands like |]f|/|[f| (unimpaired.vim).
@@ -106,7 +106,7 @@ FUNCTIONS                                                  *dirvish-functions*
     [range]. {bg} must be 0 (opens in current window) or 1 (opens in the
     "background").
 
-                                                       *dirvish#add_icon_fn()*
+                                                        *dirvish#add_icon_fn()*
 dirvish#add_icon_fn(fn)
     Registers a function {fn} to decide the "icon" for each path in a Dirvish
     buffer. Returns id for use with |dirvish#remove_icon_fn()|. If multiple
@@ -118,8 +118,8 @@ dirvish#add_icon_fn(fn)
     character (the "icon"). Example: >
         call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
 <
-
-dirvish#apply_icons() 							       *dirvish#apply_icons()*
+                                                       *dirvish#apply_icons()*
+dirvish#apply_icons() 							      
 	Reapply the icons returned by the functions registered with
 	|dirvish#add_icon_fn()|.
 
