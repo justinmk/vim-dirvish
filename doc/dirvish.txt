@@ -106,7 +106,7 @@ FUNCTIONS                                                  *dirvish-functions*
     [range]. {bg} must be 0 (opens in current window) or 1 (opens in the
     "background").
 
-                                                        *dirvish#add_icon_fn()*
+                                                       *dirvish#add_icon_fn()*
 dirvish#add_icon_fn(fn)
     Registers a function {fn} to decide the "icon" for each path in a Dirvish
     buffer. Returns id for use with |dirvish#remove_icon_fn()|. If multiple
