@@ -84,6 +84,7 @@ Some people have created plugins that extend Dirvish:
 - [vim-dirvish-git.lua](https://github.com/brianhuster/vim-dirvish-git.lua) - Show git status of each file
 - [vim-dirvish-git](https://github.com/kristijanhusak/vim-dirvish-git) - Show git status of each file 
 - [vim-dirvinist](https://github.com/fsharpasharp/vim-dirvinist) - List files defined by projections
+- [dirvish-do.nvim](https://github.com/brianhuster/dirvish-do.nvim) - Add key mappings for file manipulation
 - [vim-dirvish-dovish](https://github.com/roginfarrer/vim-dirvish-dovish) - Add vim-style file manipulation commands
 
 
