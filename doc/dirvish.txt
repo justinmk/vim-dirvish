@@ -11,7 +11,7 @@ Because each Dirvish buffer-name is the literal directory path, you can |:cd|
 to the directory, >
   :cd %
 create a new file, >
-  :edit %/foo.txt
+  :edit %foo.txt
 |expand()| the directory path, >
   :let &titlestring = expand('%', 1)
 and use complementary plugin commands like |]f|/|[f| (unimpaired.vim).
