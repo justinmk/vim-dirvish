@@ -118,6 +118,7 @@ dirvish#add_icon_fn(fn)
     character (the "icon"). Example: >
         call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
 <
+
                                                     *dirvish#remove_icon_fn()*
 dirvish#remove_icon_fn(fn_id)
     Unregisters the function associated with {fn_id} returned from
