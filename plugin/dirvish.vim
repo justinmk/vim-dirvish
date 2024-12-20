@@ -3,6 +3,8 @@ if exists('g:loaded_dirvish') || &cp || v:version < 700 || &cpo =~# 'C'
 endif
 let g:loaded_dirvish = 1
 
+let g:dirvish_shdo_before = get(g:, 'dirvish_shdo_before', '')
+
 command! -bar -nargs=? -complete=dir Dirvish call dirvish#open(<q-args>)
 command! -nargs=* -complete=file -range -bang Shdo call dirvish#shdo(<bang>0 ? argv() : getline(<line1>, <line2>), <q-args>)
 
