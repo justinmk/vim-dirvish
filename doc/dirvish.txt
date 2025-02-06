@@ -114,10 +114,12 @@ dirvish#add_icon_fn(fn)
     a given path, wins. Best practice: if you don't have anything meaningful
     to show for a given path, return empty string (or whitespace).
 
-    {fn} is any |Funcref| that takes a path (string) and returns a single
-    character (the "icon"). Example: >
+    {fn} is any |Funcref| that takes a path (string) and returns a string
+    (the "icon"). Example: >vim
         call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
 <
+    Note: multi-character icons are only supported on Nvim 0.8+ or Vim 9.1+
+    with |+textprop|.
 
                                                     *dirvish#remove_icon_fn()*
 dirvish#remove_icon_fn(fn_id)
