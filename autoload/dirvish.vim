@@ -426,7 +426,20 @@ func! s:apply_icons() abort
   if 0 == len(s:cb_map)
     return
   endif
-  highlight clear Conceal
+  let l:feat = has('nvim-0.8') ? 'extmark' : ((v:version >= 901 && has('textprop'))? 'textprop': 'conceal')
+  if l:feat ==# 'extmark'
+    if !exists('s:ns_id')
+      let s:ns_id = nvim_create_namespace('dirvish.icons')
+    endif
+  elseif l:feat ==# 'textprop'
+    if !exists('s:prop_type')
+      let s:prop_type = 'dirvish.icons'
+      call prop_type_add(s:prop_type, {})
+    endif
+  else
+    highlight clear Conceal
+  endif
+
   let i = 0
   for f in getline(1, '$')
     let i += 1
@@ -438,10 +451,16 @@ func! s:apply_icons() abort
       endif
     endfor
     if icon != ''
-      let isdir = (f[-1:] == s:sep)
-      let f = substitute(s:f(f), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
-      let tail_esc = escape(fnamemodify(f,':t').(isdir?(s:sep):''), '[,*.^$~\')
-      exe 'syntax match DirvishColumnHead =\%'.i.'l^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
+      if l:feat ==# 'extmark'
+        call nvim_buf_set_extmark(0, s:ns_id, i-1, 0, #{virt_text: [[icon, 'DirvishColumnHead']], virt_text_pos: 'inline'})
+      elseif l:feat ==# 'textprop'
+        call prop_add(i, 1, #{type: s:prop_type, text: icon})
+      else
+        let isdir = (f[-1:] == s:sep)
+        let f = substitute(s:f(f), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
+        let tail_esc = escape(fnamemodify(f,':t').(isdir?(s:sep):''), '[,*.^$~\')
+        exe 'syntax match DirvishColumnHead =\%'.i.'l^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
+      endif
     endif
   endfor
 endf
