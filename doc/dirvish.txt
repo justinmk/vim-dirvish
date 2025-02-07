@@ -114,12 +114,27 @@ dirvish#add_icon_fn(fn)
     a given path, wins. Best practice: if you don't have anything meaningful
     to show for a given path, return empty string (or whitespace).
 
-    {fn} is any |Funcref| that takes a path (string) and returns a string
-    (the "icon"). Example: >vim
+    {fn} is any |Funcref| that takes a path (string) and returns an `icon-item` as
+    a |string| or a |dict| with the following keys:
+        - "icon" (|string|): the string representing the icon.
+        - "hl"   (|string|): the highlight group to use for the icon.
+
+    Note: If your Vim isn't Vim 9.1+ with |+textprop| or Nvim 0.8+, `icon-item`
+    can only be a character.
+
+    Example that returns a string: >vim
         call dirvish#add_icon_fn({p -> p[-1:]=='/'?'📂':'📄'})
 <
-    Note: multi-character icons are only supported on Nvim 0.8+ or Vim 9.1+
-    with |+textprop|.
+    Example that uses |mini.icons| <https://github.com/echasnovski/mini.icons>
+    0.15.0 as icon provider >lua
+        --- NOTE: mini.icons must be loaded before vim-dirvish
+        vim.fn['dirvish#add_icon_fn'](function(p)
+          local get = require('mini.icons').get
+          local icon, hl = get(p:sub(-1) == '/' and 'directory' or 'file', p)
+          icon = icon .. ' '
+          return { icon = icon, hl = hl }
+        end)
+<
 
                                                     *dirvish#remove_icon_fn()*
 dirvish#remove_icon_fn(fn_id)
