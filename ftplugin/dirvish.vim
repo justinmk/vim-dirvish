@@ -4,7 +4,7 @@ endif
 let b:did_ftplugin = 1
 
 let s:nowait = (v:version > 703 ? '<nowait>' : '')
-let s:sep = stridx(fnamemodify('.', ':p'), '\') >= 0 ? '\' : '/'
+let s:sep = has('win32') && stridx(fnamemodify('.', ':p'), '\') >= 0 ? '\' : '/'
 
 if !hasmapto('<Plug>(dirvish_quit)', 'n')
   execute 'nmap '.s:nowait.'<buffer> q <Plug>(dirvish_quit)'
