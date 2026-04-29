@@ -1,5 +1,5 @@
 let s:srcdir = expand('<sfile>:h:h:p')
-let s:sep = exists('+shellslash') && !&shellslash ? '\' : '/'
+let s:sep = stridx(fnamemodify('.', ':p'), '\') >= 0 ? '\' : '/'
 let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
 let s:cb_map = {}   " callback map
