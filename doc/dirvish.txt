@@ -129,7 +129,7 @@ dirvish#remove_icon_fn(fn_id)
 ==============================================================================
 AUTOCOMMANDS                                            *dirvish-autocommands*
 
-DirvishShdoCreated                                   *User_DirvishShdoCreated*
+DirvishShdo                                   *User_DirvishShdo*
     A |User| |autocommand| invoked after creating a |:Shdo| buffer.
     b:dirvish_dir is set to the previous Dirvish buffer's path.
 
