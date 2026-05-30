@@ -412,7 +412,7 @@ func! s:buf_render(dir, lastpath) abort
 
   if !empty(a:lastpath)
     let pat = tr(s:f(a:lastpath), '/', s:sep)  " platform slashes
-    call search('\V\^'.escape(pat, '\').'\$', 'cw')
+    call search('\V\C\^'.escape(pat, '\').'\$', 'cw')
   endif
   " Place cursor on the tail (last path segment).
   call search('\'.s:sep.'\zs[^\'.s:sep.']\+\'.s:sep.'\?$', 'c', line('.'))
