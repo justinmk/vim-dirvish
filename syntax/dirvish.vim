@@ -14,8 +14,10 @@ endif
 
 " Define (again). Other windows (different arglists) need the old definitions.
 " Do these last, else they may be overridden (see :h syn-priority).
+let s:rel = exists('g:dirvish_relative_paths')
 for s:p in argv()
-  exe 'syntax match DirvishArg ,'.escape(fnamemodify(s:p,':p'),'[,*.^$~\').'$, contains=DirvishPathHead'
+  let s:f = s:rel ? fnamemodify(s:p, ':p:.') : fnamemodify(s:p, ':p')
+  exe 'syntax match DirvishArg ,'.escape(s:f,'[,*.^$~\').'$, contains=DirvishPathHead'
 endfor
 
 let b:current_syntax = 'dirvish'
