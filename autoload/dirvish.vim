@@ -4,6 +4,7 @@ let s:noswapfile = (2 == exists(':noswapfile')) ? 'noswapfile' : ''
 let s:noau       = 'silent noautocmd keepjumps'
 let s:cb_map = {}   " callback map
 let s:rel = get(g:, 'dirvish_relative_paths', 0)
+let s:virttext_feat = has('nvim-0.8') ? 'extmark' : ((v:version >= 901 && has('textprop'))? 'textprop': 'conceal')
 
 " Debug:
 "     echo '' > dirvish.log ; tail -F dirvish.log
@@ -428,12 +429,11 @@ func! s:apply_icons() abort
   if 0 == len(s:cb_map)
     return
   endif
-  let l:feat = has('nvim-0.8') ? 'extmark' : ((v:version >= 901 && has('textprop'))? 'textprop': 'conceal')
-  if l:feat ==# 'extmark'
+  if s:virttext_feat ==# 'extmark'
     if !exists('s:ns_id')
       let s:ns_id = nvim_create_namespace('dirvish.icons')
     endif
-  elseif l:feat ==# 'textprop'
+  elseif s:virttext_feat ==# 'textprop'
     if !exists('s:prop_type')
       let s:prop_type = 'dirvish.icons'
       call prop_type_add(s:prop_type, {})
@@ -445,24 +445,36 @@ func! s:apply_icons() abort
   let i = 0
   for f in getline(1, '$')
     let i += 1
-    let icon = ''
     for id in sort(keys(s:cb_map))
       let icon = s:cb_map[id](f)
-      if -1 != match(icon, '\S')
-        break
+      if type(icon) == type('')
+        if -1 != match(icon, '\S')
+          unlet icon
+          break
+        endif
       endif
     endfor
-    if icon != ''
-      if l:feat ==# 'extmark'
-        call nvim_buf_set_extmark(0, s:ns_id, i-1, 0, #{virt_text: [[icon, 'DirvishColumnHead']], virt_text_pos: 'inline'})
-      elseif l:feat ==# 'textprop'
-        call prop_add(i, 1, #{type: s:prop_type, text: icon})
+    if exists('l:icon')
+      if s:virttext_feat ==# 'extmark'
+        let l:virt_text = type(icon) == type({}) ? [[icon.icon, icon.hl]] : [[icon, 'DirvishColumnHead']]
+        call nvim_buf_set_extmark(0, s:ns_id, i-1, 0, #{virt_text: l:virt_text, virt_text_pos: 'inline'})
+      elseif s:virttext_feat ==# 'textprop'
+        if type(icon) == type('')
+          call prop_add(i, 1, #{type: s:prop_type, text: icon})
+        else
+          let l:prop_type = prop_type_get('dirvish.'.icon.hl, {})
+          if l:prop_type == {}
+            call prop_type_add('dirvish.'.icon.hl, #{highlight: icon.hl})
+          endif
+          call prop_add(i, 1, #{type: 'dirvish.'.icon.hl, text: icon.icon})
+        endif
       else
         let isdir = (f[-1:] == s:sep)
         let f = substitute(s:f(f), escape(s:sep,'\').'$', '', 'g')  " Full path, trim slash.
         let tail_esc = escape(fnamemodify(f,':t').(isdir?(s:sep):''), '[,*.^$~\')
         exe 'syntax match DirvishColumnHead =\%'.i.'l^.\{-}\ze'.tail_esc.'$= conceal cchar='.icon
       endif
+      unlet icon
     endif
   endfor
 endf
