@@ -295,8 +295,8 @@ func! s:open_selected(splitcmd, bg, line1, line2) abort
 
     if isdir
       exe (p || a:splitcmd ==# 'edit' ? '' : a:splitcmd.'|') 'Dirvish' fnameescape(shortname)
-    elseif has('nvim') || has('patch-8.1.1610') " Use bufadd() to avoid fnameescape() fragility.
-      let bnr = bufadd(shortname)
+    elseif has('nvim') " Use bufload() to avoid fnameescape() fragility.
+      let bnr = bufadd(v:lua.vim.fs.normalize(shortname))
       call setbufvar(bnr, '&buflisted', 1)
       exe (p ? 'buffer' : {'edit':'buffer','split':'sbuffer','vsplit':'vert sbuffer','tabedit':'tab sbuffer'}[a:splitcmd]) bnr
     else
