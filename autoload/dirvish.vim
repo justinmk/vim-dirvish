@@ -5,6 +5,11 @@ let s:noau       = 'silent noautocmd keepjumps'
 let s:cb_map = {}   " callback map
 let s:rel = get(g:, 'dirvish_relative_paths', 0)
 
+augroup dirvish_dummy_events
+  autocmd!
+  autocmd User Dirvish* "
+augroup END
+
 " Debug:
 "     echo '' > dirvish.log ; tail -F dirvish.log
 "     nvim +"let g:dirvish_dbg=1" -- b1 b2
@@ -171,6 +176,9 @@ func! dirvish#shdo(paths, cmd) abort
   augroup END
 
   nnoremap <buffer><silent> Z! :silent write<Bar>exe '!'.(has('win32')?fnameescape(escape(expand('%:p:gs?\\?/?'), '&\')):join(map(split(&shell), 'shellescape(v:val)')).' %')<Bar>if !v:shell_error<Bar>close<Bar>endif<CR>
+
+  let b:dirvish_dir = escape(shellescape(head),'&\')
+  doautocmd <nomodeline> User DirvishShdoCreated
 endf
 
 " Returns true if the buffer was modified by the user.
