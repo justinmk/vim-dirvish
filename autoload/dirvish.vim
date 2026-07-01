@@ -115,9 +115,10 @@ func! s:set_args(args) abort
   endif
   let normalized_argv = map(argv(), 'fnamemodify(v:val, ":p")')
   for f in a:args
-    let i = index(normalized_argv, f)
+    let normalized_f = fnamemodify(f, ':p')
+    let i = index(normalized_argv, normalized_f)
     if -1 == i
-      exe '$argadd '.fnameescape(fnamemodify(f, ':p'))
+      exe '$argadd '.fnameescape(normalized_f)
     elseif 1 == len(a:args)
       exe (i+1).'argdelete'
       syntax clear DirvishArg
