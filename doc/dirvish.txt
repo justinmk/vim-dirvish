@@ -131,7 +131,8 @@ AUTOCOMMANDS                                            *dirvish-autocommands*
 
 DirvishShdo                                         *User_DirvishShdoCreated*
     A |User| |autocommand| invoked after creating a |:Shdo| buffer.
-    b:dirvish_dir is set to the previous Dirvish buffer's path.
+    b:dirvish_dir is set to the previous Dirvish buffer's
+    (shell-escaped) path.
 
     To ensure scripts always cd to the current dirvish directory, you could
     add this to your vimrc: >
