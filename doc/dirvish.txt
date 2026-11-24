@@ -246,6 +246,7 @@ Just for fun, here's the old-school way: >
     qqq
     :g/^/let @Q='echo '.shellescape(getline('.')).' '.shellescape(getline('.'))."\n"
     :exe 'e' tempname().'.sh'
+    :!chmod +x %
     :put q|w|!%
 <
 Why does Dirvish report "invalid directory" for a path that contains unusual ~
